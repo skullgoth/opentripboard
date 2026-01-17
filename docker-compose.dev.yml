@@ -20,6 +20,8 @@ services:
   frontend:
     build:
       target: development
+    env_file:
+      - ./frontend/.env
     environment:
       NODE_ENV: development
     volumes:
@@ -33,3 +35,7 @@ services:
     ports:
       - "5173:5173"
     command: npm run dev
+
+  nginx:
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
