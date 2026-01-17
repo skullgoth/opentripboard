@@ -86,18 +86,28 @@ Build itineraries, track budgets, manage reservations, create packing lists, and
 git clone https://github.com/skullgoth/opentripboard.git
 cd opentripboard
 
-# Setup development environment (automated)
+# Setup development environment (creates all .env files automatically)
 ./scripts/setup-env.sh dev
 
-# Edit configuration files with your secrets and domain
-nano backend/.env      # Set JWT_SECRET, PEXELS_API_KEY, CORS_ORIGIN
-nano frontend/.env     # Update VITE_API_URL and VITE_WS_URL to your domain
-
-# Start the application
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Start the application (--build required on first run)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 # Open http://localhost in your browser
 ```
+
+**That's it!** The development environment is pre-configured with sensible defaults:
+- Hot reload enabled for both frontend and backend
+- Database runs locally with default credentials
+- All services accessible via nginx on port 80
+
+**Direct service access (development only):**
+
+| Service | URL | Notes |
+|---------|-----|-------|
+| Main app (nginx) | http://localhost | Recommended for testing |
+| Frontend (Vite) | http://localhost:5173 | HMR enabled |
+| Backend API | http://localhost:3000 | Direct API access |
+| Database | localhost:5432 | PostgreSQL (user: postgres) |
 
 #### Production Setup
 
@@ -106,17 +116,25 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 git clone https://github.com/skullgoth/opentripboard.git
 cd opentripboard
 
-# Setup production environment (automated)
+# Setup production environment
 ./scripts/setup-env.sh prod
 
-# Edit configuration files with your secrets and domain
-nano .env              # Set DB_PASSWORD
-nano backend/.env      # Set JWT_SECRET, PEXELS_API_KEY, CORS_ORIGIN
-nano frontend/.env     # Update VITE_API_URL and VITE_WS_URL to your domain
+# IMPORTANT: Edit configuration files with your production values
+nano .env              # Set a strong DB_PASSWORD
+nano backend/.env      # Set JWT_SECRET, PEXELS_API_KEY, CORS_ORIGIN (your domain)
+nano frontend/.env     # Set VITE_API_URL and VITE_WS_URL to your domain
 
-# Start the application
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Build and start the application
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
+
+**Production environment differences:**
+- Frontend built as static files, served by nginx (no Vite dev server)
+- Backend runs with `NODE_ENV=production`
+- Only port 80 is exposed
+- All services use `restart: always`
+
+> ⚠️ **Security:** Never commit production `.env` files to version control.
 
 Create an account and start planning your first trip!
 
@@ -141,6 +159,86 @@ Login credentials:
 | Memory | 2 GB RAM |
 | Storage | 1 GB free |
 
+### Troubleshooting
+
+<details>
+<summary><strong>Port already in use</strong></summary>
+
+If you see errors about ports being in use, check which ports are occupied:
+
+```bash
+# Check ports 80, 3000, 5173, or 5432
+sudo lsof -i :80
+```
+
+Stop conflicting services or modify the port mappings in `docker-compose.dev.yml`.
+</details>
+
+<details>
+<summary><strong>Database connection failed</strong></summary>
+
+The database might not be healthy yet. Wait a few seconds and check:
+
+```bash
+# Check container health
+docker compose ps
+
+# View database logs
+docker compose logs db
+```
+
+For a fresh start, remove the data volume:
+```bash
+docker compose down -v
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+</details>
+
+<details>
+<summary><strong>Hot reload not working (development)</strong></summary>
+
+Ensure you're using the development compose file:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+If changes still don't appear, the issue may be file watching. Try restarting the containers:
+```bash
+docker compose restart frontend backend
+```
+</details>
+
+<details>
+<summary><strong>Containers keep restarting</strong></summary>
+
+Check the logs for errors:
+```bash
+docker compose logs --tail=50 backend
+docker compose logs --tail=50 frontend
+```
+
+Common causes:
+- Missing environment variables
+- Database not ready (wait for health check)
+- Syntax errors in configuration files
+</details>
+
+<details>
+<summary><strong>Clean start (reset everything)</strong></summary>
+
+To completely reset and start fresh:
+```bash
+# Stop and remove all containers and volumes
+docker compose down -v
+
+# Remove built images (optional)
+docker compose down --rmi local
+
+# Rebuild everything
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+</details>
+
 ---
 
 ## Documentation
@@ -153,23 +251,34 @@ TODO
 
 ```
 opentripboard/
-├── backend/          # Fastify API (Node.js 20)
+├── backend/              # Fastify API (Node.js 20)
 │   ├── src/
-│   │   ├── routes/   # REST API endpoints
-│   │   ├── services/ # Business logic
-│   │   ├── db/       # PostgreSQL migrations & queries
-│   │   └── websocket/# Real-time collaboration
-│   └── tests/
+│   │   ├── routes/       # REST API endpoints
+│   │   ├── services/     # Business logic
+│   │   ├── db/           # PostgreSQL migrations & queries
+│   │   └── websocket/    # Real-time collaboration
+│   ├── tests/
+│   ├── .env.dev          # Development environment template
+│   └── .env.prod         # Production environment template
 │
-├── frontend/         # Vite + Vanilla JS
+├── frontend/             # Vite + Vanilla JS
 │   ├── src/
 │   │   ├── components/
 │   │   ├── pages/
-│   │   ├── locales/  # i18n (en, fr, es)
-│   │   └── services/ # API client, WebSocket
-│   └── tests/
+│   │   ├── locales/      # i18n (en, fr, es)
+│   │   └── services/     # API client, WebSocket
+│   ├── tests/
+│   ├── .env.dev          # Development environment template
+│   └── .env.prod         # Production environment template
 │
-└── docker-compose.yml
+├── scripts/
+│   └── setup-env.sh      # Environment setup script
+│
+├── docker-compose.yml    # Base compose (shared services)
+├── docker-compose.dev.yml # Development overrides (hot reload, exposed ports)
+├── docker-compose.prod.yml # Production overrides (static build, optimized)
+├── nginx.dev.conf        # Nginx config for development (proxies to Vite)
+└── nginx.prod.conf       # Nginx config for production (serves static files)
 ```
 
 ### Tech Stack
