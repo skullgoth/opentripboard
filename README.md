@@ -110,6 +110,7 @@ cd opentripboard
 ./scripts/setup-env.sh prod
 
 # Edit configuration files with your secrets and domain
+nano .env              # Set DB_PASSWORD
 nano backend/.env      # Set JWT_SECRET, PEXELS_API_KEY, CORS_ORIGIN
 nano frontend/.env     # Update VITE_API_URL and VITE_WS_URL to your domain
 

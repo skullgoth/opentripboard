@@ -45,6 +45,21 @@ cd "$(dirname "$0")/.."
 print_info "Setting up OpenTripBoard for $ENV environment..."
 echo ""
 
+# Setup root environment (database credentials)
+print_info "Setting up root environment..."
+if [ "$ENV" = "dev" ]; then
+  cp -v .env.dev .env
+  print_success "Root .env created from .env.dev"
+else
+  if [ ! -f .env.prod ]; then
+    print_error ".env.prod not found"
+    exit 1
+  fi
+  cp -v .env.prod .env
+  print_success "Root .env created from .env.prod"
+  print_error "⚠️  IMPORTANT: Edit .env with your production database password"
+fi
+
 # Setup backend environment
 print_info "Setting up backend..."
 if [ "$ENV" = "dev" ]; then
@@ -99,11 +114,9 @@ if [ "$ENV" = "dev" ]; then
   print_info "Next steps:"
   echo "  1. (Optional) Edit backend/.env and frontend/.env if needed"
   echo "  2. Run: docker compose -f docker-compose.yml -f docker-compose.dev.yml up"
-  echo "  3. Open: http://localhost or http://opentripboard.local"
 else
   print_info "Next steps:"
   echo "  1. Edit backend/.env with your production secrets"
   echo "  2. Edit frontend/.env with your production domain"
   echo "  3. Run: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
-  echo "  4. Configure your reverse proxy to point to the nginx container"
 fi
