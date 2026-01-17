@@ -8,7 +8,7 @@ RUN apk add --no-cache dumb-init python3 make g++
 # Stage 2: Dependencies
 FROM base AS dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Stage 3: Development
 FROM base AS development
