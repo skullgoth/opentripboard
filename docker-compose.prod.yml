@@ -21,8 +21,27 @@ services:
     restart: always
     environment:
       NODE_ENV: production
-    volumes: []
+    volumes:
+      - frontend_dist:/app/dist_shared
     ports: []
+    # Copy built assets to shared volume, then stay alive
+    command: sh -c "cp -r /app/dist/* /app/dist_shared/ && echo 'Frontend built assets ready' && sleep infinity"
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/dist_shared/index.html"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   nginx:
     restart: always
+    depends_on:
+      frontend:
+        condition: service_healthy
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - frontend_dist:/usr/share/nginx/html:ro
+
+volumes:
+  frontend_dist:
+    name: opentripboard-frontend-dist
