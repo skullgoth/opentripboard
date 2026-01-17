@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS site_config (
 CREATE INDEX IF NOT EXISTS idx_site_config_key ON site_config(key);
 
 -- Trigger for updated_at
+DROP TRIGGER IF EXISTS update_site_config_updated_at ON site_config;
 CREATE TRIGGER update_site_config_updated_at
     BEFORE UPDATE ON site_config
     FOR EACH ROW

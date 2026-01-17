@@ -3,7 +3,7 @@
 -- Feature: 004-trip-categories
 
 -- Create user_categories table
-CREATE TABLE user_categories (
+CREATE TABLE IF NOT EXISTS user_categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(50) NOT NULL,
@@ -18,10 +18,11 @@ CREATE TABLE user_categories (
 );
 
 -- Indexes for fast lookup
-CREATE INDEX idx_user_categories_user_id ON user_categories(user_id);
-CREATE INDEX idx_user_categories_user_domain ON user_categories(user_id, domain);
+CREATE INDEX IF NOT EXISTS idx_user_categories_user_id ON user_categories(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_categories_user_domain ON user_categories(user_id, domain);
 
 -- Trigger for updated_at (uses existing function from initial migration)
+DROP TRIGGER IF EXISTS update_user_categories_updated_at ON user_categories;
 CREATE TRIGGER update_user_categories_updated_at
     BEFORE UPDATE ON user_categories
     FOR EACH ROW
