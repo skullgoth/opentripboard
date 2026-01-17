@@ -1,0 +1,35 @@
+services:
+  db:
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      target: development
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tests:/app/tests
+      - ./backend/package.json:/app/package.json
+      - ./backend/vitest.config.js:/app/vitest.config.js
+    ports:
+      - "3000:3000"
+    command: npm run dev
+
+  frontend:
+    build:
+      target: development
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/vite.config.js:/app/vite.config.js
+      - ./frontend/vitest.config.js:/app/vitest.config.js
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    command: npm run dev

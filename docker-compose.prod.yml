@@ -1,0 +1,28 @@
+services:
+  db:
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+  backend:
+    build:
+      target: production
+    restart: always
+    environment:
+      NODE_ENV: production
+    volumes:
+      - uploads:/app/uploads
+    ports: []
+    command: node src/server.js
+
+  frontend:
+    build:
+      target: production
+    restart: always
+    environment:
+      NODE_ENV: production
+    volumes: []
+    ports: []
+
+  nginx:
+    restart: always

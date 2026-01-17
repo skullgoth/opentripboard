@@ -79,19 +79,42 @@ Build itineraries, track budgets, manage reservations, create packing lists, and
 
 ### Quick Start with Docker (Recommended)
 
+#### Development Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/skullgoth/opentripboard.git
 cd opentripboard
 
-# Create environment files
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+# Setup development environment (automated)
+./scripts/setup-env.sh dev
+
+# Edit configuration files with your secrets and domain
+nano backend/.env      # Set JWT_SECRET, PEXELS_API_KEY, CORS_ORIGIN
+nano frontend/.env     # Update VITE_API_URL and VITE_WS_URL to your domain
 
 # Start the application
-docker compose up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 # Open http://localhost in your browser
+```
+
+#### Production Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/skullgoth/opentripboard.git
+cd opentripboard
+
+# Setup production environment (automated)
+./scripts/setup-env.sh prod
+
+# Edit configuration files with your secrets and domain
+nano backend/.env      # Set JWT_SECRET, PEXELS_API_KEY, CORS_ORIGIN
+nano frontend/.env     # Update VITE_API_URL and VITE_WS_URL to your domain
+
+# Start the application
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 Create an account and start planning your first trip!
