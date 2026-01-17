@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+README.md
+.eslintrc.json
+.prettierrc
+tests
+*.test.js
+coverage
+.vscode
+.idea
+dist
+build

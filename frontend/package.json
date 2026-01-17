@@ -1,0 +1,47 @@
+{
+  "name": "opentripboard-frontend",
+  "version": "1.0.0",
+  "description": "Travel Planning Suite - Frontend",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:a11y": "playwright test accessibility.spec.js",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.{js,html,css}\""
+  },
+  "keywords": [
+    "travel",
+    "planning",
+    "itinerary"
+  ],
+  "author": "",
+  "license": "AGPLv3",
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
+    "sortablejs": "^1.15.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@playwright/test": "^1.40.1",
+    "@vitest/coverage-v8": "^1.0.4",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "jsdom": "^27.2.0",
+    "prettier": "^3.1.0",
+    "vite": "^5.0.4",
+    "vite-plugin-pwa": "^0.17.4",
+    "vitest": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

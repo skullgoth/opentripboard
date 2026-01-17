@@ -1,0 +1,27 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Light background -->
+  <rect width="1200" height="630" fill="#f3f4f6"/>
+
+  <!-- Suitcase icon (simplified) -->
+  <g transform="translate(500, 215)">
+    <!-- Handle -->
+    <path d="M 80 0 Q 100 -20 120 0" stroke="#6b7280" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+    <!-- Body -->
+    <rect x="0" y="20" width="200" height="160" rx="10" fill="#9ca3af"/>
+    <rect x="10" y="30" width="180" height="140" rx="8" fill="#d1d5db"/>
+
+    <!-- Straps -->
+    <rect x="0" y="90" width="200" height="10" fill="#6b7280"/>
+    <circle cx="100" cy="95" r="12" fill="#4b5563"/>
+
+    <!-- Wheels -->
+    <circle cx="40" cy="185" r="15" fill="#374151"/>
+    <circle cx="160" cy="185" r="15" fill="#374151"/>
+  </g>
+
+  <!-- Text -->
+  <text x="600" y="480" font-family="Arial, sans-serif" font-size="24" fill="#6b7280" text-anchor="middle">
+    No cover image available
+  </text>
+</svg>

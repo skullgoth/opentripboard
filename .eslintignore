@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.vite/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+
+# Config files
+*.config.js
+vite.config.js
+playwright.config.js
+vitest.config.js

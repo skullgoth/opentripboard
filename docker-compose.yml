@@ -1,0 +1,101 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: opentripboard-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: opentripboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/db/migrations:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - opentripboard-network
+
+  backend:
+    build:
+      context: ./backend
+      target: development
+    container_name: opentripboard-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/opentripboard
+      JWT_SECRET: dev-secret-change-in-production
+      CORS_ORIGIN: http://opentripboard.varetz.lan
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tests:/app/tests
+      - ./backend/package.json:/app/package.json
+      - ./backend/vitest.config.js:/app/vitest.config.js
+      - uploads:/app/uploads
+    ports:
+      - "3000:3000"
+    networks:
+      - opentripboard-network
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: opentripboard-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://opentripboard.varetz.lan/api/v1
+      VITE_WS_URL: ws://opentripboard.varetz.lan/ws
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/package.json:/app/package.json
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - opentripboard-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: opentripboard-nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    networks:
+      - opentripboard-network
+
+volumes:
+  postgres_data:
+    name: opentripboard-postgres-data
+  backend_node_modules:
+    name: opentripboard-backend-node-modules
+  frontend_node_modules:
+    name: opentripboard-frontend-node-modules
+  uploads:
+    name: opentripboard-uploads
+
+networks:
+  opentripboard-network:
+    name: opentripboard-network
+    driver: bridge

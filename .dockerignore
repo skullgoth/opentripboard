@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+README.md
+CONTRIBUTING.md
+LICENSE
+*.md
+docs/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Environment variables (will be injected at runtime)
+.env*
+!.env.example
+
+# Testing
+coverage/
+.nyc_output/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+playwright-report/
+test-results/
+
+# Build artifacts (build inside container)
+dist/
+build/
+.vite/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (will be mounted as volume)
+uploads/
+backend/uploads/
