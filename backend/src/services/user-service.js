@@ -1,9 +1,12 @@
 // T064: UserService - register, authenticate, password handling
 // US8: Extended with role support and admin bootstrapping
+// T013: Extended with refresh token storage and rotation
 import { createUser, findByEmail, findById, countAdmins } from '../db/queries/users.js';
-import { hashPassword, verifyPassword, validatePasswordStrength } from '../utils/crypto.js';
+import { hashPassword, verifyPassword, validatePasswordStrength, hashToken } from '../utils/crypto.js';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt.js';
 import { ConflictError, AuthenticationError, ValidationError } from '../middleware/error-handler.js';
+import { storeRefreshToken } from '../db/queries/refresh-tokens.js';
+import { randomUUID } from 'crypto';
 
 /**
  * Register a new user
@@ -52,7 +55,18 @@ export async function register({ email, password, fullName }) {
 
   // Generate tokens
   const accessToken = generateAccessToken({ userId: user.id, email: user.email, role: user.role || 'user' });
-  const refreshToken = generateRefreshToken({ userId: user.id });
+  const familyId = randomUUID();
+  const refreshToken = generateRefreshToken({ userId: user.id, familyId });
+
+  // Store refresh token in database
+  const tokenHash = await hashToken(refreshToken);
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  await storeRefreshToken({
+    userId: user.id,
+    tokenHash,
+    familyId,
+    expiresAt,
+  });
 
   return {
     user: {
@@ -88,7 +102,18 @@ export async function authenticate(email, password) {
 
   // Generate tokens
   const accessToken = generateAccessToken({ userId: user.id, email: user.email, role: user.role || 'user' });
-  const refreshToken = generateRefreshToken({ userId: user.id });
+  const familyId = randomUUID();
+  const refreshToken = generateRefreshToken({ userId: user.id, familyId });
+
+  // Store refresh token in database
+  const tokenHash = await hashToken(refreshToken);
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  await storeRefreshToken({
+    userId: user.id,
+    tokenHash,
+    familyId,
+    expiresAt,
+  });
 
   return {
     user: {
