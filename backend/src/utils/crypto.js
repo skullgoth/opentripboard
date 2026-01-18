@@ -27,6 +27,25 @@ export async function hashPassword(password) {
 }
 
 /**
+ * Hash a token for secure storage
+ * @param {string} token - Plain text token
+ * @returns {Promise<string>} Hashed token
+ */
+export async function hashToken(token) {
+  if (!token || typeof token !== 'string') {
+    throw new Error('Token must be a non-empty string');
+  }
+
+  try {
+    const hash = await bcrypt.hash(token, SALT_ROUNDS);
+    return hash;
+  } catch (error) {
+    console.error('Token hashing failed:', error.message);
+    throw new Error('Failed to hash token');
+  }
+}
+
+/**
  * Verify a password against a hash
  * @param {string} password - Plain text password to verify
  * @param {string} hash - Hashed password to compare against
