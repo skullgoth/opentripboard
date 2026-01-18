@@ -90,10 +90,8 @@ async function createServer() {
   // Register cache headers plugin
   await fastify.register(cachePlugin);
 
-  // Register cookie support (required for CSRF)
-  await fastify.register(import('@fastify/cookie'));
-
-  // Register CSRF protection (disabled by default, enable with CSRF_ENABLED=true)
+  // Register CSRF protection (enabled by default)
+  // Note: CSRF plugin will register cookie support automatically if needed
   await fastify.register(csrfPlugin);
 
   // Register WebSocket support
