@@ -1,5 +1,6 @@
 // API Client - HTTP request utility with authentication
 import { getItem, setItem } from './storage.js';
+import { withCsrfToken } from './csrf.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
@@ -108,9 +109,11 @@ class ApiClient {
    * @returns {Promise<any>} Response data
    */
   async post(endpoint, data) {
+    const headers = await withCsrfToken();
     return this.request(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
+      headers,
     });
   }
 
@@ -121,9 +124,11 @@ class ApiClient {
    * @returns {Promise<any>} Response data
    */
   async put(endpoint, data) {
+    const headers = await withCsrfToken();
     return this.request(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
+      headers,
     });
   }
 
@@ -134,9 +139,11 @@ class ApiClient {
    * @returns {Promise<any>} Response data
    */
   async patch(endpoint, data) {
+    const headers = await withCsrfToken();
     return this.request(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(data),
+      headers,
     });
   }
 
@@ -146,8 +153,10 @@ class ApiClient {
    * @returns {Promise<any>} Response data
    */
   async delete(endpoint) {
+    const headers = await withCsrfToken();
     return this.request(endpoint, {
       method: 'DELETE',
+      headers,
     });
   }
 
@@ -160,7 +169,7 @@ class ApiClient {
   async upload(endpoint, formData) {
     const url = `${this.baseUrl}${endpoint}`;
     const token = getItem('auth_token');
-    const headers = {};
+    const headers = await withCsrfToken();
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;

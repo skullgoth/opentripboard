@@ -28,6 +28,7 @@ import { registerServiceWorker, addServiceWorkerStyles } from './utils/service-w
 import { initI18n, setLanguage, t, onLanguageChange } from './utils/i18n.js';
 import { setSiteConfig, isRegistrationEnabled, subscribeToSiteConfig } from './state/site-config-state.js';
 import { fetchPublicSiteConfig } from './services/site-config.js';
+import { initCsrf } from './utils/csrf.js';
 
 /**
  * Application state
@@ -149,6 +150,9 @@ async function initApp() {
 
   // Initialize theme before anything else to prevent flash
   const currentTheme = initTheme();
+
+  // Initialize CSRF token (pre-fetch for subsequent API requests)
+  await initCsrf();
 
   // Load site configuration (needed for registration check)
   await loadSiteConfig();
