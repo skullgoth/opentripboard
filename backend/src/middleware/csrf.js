@@ -44,7 +44,7 @@ function isExcludedRoute(url) {
  */
 export async function csrfPlugin(fastify, options = {}) {
   const {
-    enabled = process.env.CSRF_ENABLED === 'true',
+    enabled = process.env.CSRF_ENABLED !== 'false',
     cookieOptions = {},
   } = options;
 
