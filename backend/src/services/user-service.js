@@ -222,3 +222,30 @@ export async function refreshAccessToken(refreshToken) {
     throw new AuthenticationError('Invalid refresh token');
   }
 }
+
+/**
+ * Logout user and revoke refresh token family
+ * @param {string} refreshToken - Refresh token
+ * @returns {Promise<void>}
+ */
+export async function logout(refreshToken) {
+  try {
+    // Hash the token to look it up in database
+    const tokenHash = await hashToken(refreshToken);
+
+    // Find token in database
+    const storedToken = await findByTokenHash(tokenHash);
+
+    if (!storedToken) {
+      throw new AuthenticationError('Invalid refresh token');
+    }
+
+    // Revoke entire token family
+    await revokeTokenFamily(storedToken.family_id);
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      throw error;
+    }
+    throw new AuthenticationError('Invalid refresh token');
+  }
+}
