@@ -10,6 +10,11 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config({ path: '.env' });
 
+// Ensure DATABASE_URL is set with proper fallback for integration tests
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/opentripboard';
+}
+
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 

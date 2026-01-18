@@ -25,7 +25,7 @@ export default defineConfig({
       },
     },
     include: ['tests/**/*.test.js'],
-    exclude: ['node_modules', 'dist'],
+    exclude: ['node_modules', 'dist', 'tests/integration/**/*.test.js'],
     testTimeout: 10000,
     hookTimeout: 10000,
     teardownTimeout: 5000,

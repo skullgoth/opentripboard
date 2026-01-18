@@ -165,7 +165,7 @@ describe('User Service', () => {
         errors: []
       });
       vi.mocked(crypto.hashPassword).mockResolvedValue('hashed');
-      vi.mocked(crypto.hashToken).mockResolvedValue('token-hash');
+      vi.mocked(crypto.hashToken).mockReturnValue('token-hash');
       vi.mocked(userQueries.createUser).mockResolvedValue(mockUser);
       vi.mocked(jwt.generateAccessToken).mockReturnValue('access-token');
       vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh-token');
@@ -286,7 +286,7 @@ describe('User Service', () => {
 
       vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
       vi.mocked(crypto.verifyPassword).mockResolvedValue(true);
-      vi.mocked(crypto.hashToken).mockResolvedValue('token-hash');
+      vi.mocked(crypto.hashToken).mockReturnValue('token-hash');
       vi.mocked(jwt.generateAccessToken).mockReturnValue('token');
       vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh');
       vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
@@ -402,7 +402,7 @@ describe('User Service', () => {
         userId,
         type: 'refresh'
       });
-      vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
       vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
       vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
@@ -448,7 +448,7 @@ describe('User Service', () => {
         userId: 'deleted-user',
         type: 'refresh'
       });
-      vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
       vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
       vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(null);
@@ -503,7 +503,7 @@ describe('User Service', () => {
         userId: 'user-456',
         type: 'refresh'
       });
-      vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
       vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
       vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
@@ -542,7 +542,7 @@ describe('User Service', () => {
           userId,
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
         vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
         vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
@@ -578,7 +578,7 @@ describe('User Service', () => {
           userId,
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
         vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
         vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
@@ -614,8 +614,8 @@ describe('User Service', () => {
           type: 'refresh'
         });
         vi.mocked(crypto.hashToken)
-          .mockResolvedValueOnce(tokenHash)  // First call for old token
-          .mockResolvedValueOnce(newTokenHash); // Second call for new token
+          .mockReturnValueOnce(tokenHash)  // First call for old token
+          .mockReturnValueOnce(newTokenHash); // Second call for new token
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
         vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
         vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
@@ -664,8 +664,8 @@ describe('User Service', () => {
           type: 'refresh'
         });
         vi.mocked(crypto.hashToken)
-          .mockResolvedValueOnce(tokenHash)
-          .mockResolvedValueOnce(newTokenHash);
+          .mockReturnValueOnce(tokenHash)
+          .mockReturnValueOnce(newTokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
         vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
         vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
@@ -703,7 +703,7 @@ describe('User Service', () => {
           userId: 'user-123',
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(null); // Not found
 
         await expect(userService.refreshAccessToken(refreshToken))
@@ -731,7 +731,7 @@ describe('User Service', () => {
           userId: 'user-123',
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
 
         await expect(userService.refreshAccessToken(refreshToken))
@@ -757,7 +757,7 @@ describe('User Service', () => {
           userId: 'user-123',
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
 
         await expect(userService.refreshAccessToken(refreshToken))
@@ -786,7 +786,7 @@ describe('User Service', () => {
           userId: 'user-123',
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
         vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2); // Returns count
 
@@ -814,7 +814,7 @@ describe('User Service', () => {
           userId: 'user-123',
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
         vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
 
@@ -846,7 +846,7 @@ describe('User Service', () => {
           userId: 'user-123',
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
         vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
 
@@ -879,7 +879,7 @@ describe('User Service', () => {
           userId: 'user-123',
           type: 'refresh'
         });
-        vi.mocked(crypto.hashToken).mockResolvedValue(tokenHash);
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
         vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
         vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
 
