@@ -115,6 +115,109 @@ export default async function exportRoutes(fastify) {
     })
   );
 
+  /**
+   * Export trip to JSON
+   */
+  fastify.get(
+    '/trips/:tripId/export/json',
+    {
+      preHandler: fastify.auth,
+    },
+    asyncHandler(async (request, reply) => {
+      const { tripId } = request.params;
+      const userId = request.user.userId;
+
+      // Check trip exists and user has access
+      const trip = await findTripById(tripId);
+      if (!trip) {
+        throw new NotFoundError('Trip not found');
+      }
+
+      // Check access (owner or trip buddy)
+      const isOwner = trip.owner_id === userId;
+      const isBuddy = await hasAccess(tripId, userId);
+      if (!isOwner && !isBuddy) {
+        throw new ForbiddenError('You do not have access to this trip');
+      }
+
+      // Get all trip data
+      const [activities, tripBuddies, expenses, expenseSummary, lists] = await Promise.all([
+        findActivitiesByTripId(tripId),
+        findTripBuddiesByTripId(tripId),
+        findExpensesByTripId(tripId),
+        getExpenseSummary(tripId),
+        findListsByTripId(tripId),
+      ]);
+
+      // Build JSON export data
+      const exportData = {
+        trip: {
+          id: trip.id,
+          name: trip.name,
+          destination: trip.destination,
+          startDate: trip.start_date,
+          endDate: trip.end_date,
+          coverImageUrl: trip.cover_image_url,
+          budget: trip.budget,
+          currency: trip.currency,
+          createdAt: trip.created_at,
+          updatedAt: trip.updated_at,
+        },
+        activities: activities.map((a) => ({
+          id: a.id,
+          title: a.title,
+          type: a.type,
+          startTime: a.start_time,
+          endTime: a.end_time,
+          location: a.location,
+          latitude: a.latitude,
+          longitude: a.longitude,
+          description: a.description,
+          metadata: a.metadata,
+          orderIndex: a.order_index,
+          createdAt: a.created_at,
+        })),
+        tripBuddies: tripBuddies.map((b) => ({
+          userId: b.user_id,
+          name: b.full_name,
+          email: b.email,
+          role: b.role,
+          joinedAt: b.created_at,
+        })),
+        expenses: expenses.map((e) => ({
+          id: e.id,
+          description: e.description,
+          amount: e.amount,
+          currency: e.currency,
+          category: e.category,
+          paidBy: e.paid_by_name,
+          date: e.expense_date,
+          createdAt: e.created_at,
+        })),
+        expenseSummary: {
+          totalAmount: expenseSummary.total_amount,
+          currency: expenseSummary.currency,
+          expenseCount: expenseSummary.expense_count,
+        },
+        lists: lists.map((l) => ({
+          id: l.id,
+          title: l.title,
+          items: l.items,
+          createdAt: l.created_at,
+          updatedAt: l.updated_at,
+        })),
+        exportedAt: new Date().toISOString(),
+      };
+
+      // Set response headers for JSON download
+      const filename = `${trip.name.replace(/[^a-z0-9]/gi, '_')}_export.json`;
+      reply
+        .header('Content-Type', 'application/json')
+        .header('Content-Disposition', `attachment; filename="${filename}"`)
+        .send(exportData);
+    })
+  );
+
   // =============================================
   // SHARE LINKS
   // =============================================
