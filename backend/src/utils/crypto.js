@@ -1,5 +1,6 @@
 // T029: Password hashing utility with bcrypt (12 rounds)
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 const SALT_ROUNDS = 12;
 
@@ -27,17 +28,18 @@ export async function hashPassword(password) {
 }
 
 /**
- * Hash a token for secure storage
+ * Hash a token for secure storage using SHA-256
+ * Uses deterministic hashing (unlike bcrypt) to allow token lookup
  * @param {string} token - Plain text token
- * @returns {Promise<string>} Hashed token
+ * @returns {string} Hashed token (hex encoded)
  */
-export async function hashToken(token) {
+export function hashToken(token) {
   if (!token || typeof token !== 'string') {
     throw new Error('Token must be a non-empty string');
   }
 
   try {
-    const hash = await bcrypt.hash(token, SALT_ROUNDS);
+    const hash = crypto.createHash('sha256').update(token).digest('hex');
     return hash;
   } catch (error) {
     console.error('Token hashing failed:', error.message);

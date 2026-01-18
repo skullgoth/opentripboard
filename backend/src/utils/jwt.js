@@ -68,6 +68,7 @@ export function generateRefreshToken(payload) {
         userId: payload.userId,
         familyId: familyId,
         type: 'refresh',
+        jti: randomUUID(), // Unique token ID to prevent duplicates
       },
       JWT_SECRET,
       {

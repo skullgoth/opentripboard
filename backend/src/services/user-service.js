@@ -59,7 +59,7 @@ export async function register({ email, password, fullName }) {
   const refreshToken = generateRefreshToken({ userId: user.id, familyId });
 
   // Store refresh token in database
-  const tokenHash = await hashToken(refreshToken);
+  const tokenHash = hashToken(refreshToken);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   await storeRefreshToken({
     userId: user.id,
@@ -106,7 +106,7 @@ export async function authenticate(email, password) {
   const refreshToken = generateRefreshToken({ userId: user.id, familyId });
 
   // Store refresh token in database
-  const tokenHash = await hashToken(refreshToken);
+  const tokenHash = hashToken(refreshToken);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   await storeRefreshToken({
     userId: user.id,
@@ -165,7 +165,7 @@ export async function refreshAccessToken(refreshToken) {
     }
 
     // Hash the token to look it up in database
-    const tokenHash = await hashToken(refreshToken);
+    const tokenHash = hashToken(refreshToken);
 
     // Find token in database
     const storedToken = await findByTokenHash(tokenHash);
@@ -205,7 +205,7 @@ export async function refreshAccessToken(refreshToken) {
     const newRefreshToken = generateRefreshToken({ userId: user.id, familyId: storedToken.family_id });
 
     // Store new refresh token
-    const newTokenHash = await hashToken(newRefreshToken);
+    const newTokenHash = hashToken(newRefreshToken);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
     await storeRefreshToken({
       userId: user.id,
@@ -231,7 +231,7 @@ export async function refreshAccessToken(refreshToken) {
 export async function logout(refreshToken) {
   try {
     // Hash the token to look it up in database
-    const tokenHash = await hashToken(refreshToken);
+    const tokenHash = hashToken(refreshToken);
 
     // Find token in database
     const storedToken = await findByTokenHash(tokenHash);
