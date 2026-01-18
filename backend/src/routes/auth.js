@@ -143,6 +143,21 @@ export default async function authRoutes(fastify) {
   );
 
   /**
+   * Logout from all devices and revoke all refresh tokens
+   */
+  fastify.post(
+    '/auth/logout-all',
+    {
+      preHandler: fastify.auth,
+    },
+    asyncHandler(async (request, reply) => {
+      await userService.logoutAllDevices(request.user.userId);
+
+      reply.send({ success: true });
+    })
+  );
+
+  /**
    * Get current user profile
    */
   fastify.get(
