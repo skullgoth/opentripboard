@@ -5,7 +5,7 @@ import { createUser, findByEmail, findById, countAdmins } from '../db/queries/us
 import { hashPassword, verifyPassword, validatePasswordStrength, hashToken } from '../utils/crypto.js';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt.js';
 import { ConflictError, AuthenticationError, ValidationError } from '../middleware/error-handler.js';
-import { storeRefreshToken, findByTokenHash, markAsUsed, revokeTokenFamily } from '../db/queries/refresh-tokens.js';
+import { storeRefreshToken, findByTokenHash, markAsUsed, revokeTokenFamily, revokeAllForUser } from '../db/queries/refresh-tokens.js';
 import { randomUUID } from 'crypto';
 
 /**
@@ -248,4 +248,14 @@ export async function logout(refreshToken) {
     }
     throw new AuthenticationError('Invalid refresh token');
   }
+}
+
+/**
+ * Logout all devices and revoke all refresh tokens for a user
+ * @param {string} userId - User ID
+ * @returns {Promise<void>}
+ */
+export async function logoutAllDevices(userId) {
+  // Revoke all tokens for the user
+  await revokeAllForUser(userId);
 }
