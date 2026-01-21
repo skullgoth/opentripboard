@@ -52,6 +52,17 @@ const refreshSchema = {
   additionalProperties: false,
 };
 
+const logoutSchema = {
+  type: 'object',
+  required: ['refreshToken'],
+  properties: {
+    refreshToken: {
+      type: 'string',
+    },
+  },
+  additionalProperties: false,
+};
+
 export default async function authRoutes(fastify) {
   /**
    * Register a new user
@@ -111,6 +122,38 @@ export default async function authRoutes(fastify) {
       const result = await userService.refreshAccessToken(refreshToken);
 
       reply.send(result);
+    })
+  );
+
+  /**
+   * Logout and revoke refresh token
+   */
+  fastify.post(
+    '/auth/logout',
+    {
+      preHandler: validateBody(logoutSchema),
+    },
+    asyncHandler(async (request, reply) => {
+      const { refreshToken } = request.body;
+
+      await userService.logout(refreshToken);
+
+      reply.send({ success: true });
+    })
+  );
+
+  /**
+   * Logout from all devices and revoke all refresh tokens
+   */
+  fastify.post(
+    '/auth/logout-all',
+    {
+      preHandler: fastify.auth,
+    },
+    asyncHandler(async (request, reply) => {
+      await userService.logoutAllDevices(request.user.userId);
+
+      reply.send({ success: true });
     })
   );
 

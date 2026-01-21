@@ -6,6 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as userService from '../../../src/services/user-service.js';
 import * as userQueries from '../../../src/db/queries/users.js';
+import * as refreshTokenQueries from '../../../src/db/queries/refresh-tokens.js';
 import * as crypto from '../../../src/utils/crypto.js';
 import * as jwt from '../../../src/utils/jwt.js';
 import { createMockUser } from '../../helpers.js';
@@ -20,6 +21,7 @@ vi.mock('../../../src/db/connection.js', () => ({
 }));
 
 vi.mock('../../../src/db/queries/users.js');
+vi.mock('../../../src/db/queries/refresh-tokens.js');
 vi.mock('../../../src/utils/crypto.js');
 vi.mock('../../../src/utils/jwt.js');
 
@@ -163,9 +165,11 @@ describe('User Service', () => {
         errors: []
       });
       vi.mocked(crypto.hashPassword).mockResolvedValue('hashed');
+      vi.mocked(crypto.hashToken).mockReturnValue('token-hash');
       vi.mocked(userQueries.createUser).mockResolvedValue(mockUser);
       vi.mocked(jwt.generateAccessToken).mockReturnValue('access-token');
       vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh-token');
+      vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
 
       const result = await userService.register(validUserData);
 
@@ -174,9 +178,12 @@ describe('User Service', () => {
         email: mockUser.email,
         role: 'user'
       });
-      expect(jwt.generateRefreshToken).toHaveBeenCalledWith({
-        userId: mockUser.id
-      });
+      expect(jwt.generateRefreshToken).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: mockUser.id,
+          familyId: expect.any(String)
+        })
+      );
       expect(result.accessToken).toBe('access-token');
       expect(result.refreshToken).toBe('refresh-token');
     });
@@ -279,8 +286,10 @@ describe('User Service', () => {
 
       vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
       vi.mocked(crypto.verifyPassword).mockResolvedValue(true);
+      vi.mocked(crypto.hashToken).mockReturnValue('token-hash');
       vi.mocked(jwt.generateAccessToken).mockReturnValue('token');
       vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh');
+      vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
 
       await userService.authenticate(email, password);
 
@@ -289,9 +298,12 @@ describe('User Service', () => {
         email: email,
         role: 'user'
       });
-      expect(jwt.generateRefreshToken).toHaveBeenCalledWith({
-        userId: 'user-456'
-      });
+      expect(jwt.generateRefreshToken).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-456',
+          familyId: expect.any(String)
+        })
+      );
     });
 
     it('should return formatted user object', async () => {
@@ -371,16 +383,32 @@ describe('User Service', () => {
   describe('refreshAccessToken', () => {
     it('should refresh access token successfully', async () => {
       const refreshToken = 'valid-refresh-token';
+      const tokenHash = 'hashed-token';
       const userId = 'user-123';
       const mockUser = createMockUser({ id: userId });
       const mockAccessToken = 'new-access-token';
+      const mockStoredToken = {
+        id: 'token-id',
+        user_id: userId,
+        token_hash: tokenHash,
+        family_id: 'family-123',
+        used_at: null,
+        revoked_at: null,
+        expires_at: new Date(Date.now() + 86400000),
+        created_at: new Date(),
+      };
 
       vi.mocked(jwt.verifyToken).mockReturnValue({
         userId,
         type: 'refresh'
       });
+      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+      vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+      vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
       vi.mocked(jwt.generateAccessToken).mockReturnValue(mockAccessToken);
+      vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
+      vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
 
       const result = await userService.refreshAccessToken(refreshToken);
 
@@ -399,21 +427,35 @@ describe('User Service', () => {
 
       await expect(userService.refreshAccessToken(refreshToken))
         .rejects
-        .toThrow('Invalid refresh token');
+        .toThrow('Invalid token type');
     });
 
     it('should throw AuthenticationError if user no longer exists', async () => {
       const refreshToken = 'valid-refresh-token';
+      const tokenHash = 'hashed-token';
+      const mockStoredToken = {
+        id: 'token-id',
+        user_id: 'deleted-user',
+        token_hash: tokenHash,
+        family_id: 'family-123',
+        used_at: null,
+        revoked_at: null,
+        expires_at: new Date(Date.now() + 86400000),
+        created_at: new Date(),
+      };
 
       vi.mocked(jwt.verifyToken).mockReturnValue({
         userId: 'deleted-user',
         type: 'refresh'
       });
+      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+      vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+      vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(null);
 
       await expect(userService.refreshAccessToken(refreshToken))
         .rejects
-        .toThrow('Invalid refresh token');
+        .toThrow('User not found');
     });
 
     it('should throw AuthenticationError for expired token', async () => {
@@ -441,17 +483,33 @@ describe('User Service', () => {
     });
 
     it('should generate new access token with correct user data', async () => {
+      const tokenHash = 'hashed-token';
       const mockUser = createMockUser({
         id: 'user-456',
         email: 'refresh@example.com'
       });
+      const mockStoredToken = {
+        id: 'token-id',
+        user_id: 'user-456',
+        token_hash: tokenHash,
+        family_id: 'family-123',
+        used_at: null,
+        revoked_at: null,
+        expires_at: new Date(Date.now() + 86400000),
+        created_at: new Date(),
+      };
 
       vi.mocked(jwt.verifyToken).mockReturnValue({
         userId: 'user-456',
         type: 'refresh'
       });
+      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+      vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+      vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
       vi.mocked(jwt.generateAccessToken).mockReturnValue('new-token');
+      vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
+      vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
 
       await userService.refreshAccessToken('valid-token');
 
@@ -459,6 +517,382 @@ describe('User Service', () => {
         userId: 'user-456',
         email: 'refresh@example.com',
         role: 'user'
+      });
+    });
+
+    describe('Token Rotation', () => {
+      it('should return both new access token and new refresh token', async () => {
+        const refreshToken = 'valid-refresh-token';
+        const tokenHash = 'hashed-token';
+        const familyId = 'family-123';
+        const userId = 'user-123';
+        const mockUser = createMockUser({ id: userId });
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: userId,
+          token_hash: tokenHash,
+          family_id: familyId,
+          used_at: null,
+          revoked_at: null,
+          expires_at: new Date(Date.now() + 86400000), // Future date
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId,
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+        vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
+        vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
+        vi.mocked(jwt.generateAccessToken).mockReturnValue('new-access-token');
+        vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
+        vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
+
+        const result = await userService.refreshAccessToken(refreshToken);
+
+        expect(result).toBeDefined();
+        expect(result.accessToken).toBe('new-access-token');
+        expect(result.refreshToken).toBe('new-refresh-token');
+      });
+
+      it('should mark old refresh token as used', async () => {
+        const refreshToken = 'valid-refresh-token';
+        const tokenHash = 'hashed-token';
+        const familyId = 'family-123';
+        const userId = 'user-123';
+        const mockUser = createMockUser({ id: userId });
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: userId,
+          token_hash: tokenHash,
+          family_id: familyId,
+          used_at: null,
+          revoked_at: null,
+          expires_at: new Date(Date.now() + 86400000),
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId,
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+        vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
+        vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
+        vi.mocked(jwt.generateAccessToken).mockReturnValue('new-access-token');
+        vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
+        vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
+
+        await userService.refreshAccessToken(refreshToken);
+
+        expect(refreshTokenQueries.markAsUsed).toHaveBeenCalledWith(tokenHash);
+      });
+
+      it('should generate new refresh token with same family ID for rotation tracking', async () => {
+        const refreshToken = 'valid-refresh-token';
+        const tokenHash = 'hashed-token';
+        const newTokenHash = 'new-hashed-token';
+        const familyId = 'family-123';
+        const userId = 'user-123';
+        const mockUser = createMockUser({ id: userId, email: 'user@example.com' });
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: userId,
+          token_hash: tokenHash,
+          family_id: familyId,
+          used_at: null,
+          revoked_at: null,
+          expires_at: new Date(Date.now() + 86400000),
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId,
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken)
+          .mockReturnValueOnce(tokenHash)  // First call for old token
+          .mockReturnValueOnce(newTokenHash); // Second call for new token
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+        vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
+        vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
+        vi.mocked(jwt.generateAccessToken).mockReturnValue('new-access-token');
+        vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
+        vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
+
+        await userService.refreshAccessToken(refreshToken);
+
+        // Verify new refresh token is generated with same family ID
+        expect(jwt.generateRefreshToken).toHaveBeenCalledWith({
+          userId,
+          familyId
+        });
+
+        // Verify new token is stored with same family ID
+        expect(refreshTokenQueries.storeRefreshToken).toHaveBeenCalledWith(
+          expect.objectContaining({
+            userId,
+            familyId,
+            tokenHash: newTokenHash
+          })
+        );
+      });
+
+      it('should store new refresh token in database with 7-day expiration', async () => {
+        const refreshToken = 'valid-refresh-token';
+        const tokenHash = 'hashed-token';
+        const newTokenHash = 'new-hashed-token';
+        const familyId = 'family-123';
+        const userId = 'user-123';
+        const mockUser = createMockUser({ id: userId });
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: userId,
+          token_hash: tokenHash,
+          family_id: familyId,
+          used_at: null,
+          revoked_at: null,
+          expires_at: new Date(Date.now() + 86400000),
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId,
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken)
+          .mockReturnValueOnce(tokenHash)
+          .mockReturnValueOnce(newTokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+        vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
+        vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
+        vi.mocked(jwt.generateAccessToken).mockReturnValue('new-access-token');
+        vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
+        vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
+
+        const beforeCall = Date.now();
+        await userService.refreshAccessToken(refreshToken);
+        const afterCall = Date.now();
+
+        expect(refreshTokenQueries.storeRefreshToken).toHaveBeenCalledWith(
+          expect.objectContaining({
+            userId,
+            tokenHash: newTokenHash,
+            familyId
+          })
+        );
+
+        // Verify expiration is approximately 7 days from now
+        const storeCall = vi.mocked(refreshTokenQueries.storeRefreshToken).mock.calls[0][0];
+        const expiresAt = storeCall.expiresAt.getTime();
+        const expectedExpiry = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+        expect(expiresAt).toBeGreaterThanOrEqual(beforeCall + expectedExpiry);
+        expect(expiresAt).toBeLessThanOrEqual(afterCall + expectedExpiry);
+      });
+    });
+
+    describe('Token Validation', () => {
+      it('should verify token exists in database', async () => {
+        const refreshToken = 'valid-refresh-token';
+        const tokenHash = 'hashed-token';
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId: 'user-123',
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(null); // Not found
+
+        await expect(userService.refreshAccessToken(refreshToken))
+          .rejects
+          .toThrow('Invalid refresh token');
+
+        expect(refreshTokenQueries.findByTokenHash).toHaveBeenCalledWith(tokenHash);
+      });
+
+      it('should check if token is expired', async () => {
+        const refreshToken = 'expired-refresh-token';
+        const tokenHash = 'hashed-token';
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: 'user-123',
+          token_hash: tokenHash,
+          family_id: 'family-123',
+          used_at: null,
+          revoked_at: null,
+          expires_at: new Date(Date.now() - 86400000), // Past date (expired)
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId: 'user-123',
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+
+        await expect(userService.refreshAccessToken(refreshToken))
+          .rejects
+          .toThrow('Refresh token expired');
+      });
+
+      it('should check if token is revoked', async () => {
+        const refreshToken = 'revoked-refresh-token';
+        const tokenHash = 'hashed-token';
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: 'user-123',
+          token_hash: tokenHash,
+          family_id: 'family-123',
+          used_at: null,
+          revoked_at: new Date(), // Token is revoked
+          expires_at: new Date(Date.now() + 86400000),
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId: 'user-123',
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+
+        await expect(userService.refreshAccessToken(refreshToken))
+          .rejects
+          .toThrow('Refresh token revoked');
+      });
+    });
+
+    describe('Reuse Detection', () => {
+      it('should detect token reuse and throw error', async () => {
+        const refreshToken = 'used-refresh-token';
+        const tokenHash = 'hashed-token';
+        const familyId = 'family-123';
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: 'user-123',
+          token_hash: tokenHash,
+          family_id: familyId,
+          used_at: new Date(), // Token already used
+          revoked_at: null,
+          expires_at: new Date(Date.now() + 86400000),
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId: 'user-123',
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+        vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2); // Returns count
+
+        await expect(userService.refreshAccessToken(refreshToken))
+          .rejects
+          .toThrow('Token reuse detected');
+      });
+
+      it('should revoke entire token family when reuse is detected', async () => {
+        const refreshToken = 'used-refresh-token';
+        const tokenHash = 'hashed-token';
+        const familyId = 'family-123';
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: 'user-123',
+          token_hash: tokenHash,
+          family_id: familyId,
+          used_at: new Date(), // Token already used
+          revoked_at: null,
+          expires_at: new Date(Date.now() + 86400000),
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId: 'user-123',
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+        vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
+
+        try {
+          await userService.refreshAccessToken(refreshToken);
+        } catch (error) {
+          // Expected to throw
+        }
+
+        expect(refreshTokenQueries.revokeTokenFamily).toHaveBeenCalledWith(familyId);
+      });
+
+      it('should not mark token as used if reuse is detected', async () => {
+        const refreshToken = 'used-refresh-token';
+        const tokenHash = 'hashed-token';
+        const familyId = 'family-123';
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: 'user-123',
+          token_hash: tokenHash,
+          family_id: familyId,
+          used_at: new Date(), // Token already used
+          revoked_at: null,
+          expires_at: new Date(Date.now() + 86400000),
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId: 'user-123',
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+        vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
+
+        try {
+          await userService.refreshAccessToken(refreshToken);
+        } catch (error) {
+          // Expected to throw
+        }
+
+        // Should NOT call markAsUsed since reuse was detected
+        expect(refreshTokenQueries.markAsUsed).not.toHaveBeenCalled();
+      });
+
+      it('should not generate new tokens if reuse is detected', async () => {
+        const refreshToken = 'used-refresh-token';
+        const tokenHash = 'hashed-token';
+        const familyId = 'family-123';
+        const mockStoredToken = {
+          id: 'token-id',
+          user_id: 'user-123',
+          token_hash: tokenHash,
+          family_id: familyId,
+          used_at: new Date(), // Token already used
+          revoked_at: null,
+          expires_at: new Date(Date.now() + 86400000),
+          created_at: new Date(),
+        };
+
+        vi.mocked(jwt.verifyToken).mockReturnValue({
+          userId: 'user-123',
+          type: 'refresh'
+        });
+        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
+        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
+        vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
+
+        try {
+          await userService.refreshAccessToken(refreshToken);
+        } catch (error) {
+          // Expected to throw
+        }
+
+        // Should NOT generate new tokens since reuse was detected
+        expect(jwt.generateAccessToken).not.toHaveBeenCalled();
+        expect(jwt.generateRefreshToken).not.toHaveBeenCalled();
+        expect(refreshTokenQueries.storeRefreshToken).not.toHaveBeenCalled();
       });
     });
   });

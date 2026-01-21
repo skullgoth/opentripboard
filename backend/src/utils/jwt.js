@@ -1,5 +1,6 @@
 // T030: JWT token generation and verification
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '15m';
@@ -50,6 +51,7 @@ export function generateAccessToken(payload) {
  * Generate refresh token for token renewal
  * @param {Object} payload - User data to encode in token
  * @param {string} payload.userId - User ID
+ * @param {string} [payload.familyId] - Token family ID (generated if not provided)
  * @returns {string} JWT refresh token
  */
 export function generateRefreshToken(payload) {
@@ -57,11 +59,16 @@ export function generateRefreshToken(payload) {
     throw new Error('userId is required in token payload');
   }
 
+  // Generate new family ID if not provided
+  const familyId = payload.familyId || randomUUID();
+
   try {
     const token = jwt.sign(
       {
         userId: payload.userId,
+        familyId: familyId,
         type: 'refresh',
+        jti: randomUUID(), // Unique token ID to prevent duplicates
       },
       JWT_SECRET,
       {
