@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as userService from '../../../src/services/user-service.js';
 import * as userQueries from '../../../src/db/queries/users.js';
-import * as refreshTokenQueries from '../../../src/db/queries/refresh-tokens.js';
 import * as crypto from '../../../src/utils/crypto.js';
 import * as jwt from '../../../src/utils/jwt.js';
 import { createMockUser } from '../../helpers.js';
@@ -21,7 +20,6 @@ vi.mock('../../../src/db/connection.js', () => ({
 }));
 
 vi.mock('../../../src/db/queries/users.js');
-vi.mock('../../../src/db/queries/refresh-tokens.js');
 vi.mock('../../../src/utils/crypto.js');
 vi.mock('../../../src/utils/jwt.js');
 
@@ -165,11 +163,9 @@ describe('User Service', () => {
         errors: []
       });
       vi.mocked(crypto.hashPassword).mockResolvedValue('hashed');
-      vi.mocked(crypto.hashToken).mockReturnValue('token-hash');
       vi.mocked(userQueries.createUser).mockResolvedValue(mockUser);
       vi.mocked(jwt.generateAccessToken).mockReturnValue('access-token');
       vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh-token');
-      vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
 
       const result = await userService.register(validUserData);
 
@@ -178,12 +174,9 @@ describe('User Service', () => {
         email: mockUser.email,
         role: 'user'
       });
-      expect(jwt.generateRefreshToken).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userId: mockUser.id,
-          familyId: expect.any(String)
-        })
-      );
+      expect(jwt.generateRefreshToken).toHaveBeenCalledWith({
+        userId: mockUser.id
+      });
       expect(result.accessToken).toBe('access-token');
       expect(result.refreshToken).toBe('refresh-token');
     });
@@ -228,6 +221,7 @@ describe('User Service', () => {
       const mockRefreshToken = 'mock-refresh-token';
 
       vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
       vi.mocked(crypto.verifyPassword).mockResolvedValue(true);
       vi.mocked(jwt.generateAccessToken).mockReturnValue(mockToken);
       vi.mocked(jwt.generateRefreshToken).mockReturnValue(mockRefreshToken);
@@ -253,7 +247,13 @@ describe('User Service', () => {
       const mockUser = createMockUser({ email });
 
       vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
       vi.mocked(crypto.verifyPassword).mockResolvedValue(false);
+      vi.mocked(userQueries.incrementFailedAttempts).mockResolvedValue({
+        id: mockUser.id,
+        failed_login_attempts: 1,
+        last_failed_login_at: new Date(),
+      });
 
       await expect(userService.authenticate(email, password))
         .rejects
@@ -272,7 +272,13 @@ describe('User Service', () => {
 
       const mockUser = createMockUser({ email });
       vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
       vi.mocked(crypto.verifyPassword).mockResolvedValue(false);
+      vi.mocked(userQueries.incrementFailedAttempts).mockResolvedValue({
+        id: mockUser.id,
+        failed_login_attempts: 1,
+        last_failed_login_at: new Date(),
+      });
 
       try {
         await userService.authenticate(email, 'wrongpassword');
@@ -285,11 +291,10 @@ describe('User Service', () => {
       const mockUser = createMockUser({ email, id: 'user-456' });
 
       vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
       vi.mocked(crypto.verifyPassword).mockResolvedValue(true);
-      vi.mocked(crypto.hashToken).mockReturnValue('token-hash');
       vi.mocked(jwt.generateAccessToken).mockReturnValue('token');
       vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh');
-      vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
 
       await userService.authenticate(email, password);
 
@@ -298,12 +303,9 @@ describe('User Service', () => {
         email: email,
         role: 'user'
       });
-      expect(jwt.generateRefreshToken).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userId: 'user-456',
-          familyId: expect.any(String)
-        })
-      );
+      expect(jwt.generateRefreshToken).toHaveBeenCalledWith({
+        userId: 'user-456'
+      });
     });
 
     it('should return formatted user object', async () => {
@@ -315,6 +317,7 @@ describe('User Service', () => {
       });
 
       vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
       vi.mocked(crypto.verifyPassword).mockResolvedValue(true);
       vi.mocked(jwt.generateAccessToken).mockReturnValue('token');
       vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh');
@@ -383,32 +386,16 @@ describe('User Service', () => {
   describe('refreshAccessToken', () => {
     it('should refresh access token successfully', async () => {
       const refreshToken = 'valid-refresh-token';
-      const tokenHash = 'hashed-token';
       const userId = 'user-123';
       const mockUser = createMockUser({ id: userId });
       const mockAccessToken = 'new-access-token';
-      const mockStoredToken = {
-        id: 'token-id',
-        user_id: userId,
-        token_hash: tokenHash,
-        family_id: 'family-123',
-        used_at: null,
-        revoked_at: null,
-        expires_at: new Date(Date.now() + 86400000),
-        created_at: new Date(),
-      };
 
       vi.mocked(jwt.verifyToken).mockReturnValue({
         userId,
         type: 'refresh'
       });
-      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-      vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-      vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
       vi.mocked(jwt.generateAccessToken).mockReturnValue(mockAccessToken);
-      vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
-      vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
 
       const result = await userService.refreshAccessToken(refreshToken);
 
@@ -427,35 +414,21 @@ describe('User Service', () => {
 
       await expect(userService.refreshAccessToken(refreshToken))
         .rejects
-        .toThrow('Invalid token type');
+        .toThrow('Invalid refresh token');
     });
 
     it('should throw AuthenticationError if user no longer exists', async () => {
       const refreshToken = 'valid-refresh-token';
-      const tokenHash = 'hashed-token';
-      const mockStoredToken = {
-        id: 'token-id',
-        user_id: 'deleted-user',
-        token_hash: tokenHash,
-        family_id: 'family-123',
-        used_at: null,
-        revoked_at: null,
-        expires_at: new Date(Date.now() + 86400000),
-        created_at: new Date(),
-      };
 
       vi.mocked(jwt.verifyToken).mockReturnValue({
         userId: 'deleted-user',
         type: 'refresh'
       });
-      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-      vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-      vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(null);
 
       await expect(userService.refreshAccessToken(refreshToken))
         .rejects
-        .toThrow('User not found');
+        .toThrow('Invalid refresh token');
     });
 
     it('should throw AuthenticationError for expired token', async () => {
@@ -483,33 +456,17 @@ describe('User Service', () => {
     });
 
     it('should generate new access token with correct user data', async () => {
-      const tokenHash = 'hashed-token';
       const mockUser = createMockUser({
         id: 'user-456',
         email: 'refresh@example.com'
       });
-      const mockStoredToken = {
-        id: 'token-id',
-        user_id: 'user-456',
-        token_hash: tokenHash,
-        family_id: 'family-123',
-        used_at: null,
-        revoked_at: null,
-        expires_at: new Date(Date.now() + 86400000),
-        created_at: new Date(),
-      };
 
       vi.mocked(jwt.verifyToken).mockReturnValue({
         userId: 'user-456',
         type: 'refresh'
       });
-      vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-      vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-      vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
       vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
       vi.mocked(jwt.generateAccessToken).mockReturnValue('new-token');
-      vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
-      vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
 
       await userService.refreshAccessToken('valid-token');
 
@@ -519,381 +476,234 @@ describe('User Service', () => {
         role: 'user'
       });
     });
+  });
 
-    describe('Token Rotation', () => {
-      it('should return both new access token and new refresh token', async () => {
-        const refreshToken = 'valid-refresh-token';
-        const tokenHash = 'hashed-token';
-        const familyId = 'family-123';
-        const userId = 'user-123';
-        const mockUser = createMockUser({ id: userId });
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: userId,
-          token_hash: tokenHash,
-          family_id: familyId,
-          used_at: null,
-          revoked_at: null,
-          expires_at: new Date(Date.now() + 86400000), // Future date
-          created_at: new Date(),
-        };
+  describe('Account Lockout', () => {
+    const email = 'lockout@example.com';
+    const password = 'Password123';
+    const wrongPassword = 'WrongPassword';
+    const userId = 'user-lockout-123';
 
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId,
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-        vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
-        vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
-        vi.mocked(jwt.generateAccessToken).mockReturnValue('new-access-token');
-        vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
-        vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
+    it('should lock account after 5 failed login attempts', async () => {
+      const mockUser = createMockUser({ id: userId, email });
 
-        const result = await userService.refreshAccessToken(refreshToken);
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
+      vi.mocked(crypto.verifyPassword).mockResolvedValue(false);
 
-        expect(result).toBeDefined();
-        expect(result.accessToken).toBe('new-access-token');
-        expect(result.refreshToken).toBe('new-refresh-token');
-      });
-
-      it('should mark old refresh token as used', async () => {
-        const refreshToken = 'valid-refresh-token';
-        const tokenHash = 'hashed-token';
-        const familyId = 'family-123';
-        const userId = 'user-123';
-        const mockUser = createMockUser({ id: userId });
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: userId,
-          token_hash: tokenHash,
-          family_id: familyId,
-          used_at: null,
-          revoked_at: null,
-          expires_at: new Date(Date.now() + 86400000),
-          created_at: new Date(),
-        };
-
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId,
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-        vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
-        vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
-        vi.mocked(jwt.generateAccessToken).mockReturnValue('new-access-token');
-        vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
-        vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
-
-        await userService.refreshAccessToken(refreshToken);
-
-        expect(refreshTokenQueries.markAsUsed).toHaveBeenCalledWith(tokenHash);
-      });
-
-      it('should generate new refresh token with same family ID for rotation tracking', async () => {
-        const refreshToken = 'valid-refresh-token';
-        const tokenHash = 'hashed-token';
-        const newTokenHash = 'new-hashed-token';
-        const familyId = 'family-123';
-        const userId = 'user-123';
-        const mockUser = createMockUser({ id: userId, email: 'user@example.com' });
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: userId,
-          token_hash: tokenHash,
-          family_id: familyId,
-          used_at: null,
-          revoked_at: null,
-          expires_at: new Date(Date.now() + 86400000),
-          created_at: new Date(),
-        };
-
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId,
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken)
-          .mockReturnValueOnce(tokenHash)  // First call for old token
-          .mockReturnValueOnce(newTokenHash); // Second call for new token
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-        vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
-        vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
-        vi.mocked(jwt.generateAccessToken).mockReturnValue('new-access-token');
-        vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
-        vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
-
-        await userService.refreshAccessToken(refreshToken);
-
-        // Verify new refresh token is generated with same family ID
-        expect(jwt.generateRefreshToken).toHaveBeenCalledWith({
-          userId,
-          familyId
+      // Mock incrementFailedAttempts to return increasing attempt counts
+      for (let i = 1; i <= 5; i++) {
+        vi.mocked(userQueries.incrementFailedAttempts).mockResolvedValueOnce({
+          id: userId,
+          failed_login_attempts: i,
+          last_failed_login_at: new Date(),
         });
 
-        // Verify new token is stored with same family ID
-        expect(refreshTokenQueries.storeRefreshToken).toHaveBeenCalledWith(
-          expect.objectContaining({
-            userId,
-            familyId,
-            tokenHash: newTokenHash
-          })
-        );
-      });
+        try {
+          await userService.authenticate(email, wrongPassword);
+        } catch (error) {
+          // Expected to throw
+          if (i === 5) {
+            // On 5th failed attempt, account should be locked
+            expect(error.message).toContain('Account locked due to 5 failed login attempts');
+            expect(error.message).toContain('15 minutes');
+            expect(userQueries.lockAccount).toHaveBeenCalledWith(userId, 15);
+          } else {
+            expect(error.message).toBe('Invalid email or password');
+          }
+        }
+      }
 
-      it('should store new refresh token in database with 7-day expiration', async () => {
-        const refreshToken = 'valid-refresh-token';
-        const tokenHash = 'hashed-token';
-        const newTokenHash = 'new-hashed-token';
-        const familyId = 'family-123';
-        const userId = 'user-123';
-        const mockUser = createMockUser({ id: userId });
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: userId,
-          token_hash: tokenHash,
-          family_id: familyId,
-          used_at: null,
-          revoked_at: null,
-          expires_at: new Date(Date.now() + 86400000),
-          created_at: new Date(),
-        };
-
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId,
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken)
-          .mockReturnValueOnce(tokenHash)
-          .mockReturnValueOnce(newTokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-        vi.mocked(refreshTokenQueries.markAsUsed).mockResolvedValue({});
-        vi.mocked(userQueries.findById).mockResolvedValue(mockUser);
-        vi.mocked(jwt.generateAccessToken).mockReturnValue('new-access-token');
-        vi.mocked(jwt.generateRefreshToken).mockReturnValue('new-refresh-token');
-        vi.mocked(refreshTokenQueries.storeRefreshToken).mockResolvedValue({});
-
-        const beforeCall = Date.now();
-        await userService.refreshAccessToken(refreshToken);
-        const afterCall = Date.now();
-
-        expect(refreshTokenQueries.storeRefreshToken).toHaveBeenCalledWith(
-          expect.objectContaining({
-            userId,
-            tokenHash: newTokenHash,
-            familyId
-          })
-        );
-
-        // Verify expiration is approximately 7 days from now
-        const storeCall = vi.mocked(refreshTokenQueries.storeRefreshToken).mock.calls[0][0];
-        const expiresAt = storeCall.expiresAt.getTime();
-        const expectedExpiry = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
-        expect(expiresAt).toBeGreaterThanOrEqual(beforeCall + expectedExpiry);
-        expect(expiresAt).toBeLessThanOrEqual(afterCall + expectedExpiry);
-      });
+      expect(userQueries.incrementFailedAttempts).toHaveBeenCalledTimes(5);
     });
 
-    describe('Token Validation', () => {
-      it('should verify token exists in database', async () => {
-        const refreshToken = 'valid-refresh-token';
-        const tokenHash = 'hashed-token';
+    it('should reject login for locked account with time remaining message', async () => {
+      const mockUser = createMockUser({ id: userId, email });
+      const lockedUntil = new Date(Date.now() + 10 * 60 * 1000); // Locked for 10 more minutes
 
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId: 'user-123',
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(null); // Not found
-
-        await expect(userService.refreshAccessToken(refreshToken))
-          .rejects
-          .toThrow('Invalid refresh token');
-
-        expect(refreshTokenQueries.findByTokenHash).toHaveBeenCalledWith(tokenHash);
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({
+        isLocked: true,
+        lockedUntil: lockedUntil.toISOString(),
       });
 
-      it('should check if token is expired', async () => {
-        const refreshToken = 'expired-refresh-token';
-        const tokenHash = 'hashed-token';
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: 'user-123',
-          token_hash: tokenHash,
-          family_id: 'family-123',
-          used_at: null,
-          revoked_at: null,
-          expires_at: new Date(Date.now() - 86400000), // Past date (expired)
-          created_at: new Date(),
-        };
+      await expect(userService.authenticate(email, password))
+        .rejects
+        .toThrow(/Account is locked due to multiple failed login attempts/);
 
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId: 'user-123',
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-
-        await expect(userService.refreshAccessToken(refreshToken))
-          .rejects
-          .toThrow('Refresh token expired');
-      });
-
-      it('should check if token is revoked', async () => {
-        const refreshToken = 'revoked-refresh-token';
-        const tokenHash = 'hashed-token';
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: 'user-123',
-          token_hash: tokenHash,
-          family_id: 'family-123',
-          used_at: null,
-          revoked_at: new Date(), // Token is revoked
-          expires_at: new Date(Date.now() + 86400000),
-          created_at: new Date(),
-        };
-
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId: 'user-123',
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-
-        await expect(userService.refreshAccessToken(refreshToken))
-          .rejects
-          .toThrow('Refresh token revoked');
-      });
+      // Verify password was not checked (account check happens first)
+      expect(crypto.verifyPassword).not.toHaveBeenCalled();
     });
 
-    describe('Reuse Detection', () => {
-      it('should detect token reuse and throw error', async () => {
-        const refreshToken = 'used-refresh-token';
-        const tokenHash = 'hashed-token';
-        const familyId = 'family-123';
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: 'user-123',
-          token_hash: tokenHash,
-          family_id: familyId,
-          used_at: new Date(), // Token already used
-          revoked_at: null,
-          expires_at: new Date(Date.now() + 86400000),
-          created_at: new Date(),
-        };
+    it('should include correct time remaining in lockout error message', async () => {
+      const mockUser = createMockUser({ id: userId, email });
+      const lockedUntil = new Date(Date.now() + 7.5 * 60 * 1000); // 7.5 minutes remaining
 
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId: 'user-123',
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-        vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2); // Returns count
-
-        await expect(userService.refreshAccessToken(refreshToken))
-          .rejects
-          .toThrow('Token reuse detected');
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({
+        isLocked: true,
+        lockedUntil: lockedUntil.toISOString(),
       });
 
-      it('should revoke entire token family when reuse is detected', async () => {
-        const refreshToken = 'used-refresh-token';
-        const tokenHash = 'hashed-token';
-        const familyId = 'family-123';
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: 'user-123',
-          token_hash: tokenHash,
-          family_id: familyId,
-          used_at: new Date(), // Token already used
-          revoked_at: null,
-          expires_at: new Date(Date.now() + 86400000),
-          created_at: new Date(),
-        };
+      try {
+        await userService.authenticate(email, password);
+        throw new Error('Should have thrown AuthenticationError');
+      } catch (error) {
+        expect(error.message).toMatch(/try again in 8 minutes/); // Ceiling of 7.5 = 8
+      }
+    });
 
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId: 'user-123',
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-        vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
+    it('should reset failed attempts counter on successful login', async () => {
+      const mockUser = createMockUser({ id: userId, email });
 
-        try {
-          await userService.refreshAccessToken(refreshToken);
-        } catch (error) {
-          // Expected to throw
-        }
-
-        expect(refreshTokenQueries.revokeTokenFamily).toHaveBeenCalledWith(familyId);
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
+      vi.mocked(crypto.verifyPassword).mockResolvedValue(true);
+      vi.mocked(jwt.generateAccessToken).mockReturnValue('token');
+      vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh');
+      vi.mocked(userQueries.resetFailedAttempts).mockResolvedValue({
+        id: userId,
+        failed_login_attempts: 0,
+        locked_until: null,
       });
 
-      it('should not mark token as used if reuse is detected', async () => {
-        const refreshToken = 'used-refresh-token';
-        const tokenHash = 'hashed-token';
-        const familyId = 'family-123';
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: 'user-123',
-          token_hash: tokenHash,
-          family_id: familyId,
-          used_at: new Date(), // Token already used
-          revoked_at: null,
-          expires_at: new Date(Date.now() + 86400000),
-          created_at: new Date(),
-        };
+      await userService.authenticate(email, password);
 
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId: 'user-123',
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-        vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
+      expect(userQueries.resetFailedAttempts).toHaveBeenCalledWith(userId);
+    });
 
-        try {
-          await userService.refreshAccessToken(refreshToken);
-        } catch (error) {
-          // Expected to throw
-        }
+    it('should allow login when account is not locked', async () => {
+      const mockUser = createMockUser({ id: userId, email });
 
-        // Should NOT call markAsUsed since reuse was detected
-        expect(refreshTokenQueries.markAsUsed).not.toHaveBeenCalled();
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
+      vi.mocked(crypto.verifyPassword).mockResolvedValue(true);
+      vi.mocked(jwt.generateAccessToken).mockReturnValue('token');
+      vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh');
+
+      const result = await userService.authenticate(email, password);
+
+      expect(result).toBeDefined();
+      expect(result.user.id).toBe(userId);
+      expect(result.accessToken).toBe('token');
+    });
+
+    it('should increment failed attempts on each wrong password', async () => {
+      const mockUser = createMockUser({ id: userId, email });
+
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
+      vi.mocked(crypto.verifyPassword).mockResolvedValue(false);
+      vi.mocked(userQueries.incrementFailedAttempts).mockResolvedValue({
+        id: userId,
+        failed_login_attempts: 1,
+        last_failed_login_at: new Date(),
       });
 
-      it('should not generate new tokens if reuse is detected', async () => {
-        const refreshToken = 'used-refresh-token';
-        const tokenHash = 'hashed-token';
-        const familyId = 'family-123';
-        const mockStoredToken = {
-          id: 'token-id',
-          user_id: 'user-123',
-          token_hash: tokenHash,
-          family_id: familyId,
-          used_at: new Date(), // Token already used
-          revoked_at: null,
-          expires_at: new Date(Date.now() + 86400000),
-          created_at: new Date(),
-        };
+      try {
+        await userService.authenticate(email, wrongPassword);
+      } catch (error) {
+        // Expected to throw
+      }
 
-        vi.mocked(jwt.verifyToken).mockReturnValue({
-          userId: 'user-123',
-          type: 'refresh'
-        });
-        vi.mocked(crypto.hashToken).mockReturnValue(tokenHash);
-        vi.mocked(refreshTokenQueries.findByTokenHash).mockResolvedValue(mockStoredToken);
-        vi.mocked(refreshTokenQueries.revokeTokenFamily).mockResolvedValue(2);
+      expect(userQueries.incrementFailedAttempts).toHaveBeenCalledWith(userId);
+    });
 
-        try {
-          await userService.refreshAccessToken(refreshToken);
-        } catch (error) {
-          // Expected to throw
-        }
+    it('should track failed attempts per account not globally', async () => {
+      const user1 = createMockUser({ id: 'user-1', email: 'user1@example.com' });
+      const user2 = createMockUser({ id: 'user-2', email: 'user2@example.com' });
 
-        // Should NOT generate new tokens since reuse was detected
-        expect(jwt.generateAccessToken).not.toHaveBeenCalled();
-        expect(jwt.generateRefreshToken).not.toHaveBeenCalled();
-        expect(refreshTokenQueries.storeRefreshToken).not.toHaveBeenCalled();
+      // User 1 fails login
+      vi.mocked(userQueries.findByEmail).mockResolvedValueOnce(user1);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValueOnce({ isLocked: false, lockedUntil: null });
+      vi.mocked(crypto.verifyPassword).mockResolvedValueOnce(false);
+      vi.mocked(userQueries.incrementFailedAttempts).mockResolvedValueOnce({
+        id: 'user-1',
+        failed_login_attempts: 1,
+        last_failed_login_at: new Date(),
       });
+
+      try {
+        await userService.authenticate('user1@example.com', wrongPassword);
+      } catch (error) {
+        // Expected
+      }
+
+      // User 2 fails login
+      vi.mocked(userQueries.findByEmail).mockResolvedValueOnce(user2);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValueOnce({ isLocked: false, lockedUntil: null });
+      vi.mocked(crypto.verifyPassword).mockResolvedValueOnce(false);
+      vi.mocked(userQueries.incrementFailedAttempts).mockResolvedValueOnce({
+        id: 'user-2',
+        failed_login_attempts: 1,
+        last_failed_login_at: new Date(),
+      });
+
+      try {
+        await userService.authenticate('user2@example.com', wrongPassword);
+      } catch (error) {
+        // Expected
+      }
+
+      // Verify that incrementFailedAttempts was called with different user IDs
+      expect(userQueries.incrementFailedAttempts).toHaveBeenCalledWith('user-1');
+      expect(userQueries.incrementFailedAttempts).toHaveBeenCalledWith('user-2');
+    });
+
+    it('should not increment failed attempts on successful login', async () => {
+      const mockUser = createMockUser({ id: userId, email });
+
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
+      vi.mocked(crypto.verifyPassword).mockResolvedValue(true);
+      vi.mocked(jwt.generateAccessToken).mockReturnValue('token');
+      vi.mocked(jwt.generateRefreshToken).mockReturnValue('refresh');
+
+      await userService.authenticate(email, password);
+
+      expect(userQueries.incrementFailedAttempts).not.toHaveBeenCalled();
+    });
+
+    it('should lock account for exactly 15 minutes after threshold', async () => {
+      const mockUser = createMockUser({ id: userId, email });
+
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({ isLocked: false, lockedUntil: null });
+      vi.mocked(crypto.verifyPassword).mockResolvedValue(false);
+      vi.mocked(userQueries.incrementFailedAttempts).mockResolvedValue({
+        id: userId,
+        failed_login_attempts: 5,
+        last_failed_login_at: new Date(),
+      });
+
+      try {
+        await userService.authenticate(email, wrongPassword);
+      } catch (error) {
+        // Expected to throw
+      }
+
+      expect(userQueries.lockAccount).toHaveBeenCalledWith(userId, 15);
+    });
+
+    it('should check account lock status before password verification', async () => {
+      const mockUser = createMockUser({ id: userId, email });
+      const lockedUntil = new Date(Date.now() + 5 * 60 * 1000);
+
+      vi.mocked(userQueries.findByEmail).mockResolvedValue(mockUser);
+      vi.mocked(userQueries.isAccountLocked).mockResolvedValue({
+        isLocked: true,
+        lockedUntil: lockedUntil.toISOString(),
+      });
+
+      try {
+        await userService.authenticate(email, password);
+      } catch (error) {
+        // Expected to throw lockout error
+      }
+
+      // Password verification should not be called if account is locked
+      expect(crypto.verifyPassword).not.toHaveBeenCalled();
+      expect(userQueries.incrementFailedAttempts).not.toHaveBeenCalled();
     });
   });
 });

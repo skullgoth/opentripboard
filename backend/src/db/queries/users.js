@@ -218,3 +218,106 @@ export async function countAdmins() {
   );
   return parseInt(result.rows[0].count, 10);
 }
+
+/**
+ * Increment failed login attempts for a user
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Updated user with failed_login_attempts and last_failed_login_at
+ */
+export async function incrementFailedAttempts(userId) {
+  const result = await query(
+    `UPDATE users
+     SET failed_login_attempts = failed_login_attempts + 1,
+         last_failed_login_at = NOW(),
+         updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, failed_login_attempts, last_failed_login_at, locked_until`,
+    [userId]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Reset failed login attempts for a user
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Updated user with reset lockout fields
+ */
+export async function resetFailedAttempts(userId) {
+  const result = await query(
+    `UPDATE users
+     SET failed_login_attempts = 0,
+         locked_until = NULL,
+         updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, failed_login_attempts, locked_until`,
+    [userId]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Check if a user account is currently locked
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Object with isLocked boolean and lockedUntil timestamp
+ */
+export async function isAccountLocked(userId) {
+  const result = await query(
+    `SELECT
+       id,
+       locked_until,
+       (locked_until IS NOT NULL AND locked_until > NOW()) as is_locked
+     FROM users
+     WHERE id = $1`,
+    [userId]
+  );
+
+  const user = result.rows[0];
+  if (!user) {
+    return { isLocked: false, lockedUntil: null };
+  }
+
+  return {
+    isLocked: user.is_locked,
+    lockedUntil: user.locked_until,
+  };
+}
+
+/**
+ * Lock a user account for a specified duration
+ * @param {string} userId - User ID
+ * @param {number} durationMinutes - Lockout duration in minutes
+ * @returns {Promise<Object>} Updated user with locked_until timestamp
+ */
+export async function lockAccount(userId, durationMinutes) {
+  const result = await query(
+    `UPDATE users
+     SET locked_until = NOW() + ($2 || ' minutes')::INTERVAL,
+         updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, locked_until, failed_login_attempts`,
+    [userId, durationMinutes]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Unlock a user account and reset failed attempts
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Updated user with cleared lockout fields
+ */
+export async function unlockAccount(userId) {
+  const result = await query(
+    `UPDATE users
+     SET locked_until = NULL,
+         failed_login_attempts = 0,
+         updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, failed_login_attempts, locked_until`,
+    [userId]
+  );
+
+  return result.rows[0];
+}

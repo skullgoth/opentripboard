@@ -11,6 +11,7 @@ import {
   countAdmins,
   findByEmail,
   createUser,
+  unlockAccount,
 } from '../db/queries/users.js';
 import { hashPassword, verifyPassword, validatePasswordStrength } from '../utils/crypto.js';
 
@@ -420,6 +421,30 @@ export default async function usersRoutes(fastify) {
       await deleteUser(userId);
 
       reply.code(204).send();
+    })
+  );
+
+  /**
+   * Unlock a user account (admin only)
+   */
+  fastify.post(
+    '/admin/users/:userId/unlock',
+    {
+      preHandler: [fastify.auth, requireAdmin],
+    },
+    asyncHandler(async (request, reply) => {
+      const { userId } = request.params;
+
+      // Check if user exists
+      const user = await findById(userId);
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+
+      // Unlock the account and reset failed attempts
+      await unlockAccount(userId);
+
+      reply.send({ message: 'Account unlocked successfully' });
     })
   );
 }
