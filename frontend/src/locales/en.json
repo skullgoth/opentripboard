@@ -20,7 +20,12 @@
     "success": "Success",
     "warning": "Warning",
     "info": "Info",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "download": "Download",
+    "upvote": "Upvote",
+    "downvote": "Downvote",
+    "toggleTheme": "Toggle theme",
+    "userMenu": "User menu"
   },
   "nav": {
     "myTrips": "My Trips",
@@ -136,6 +141,11 @@
     "saveFailed": "Failed to save changes",
     "movedToDate": "Activity moved to new date",
     "moveFailed": "Failed to move activity",
+    "confirmDelete": "Are you sure you want to delete this activity?",
+    "editActivity": "Edit activity",
+    "deleteActivity": "Delete activity",
+    "addedBy": "Added by {{name}}",
+    "updatedBy": "Updated by {{name}}",
     "types": {
       "market": "Market",
       "monument": "Monument",
@@ -198,14 +208,44 @@
     "deleteFailed": "Failed to delete suggestion. Please try again.",
     "confirmDelete": "Are you sure you want to delete this suggestion?",
     "showHistory": "Show Suggestion History",
-    "hideHistory": "Hide Suggestion History"
+    "hideHistory": "Hide Suggestion History",
+    "upvote": "Upvote",
+    "downvote": "Downvote",
+    "acceptAndAdd": "Accept and add to itinerary",
+    "rejectSuggestion": "Reject suggestion",
+    "suggestedBy": "Suggested by {{name}}",
+    "acceptedAndAdded": "Accepted and added to itinerary",
+    "rejected": "Rejected"
   },
   "tripBuddy": {
     "inviteSuccess": "Trip buddy invited successfully",
     "inviteFailed": "Failed to invite trip buddy",
     "removeSuccess": "Trip buddy removed successfully",
     "removeFailed": "Failed to remove trip buddy",
-    "confirmRemove": "Are you sure you want to remove this trip buddy?"
+    "confirmRemove": "Are you sure you want to remove this trip buddy?",
+    "title": "Trip Buddies",
+    "invite": "Invite",
+    "noBuddies": "No trip buddies yet",
+    "inviteHint": "Invite friends to collaborate on this trip",
+    "owner": "Owner",
+    "roleLabel": "Role",
+    "you": "(You)",
+    "online": "Online",
+    "removeBuddy": "Remove buddy",
+    "inviteBuddy": "Invite buddy",
+    "emailLabel": "Email Address",
+    "emailHint": "Enter the email address of the person you want to invite",
+    "roleRequired": "Role *",
+    "selectRole": "Select role...",
+    "editorRole": "Editor",
+    "viewerRole": "Viewer",
+    "roleHint": "Editors can modify the trip, viewers can only see it",
+    "sendInvitation": "Send Invitation",
+    "modalTitle": "Invite Trip Buddy",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email address",
+    "roleRequiredError": "Please select a role",
+    "invalidRole": "Invalid role selected"
   },
   "map": {
     "loadFailed": "Failed to load map",
@@ -490,7 +530,8 @@
       "createList": "Create List",
       "saveChanges": "Save Changes",
       "titleRequired": "Please enter a title"
-    }
+    },
+    "createTemplate": "Create {{name}}"
   },
   "documents": {
     "title": "Documents",
@@ -780,7 +821,15 @@
     "unauthorized": "Please log in to continue.",
     "forbidden": "You don't have permission to do this.",
     "notFound": "The requested resource was not found.",
-    "validationError": "Please check your input and try again."
+    "validationError": "Please check your input and try again.",
+    "somethingWrong": "Something went wrong",
+    "reloadPage": "Reload Page",
+    "dismiss": "Dismiss",
+    "reloadAriaLabel": "Reload the page",
+    "dismissAriaLabel": "Dismiss error message",
+    "technicalDetails": "Technical Details",
+    "unexpectedError": "An unexpected error occurred",
+    "reorderFailed": "Failed to reorder items"
   },
   "categories": {
     "activity": {
