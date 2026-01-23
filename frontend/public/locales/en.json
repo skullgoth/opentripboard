@@ -120,6 +120,12 @@
     "exportPdfFailed": "Failed to export PDF. Please try again.",
     "noActivitiesForMap": "No activities with locations to show on map"
   },
+  "activityCard": {
+    "editActivity": "Edit activity",
+    "deleteActivity": "Delete activity",
+    "addedBy": "Added by {{name}}",
+    "updatedBy": "Updated by {{name}}"
+  },
   "activity": {
     "title": "Title",
     "type": "Type",
@@ -206,6 +212,24 @@
     "removeSuccess": "Trip buddy removed successfully",
     "removeFailed": "Failed to remove trip buddy",
     "confirmRemove": "Are you sure you want to remove this trip buddy?"
+  },
+  "inviteTripBuddy": {
+    "modalTitle": "Invite Trip Buddy",
+    "emailLabel": "Email Address *",
+    "emailPlaceholder": "colleague@example.com",
+    "emailHint": "Enter the email address of the person you want to invite",
+    "roleLabel": "Role *",
+    "selectRole": "Select a role...",
+    "roleEditorOption": "Editor - Can view and edit trip details",
+    "roleViewerOption": "Viewer - Can only view trip details",
+    "roleHint": "Choose the permission level for this trip buddy",
+    "sendInvitation": "Send Invitation",
+    "errors": {
+      "emailRequired": "Email address is required",
+      "emailInvalid": "Please enter a valid email address",
+      "roleRequired": "Role is required",
+      "roleInvalid": "Invalid role selected"
+    }
   },
   "map": {
     "loadFailed": "Failed to load map",

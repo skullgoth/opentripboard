@@ -259,6 +259,24 @@
     "removeFailed": "Error al eliminar al compañero de viaje",
     "confirmRemove": "¿Estás seguro de que quieres eliminar a este compañero de viaje?"
   },
+  "inviteTripBuddy": {
+    "modalTitle": "Invitar Compañero de Viaje",
+    "emailLabel": "Correo Electrónico *",
+    "emailPlaceholder": "colega@ejemplo.com",
+    "emailHint": "Introduce el correo electrónico de la persona que quieres invitar",
+    "roleLabel": "Rol *",
+    "selectRole": "Selecciona un rol...",
+    "roleEditorOption": "Editor - Puede ver y editar los detalles del viaje",
+    "roleViewerOption": "Lector - Solo puede ver los detalles del viaje",
+    "roleHint": "Elige el nivel de permisos para este compañero",
+    "sendInvitation": "Enviar Invitación",
+    "errors": {
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Por favor, introduce un correo electrónico válido",
+      "roleRequired": "El rol es obligatorio",
+      "roleInvalid": "Rol seleccionado inválido"
+    }
+  },
   "map": {
     "loadFailed": "Error al cargar el mapa",
     "noActivities": "No hay actividades para exportar",

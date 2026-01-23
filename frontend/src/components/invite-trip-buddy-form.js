@@ -1,4 +1,5 @@
 // Invite Trip Buddy Form Component - Form for inviting trip tripBuddys
+import { t } from '../utils/i18n.js';
 
 /**
  * Create invite tripBuddy form
@@ -9,32 +10,32 @@ export function createInviteTripBuddyForm(tripId) {
   return `
     <form id="invite-trip-buddy-form" class="form" novalidate>
       <div class="form-group">
-        <label for="trip-buddy-email">Email Address *</label>
+        <label for="trip-buddy-email">${t('inviteTripBuddy.emailLabel')}</label>
         <input
           type="email"
           id="trip-buddy-email"
           name="email"
           class="form-control"
-          placeholder="colleague@example.com"
+          placeholder="${t('inviteTripBuddy.emailPlaceholder')}"
           required
           autocomplete="email"
         />
-        <div class="form-hint">Enter the email address of the person you want to invite</div>
+        <div class="form-hint">${t('inviteTripBuddy.emailHint')}</div>
       </div>
 
       <div class="form-group">
-        <label for="trip-buddy-role">Role *</label>
+        <label for="trip-buddy-role">${t('inviteTripBuddy.roleLabel')}</label>
         <select
           id="trip-buddy-role"
           name="role"
           class="form-control"
           required
         >
-          <option value="">Select a role...</option>
-          <option value="editor">Editor - Can view and edit trip details</option>
-          <option value="viewer">Viewer - Can only view trip details</option>
+          <option value="">${t('inviteTripBuddy.selectRole')}</option>
+          <option value="editor">${t('inviteTripBuddy.roleEditorOption')}</option>
+          <option value="viewer">${t('inviteTripBuddy.roleViewerOption')}</option>
         </select>
-        <div class="form-hint">Choose the permission level for this tripBuddy</div>
+        <div class="form-hint">${t('inviteTripBuddy.roleHint')}</div>
       </div>
 
       <div class="form-actions">
@@ -43,13 +44,13 @@ export function createInviteTripBuddyForm(tripId) {
           class="btn btn-sm btn-secondary"
           data-action="close-modal"
         >
-          Cancel
+          ${t('common.cancel')}
         </button>
         <button
           type="submit"
           class="btn btn-sm btn-primary"
         >
-          Send Invitation
+          ${t('inviteTripBuddy.sendInvitation')}
         </button>
       </div>
     </form>
@@ -66,12 +67,12 @@ export function createInviteTripBuddyModal(tripId) {
     <div class="modal-overlay" id="invite-trip-buddy-modal">
       <div class="modal-dialog" role="dialog" aria-labelledby="modal-title" aria-modal="true">
         <div class="modal-header">
-          <h2 class="modal-title" id="modal-title">Invite Trip Buddy</h2>
+          <h2 class="modal-title" id="modal-title">${t('inviteTripBuddy.modalTitle')}</h2>
           <button
             type="button"
             class="modal-close"
             data-action="close-modal"
-            aria-label="Close"
+            aria-label="${t('common.close')}"
           >
             ×
           </button>
@@ -96,20 +97,20 @@ export function validateInviteTripBuddyForm(formData) {
 
   // Validate email
   if (!email || !email.trim()) {
-    errors.email = 'Email address is required';
+    errors.email = t('inviteTripBuddy.errors.emailRequired');
   } else {
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = t('inviteTripBuddy.errors.emailInvalid');
     }
   }
 
   // Validate role
   if (!role || !role.trim()) {
-    errors.role = 'Role is required';
+    errors.role = t('inviteTripBuddy.errors.roleRequired');
   } else if (!['editor', 'viewer'].includes(role)) {
-    errors.role = 'Invalid role selected';
+    errors.role = t('inviteTripBuddy.errors.roleInvalid');
   }
 
   return {
