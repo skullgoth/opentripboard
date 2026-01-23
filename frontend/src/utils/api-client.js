@@ -181,6 +181,7 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: 'POST',
+        credentials: 'include',
         headers,
         body: formData,
       });
