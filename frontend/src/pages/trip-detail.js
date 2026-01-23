@@ -1583,6 +1583,45 @@ async function handleExportPdf(trip) {
 }
 
 /**
+ * Handle export to JSON
+ */
+async function handleExportJson(trip) {
+  if (!trip) return;
+
+  try {
+    showToast(t('export.generatingJson'), 'info');
+
+    // Fetch JSON from API
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+    const response = await fetch(`${baseUrl}/trips/${trip.id}/export/json`, {
+      headers: {
+        Authorization: `Bearer ${getItem('auth_token')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate JSON');
+    }
+
+    // Create blob and download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${trip.name.replace(/[^a-z0-9]/gi, '_')}_trip.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    showToast(t('export.jsonSuccess'), 'success');
+  } catch (error) {
+    console.error('Failed to export JSON:', error);
+    showToast(t('export.jsonFailed'), 'error');
+  }
+}
+
+/**
  * Handle export to Google Maps
  */
 function handleExportGoogleMaps() {
