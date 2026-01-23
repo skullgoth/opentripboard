@@ -427,6 +427,7 @@
     "title": "Gastos",
     "addExpense": "Añadir Gasto",
     "editExpense": "Editar Gasto",
+    "deleteExpense": "Eliminar Gasto",
     "amountRequired": "Importe *",
     "categoryRequired": "Categoría *",
     "categories": {

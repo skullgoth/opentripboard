@@ -414,6 +414,7 @@
     "title": "Expenses",
     "addExpense": "Add Expense",
     "editExpense": "Edit Expense",
+    "deleteExpense": "Delete Expense",
     "amountRequired": "Amount *",
     "categoryRequired": "Category *",
     "categories": {
