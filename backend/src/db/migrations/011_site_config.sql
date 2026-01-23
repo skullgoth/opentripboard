@@ -35,3 +35,7 @@ COMMENT ON TABLE site_config IS 'Site-wide configuration settings stored as key-
 COMMENT ON COLUMN site_config.key IS 'Unique configuration key identifier';
 COMMENT ON COLUMN site_config.value IS 'Configuration value stored as JSONB for flexibility';
 COMMENT ON COLUMN site_config.description IS 'Human-readable description of the setting';
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('011_site_config')
+ON CONFLICT (version) DO NOTHING;

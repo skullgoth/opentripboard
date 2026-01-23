@@ -30,3 +30,7 @@ COMMENT ON COLUMN trips.destination_data IS
 
 COMMENT ON COLUMN trips.cover_image_attribution IS
 'Photo credit information for cover images. Format: {source: "pexels"|"user_upload"|"placeholder", photographer, photographer_url, photo_id, photo_url}. NULL for user-uploaded or placeholder covers without attribution.';
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('009_add_destination_to_trips')
+ON CONFLICT (version) DO NOTHING;

@@ -1,5 +1,5 @@
 -- User Preferences Migration
--- Version: 002
+-- Version: 007
 -- Description: Add user preferences JSONB column for internationalization settings
 
 -- Add preferences column to users table
@@ -18,6 +18,6 @@ COMMENT ON COLUMN users.preferences IS 'User display preferences: language (en/f
 CREATE INDEX IF NOT EXISTS idx_users_preferences_language
 ON users USING GIN ((preferences->'language'));
 
--- Update schema_migrations
-INSERT INTO schema_migrations (version) VALUES ('002_user_preferences')
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('007_user_preferences')
 ON CONFLICT (version) DO NOTHING;

@@ -7,3 +7,7 @@ ALTER TABLE expenses ADD CONSTRAINT valid_category CHECK (category IN (
     'accommodation', 'transportation', 'food', 'activities',
     'shopping', 'entertainment', 'settlement', 'other'
 ));
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('003_add_settlement_category')
+ON CONFLICT (version) DO NOTHING;

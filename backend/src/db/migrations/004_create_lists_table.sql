@@ -39,3 +39,7 @@ CREATE TRIGGER trigger_lists_updated_at
 COMMENT ON TABLE lists IS 'Packing lists, to-do lists, and custom lists for trips';
 COMMENT ON COLUMN lists.type IS 'List type: packing, todo, shopping, custom';
 COMMENT ON COLUMN lists.items IS 'JSONB array of items with id, text, checked, order fields';
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('004_create_lists_table')
+ON CONFLICT (version) DO NOTHING;

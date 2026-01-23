@@ -32,3 +32,7 @@ CREATE TRIGGER trigger_share_tokens_updated_at
   BEFORE UPDATE ON share_tokens
   FOR EACH ROW
   EXECUTE FUNCTION update_share_tokens_updated_at();
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('006_create_share_tokens')
+ON CONFLICT (version) DO NOTHING;

@@ -18,3 +18,7 @@ CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
 -- Comment for documentation
 COMMENT ON COLUMN users.role IS 'User role for RBAC: user (default) or admin';
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('005_add_user_roles')
+ON CONFLICT (version) DO NOTHING;

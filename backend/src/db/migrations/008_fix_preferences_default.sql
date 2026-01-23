@@ -13,3 +13,7 @@ UPDATE users
 SET preferences = NULL
 WHERE preferences = '{"language": "en", "dateFormat": "mdy", "timeFormat": "12h", "distanceFormat": "mi"}'::jsonb
   OR preferences = '{"dateFormat": "mdy", "distanceFormat": "mi", "language": "en", "timeFormat": "12h"}'::jsonb;
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('008_fix_preferences_default')
+ON CONFLICT (version) DO NOTHING;

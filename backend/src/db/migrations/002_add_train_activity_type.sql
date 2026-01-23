@@ -24,3 +24,7 @@ ALTER TABLE activities ADD CONSTRAINT valid_activity_type CHECK (type IN (
 ));
 
 COMMENT ON TABLE activities IS 'Activities table with expanded type support added in migration 002';
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('002_add_train_activity_type')
+ON CONFLICT (version) DO NOTHING;

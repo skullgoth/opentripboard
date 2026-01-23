@@ -24,3 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_users_failed_attempts ON users(failed_login_attem
 COMMENT ON COLUMN users.failed_login_attempts IS 'Counter for consecutive failed login attempts. Resets to 0 on successful login.';
 COMMENT ON COLUMN users.locked_until IS 'Account is locked until this timestamp. NULL means account is not locked.';
 COMMENT ON COLUMN users.last_failed_login_at IS 'Timestamp of the most recent failed login attempt for audit purposes.';
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('012_add_account_lockout')
+ON CONFLICT (version) DO NOTHING;

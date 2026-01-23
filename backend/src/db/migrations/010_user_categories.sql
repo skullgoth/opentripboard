@@ -32,3 +32,7 @@ CREATE TRIGGER update_user_categories_updated_at
 COMMENT ON TABLE user_categories IS 'User-defined custom categories for activities, reservations, expenses, and documents';
 COMMENT ON COLUMN user_categories.domain IS 'Category domain: activity, reservation, expense, or document';
 COMMENT ON COLUMN user_categories.icon IS 'Emoji character(s) for the category icon';
+
+-- Register migration
+INSERT INTO schema_migrations (version) VALUES ('010_user_categories')
+ON CONFLICT (version) DO NOTHING;
