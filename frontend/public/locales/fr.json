@@ -906,5 +906,19 @@
     "inHours_plural": "dans {{count}} heures",
     "inDays": "dans {{count}} jour",
     "inDays_plural": "dans {{count}} jours"
+  },
+  "dragDrop": {
+    "reorderFailed": "Échec de l'enregistrement du nouvel ordre. Veuillez réessayer.",
+    "keyboardHint": "Appuyez sur Espace pour saisir, touches fléchées pour déplacer, Espace pour déposer",
+    "activitiesFor": "Activités pour {{date}}",
+    "unscheduled": "non planifiées",
+    "activityPickedUp": "Activité saisie. Utilisez les touches fléchées pour déplacer, Espace ou Entrée pour déposer, Échap pour annuler.",
+    "activityDropped": "Activité déposée.",
+    "dragCancelled": "Glisser annulé.",
+    "movedUp": "Déplacé vers le haut.",
+    "movedDown": "Déplacé vers le bas.",
+    "movedToDay": "Déplacé vers {{day}}.",
+    "previousDay": "jour précédent",
+    "nextDay": "jour suivant"
   }
 }

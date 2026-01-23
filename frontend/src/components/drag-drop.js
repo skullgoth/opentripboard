@@ -1,6 +1,7 @@
 // T075: SortableJS integration for drag-and-drop reordering
 // T297: Keyboard navigation support for accessibility
 import Sortable from 'sortablejs';
+import { t } from '../utils/i18n.js';
 
 // Track keyboard drag state
 let keyboardDragState = {
@@ -113,7 +114,7 @@ async function handleReorder(evt, onReorder, onDateChange) {
     console.error('Failed to reorder activities:', error);
 
     // Show error message
-    showToast('Failed to save new order. Please try again.', 'error');
+    showToast(t('dragDrop.reorderFailed'), 'error');
 
     // Optionally revert the order (would need to store original order)
   }
@@ -145,7 +146,7 @@ function showToast(message, type = 'info') {
   toast.innerHTML = `
     <div class="toast-content">
       <span class="toast-message">${escapeHtml(message)}</span>
-      <button class="toast-close" aria-label="Close">&times;</button>
+      <button class="toast-close" aria-label="${t('common.close')}">&times;</button>
     </div>
   `;
 
@@ -208,7 +209,7 @@ function initializeKeyboardNavigation(container, onReorder, onDateChange) {
     // Add keyboard hint
     const handle = card.querySelector('.activity-drag-handle');
     if (handle) {
-      handle.setAttribute('aria-label', 'Press Space to pick up, arrow keys to move, Space to drop');
+      handle.setAttribute('aria-label', t('dragDrop.keyboardHint'));
     }
   });
 
@@ -216,7 +217,7 @@ function initializeKeyboardNavigation(container, onReorder, onDateChange) {
   const dropZones = container.querySelectorAll('[data-drop-zone]');
   dropZones.forEach((zone) => {
     zone.setAttribute('role', 'list');
-    zone.setAttribute('aria-label', `Activities for ${zone.dataset.dropZone || 'unscheduled'}`);
+    zone.setAttribute('aria-label', t('dragDrop.activitiesFor', { date: zone.dataset.dropZone || t('dragDrop.unscheduled') }));
   });
 
   // Handle keyboard events
@@ -305,7 +306,7 @@ function pickUpCard(card, container) {
   card.setAttribute('aria-grabbed', 'true');
   container.classList.add('keyboard-drag-active');
 
-  announceForScreenReader('Activity picked up. Use arrow keys to move, Space or Enter to drop, Escape to cancel.');
+  announceForScreenReader(t('dragDrop.activityPickedUp'));
 }
 
 /**
@@ -352,7 +353,7 @@ async function dropCard(container, onReorder, onDateChange) {
     sourceIndex: null,
   };
 
-  announceForScreenReader('Activity dropped.');
+  announceForScreenReader(t('dragDrop.activityDropped'));
 }
 
 /**
@@ -388,7 +389,7 @@ function cancelKeyboardDrag(container) {
     sourceIndex: null,
   };
 
-  announceForScreenReader('Drag cancelled.');
+  announceForScreenReader(t('dragDrop.dragCancelled'));
 }
 
 /**
@@ -408,7 +409,7 @@ async function moveCardUp(container, onReorder, onDateChange) {
     // Move within same zone
     zone.insertBefore(sourceCard, prevSibling);
     sourceCard.focus();
-    announceForScreenReader('Moved up.');
+    announceForScreenReader(t('dragDrop.movedUp'));
   } else {
     // Try to move to previous zone
     const dropZones = Array.from(container.querySelectorAll('[data-drop-zone]'));
@@ -418,7 +419,7 @@ async function moveCardUp(container, onReorder, onDateChange) {
       const prevZone = dropZones[zoneIndex - 1];
       prevZone.appendChild(sourceCard);
       sourceCard.focus();
-      announceForScreenReader(`Moved to ${prevZone.dataset.dropZone || 'previous day'}.`);
+      announceForScreenReader(t('dragDrop.movedToDay', { day: prevZone.dataset.dropZone || t('dragDrop.previousDay') }));
     }
   }
 }
@@ -440,7 +441,7 @@ async function moveCardDown(container, onReorder, onDateChange) {
     // Move within same zone
     zone.insertBefore(nextSibling, sourceCard);
     sourceCard.focus();
-    announceForScreenReader('Moved down.');
+    announceForScreenReader(t('dragDrop.movedDown'));
   } else {
     // Try to move to next zone
     const dropZones = Array.from(container.querySelectorAll('[data-drop-zone]'));
@@ -455,7 +456,7 @@ async function moveCardDown(container, onReorder, onDateChange) {
         nextZone.appendChild(sourceCard);
       }
       sourceCard.focus();
-      announceForScreenReader(`Moved to ${nextZone.dataset.dropZone || 'next day'}.`);
+      announceForScreenReader(t('dragDrop.movedToDay', { day: nextZone.dataset.dropZone || t('dragDrop.nextDay') }));
     }
   }
 }

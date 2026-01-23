@@ -912,5 +912,19 @@
     "inHours_plural": "in {{count}} hours",
     "inDays": "in {{count}} day",
     "inDays_plural": "in {{count}} days"
+  },
+  "dragDrop": {
+    "reorderFailed": "Failed to save new order. Please try again.",
+    "keyboardHint": "Press Space to pick up, arrow keys to move, Space to drop",
+    "activitiesFor": "Activities for {{date}}",
+    "unscheduled": "unscheduled",
+    "activityPickedUp": "Activity picked up. Use arrow keys to move, Space or Enter to drop, Escape to cancel.",
+    "activityDropped": "Activity dropped.",
+    "dragCancelled": "Drag cancelled.",
+    "movedUp": "Moved up.",
+    "movedDown": "Moved down.",
+    "movedToDay": "Moved to {{day}}.",
+    "previousDay": "previous day",
+    "nextDay": "next day"
   }
 }
