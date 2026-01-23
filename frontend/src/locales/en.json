@@ -229,9 +229,15 @@
     "estTravelTime": "Est. Travel Time:"
   },
   "export": {
+    "export": "Export",
+    "pdf": "PDF",
+    "json": "JSON",
     "generatingPdf": "Generating PDF...",
+    "generatingJson": "Generating JSON...",
     "pdfSuccess": "PDF downloaded successfully!",
-    "pdfFailed": "Failed to export PDF. Please try again."
+    "jsonSuccess": "JSON downloaded successfully!",
+    "pdfFailed": "Failed to export PDF. Please try again.",
+    "jsonFailed": "Failed to export JSON. Please try again."
   },
   "cover": {
     "confirmRemove": "Are you sure you want to remove the cover image?",

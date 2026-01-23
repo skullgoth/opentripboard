@@ -132,10 +132,21 @@ export async function tripDetailPage(params) {
               <span>⋮</span>
             </button>
             <div class="dropdown-menu trip-menu-dropdown" style="display: none;">
-              <button class="dropdown-item" data-action="export-pdf" title="${t('trip.exportPdf')}">
-                <span class="dropdown-item-icon">📄</span>
-                <span>${t('trip.exportPdf')}</span>
-              </button>
+              <div class="dropdown-item dropdown-item-has-submenu">
+                <span class="dropdown-item-icon">📥</span>
+                <span>${t('export.export')}</span>
+                <span class="dropdown-submenu-arrow">▶</span>
+                <div class="dropdown-submenu">
+                  <button class="dropdown-item" data-action="export-pdf">
+                    <span class="dropdown-item-icon">📄</span>
+                    <span>${t('export.pdf')}</span>
+                  </button>
+                  <button class="dropdown-item" data-action="export-json">
+                    <span class="dropdown-item-icon">📋</span>
+                    <span>${t('export.json')}</span>
+                  </button>
+                </div>
+              </div>
               <button class="dropdown-item" data-action="export-google-maps" title="${t('trip.openGoogleMaps')}">
                 <span class="dropdown-item-icon">🗺️</span>
                 <span>${t('trip.openGoogleMaps')}</span>
@@ -294,6 +305,11 @@ export async function tripDetailPage(params) {
     // Attach export PDF button
     container.querySelector('[data-action="export-pdf"]')?.addEventListener('click', () => {
       handleExportPdf(trip);
+    });
+
+    // Attach export JSON button
+    container.querySelector('[data-action="export-json"]')?.addEventListener('click', () => {
+      handleExportJson(trip);
     });
 
     // Attach export to Google Maps button
@@ -1579,6 +1595,45 @@ async function handleExportPdf(trip) {
   } catch (error) {
     console.error('Failed to export PDF:', error);
     showToast(t('export.pdfFailed'), 'error');
+  }
+}
+
+/**
+ * Handle export to JSON
+ */
+async function handleExportJson(trip) {
+  if (!trip) return;
+
+  try {
+    showToast(t('export.generatingJson'), 'info');
+
+    // Fetch JSON from API
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+    const response = await fetch(`${baseUrl}/trips/${trip.id}/export/json`, {
+      headers: {
+        Authorization: `Bearer ${getItem('auth_token')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate JSON');
+    }
+
+    // Create blob and download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${trip.name.replace(/[^a-z0-9]/gi, '_')}_trip.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    showToast(t('export.jsonSuccess'), 'success');
+  } catch (error) {
+    console.error('Failed to export JSON:', error);
+    showToast(t('export.jsonFailed'), 'error');
   }
 }
 

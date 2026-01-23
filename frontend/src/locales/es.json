@@ -281,9 +281,15 @@
     "estTravelTime": "Tiempo estimado:"
   },
   "export": {
+    "export": "Exportar",
+    "pdf": "PDF",
+    "json": "JSON",
     "generatingPdf": "Generando PDF...",
+    "generatingJson": "Generando JSON...",
     "pdfSuccess": "¡PDF descargado con éxito!",
-    "pdfFailed": "Error al exportar PDF. Por favor, inténtalo de nuevo."
+    "jsonSuccess": "¡JSON descargado con éxito!",
+    "pdfFailed": "Error al exportar PDF. Por favor, inténtalo de nuevo.",
+    "jsonFailed": "Error al exportar JSON. Por favor, inténtalo de nuevo."
   },
   "cover": {
     "confirmRemove": "¿Estás seguro de que quieres eliminar la imagen de portada?",
