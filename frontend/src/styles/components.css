@@ -1278,6 +1278,38 @@ body:has(.trip-detail-page) {
   background-color: rgba(239, 68, 68, 0.15);
 }
 
+/* Dropdown submenu - right-opening nested menu */
+.dropdown-item-has-submenu {
+  position: relative;
+}
+
+.dropdown-submenu-arrow {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+}
+
+.dropdown-submenu {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 160px;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-index-dropdown);
+}
+
+.dropdown-item-has-submenu:hover .dropdown-submenu {
+  display: block;
+}
+
+[data-theme='dark'] .dropdown-submenu {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+}
+
 .btn-icon {
   display: inline-flex;
   align-items: center;
