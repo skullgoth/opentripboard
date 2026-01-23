@@ -800,6 +800,15 @@
     "notFound": "La ressource demandée n'a pas été trouvée.",
     "validationError": "Veuillez vérifier vos données et réessayer."
   },
+  "errorBoundary": {
+    "title": "Une erreur s'est produite",
+    "unexpectedError": "Une erreur inattendue s'est produite",
+    "reloadPage": "Recharger la Page",
+    "reloadPageAriaLabel": "Recharger la page",
+    "dismiss": "Fermer",
+    "dismissAriaLabel": "Fermer le message d'erreur",
+    "technicalDetails": "Détails Techniques"
+  },
   "categories": {
     "activity": {
       "museum": "Musée",

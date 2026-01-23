@@ -797,6 +797,15 @@
     "notFound": "El recurso solicitado no fue encontrado.",
     "validationError": "Por favor, verifica tus datos e inténtalo de nuevo."
   },
+  "errorBoundary": {
+    "title": "Algo salió mal",
+    "unexpectedError": "Ocurrió un error inesperado",
+    "reloadPage": "Recargar Página",
+    "reloadPageAriaLabel": "Recargar la página",
+    "dismiss": "Cerrar",
+    "dismissAriaLabel": "Cerrar mensaje de error",
+    "technicalDetails": "Detalles Técnicos"
+  },
   "categories": {
     "activity": {
       "museum": "Museo",

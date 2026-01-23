@@ -806,6 +806,15 @@
     "notFound": "The requested resource was not found.",
     "validationError": "Please check your input and try again."
   },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred",
+    "reloadPage": "Reload Page",
+    "reloadPageAriaLabel": "Reload the page",
+    "dismiss": "Dismiss",
+    "dismissAriaLabel": "Dismiss error message",
+    "technicalDetails": "Technical Details"
+  },
   "categories": {
     "activity": {
       "museum": "Museum",
