@@ -85,3 +85,4 @@ desktop.ini
 .worktrees/
 .security-key
 logs/security/
+nginx.conf
