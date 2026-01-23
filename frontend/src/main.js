@@ -287,14 +287,14 @@ function updateUIForAuthState(isAuthenticated) {
 
     userMenu.innerHTML = `
       <div class="user-info">
-        <button id="theme-toggle" class="btn btn-sm btn-secondary" aria-label="Toggle theme">
+        <button id="theme-toggle" class="btn btn-sm btn-secondary" aria-label="${t('nav.toggleTheme')}">
           <span id="theme-icon">🌙</span>
         </button>
         <div class="avatar-menu-container">
           <button
             id="avatar-badge"
             class="user-avatar"
-            aria-label="User menu"
+            aria-label="${t('nav.userMenu')}"
             aria-haspopup="true"
             aria-expanded="false"
             style="background-color: ${getAvatarColor(app.user?.email)}">
@@ -356,7 +356,7 @@ function updateUIForAuthState(isAuthenticated) {
     const registrationEnabled = isRegistrationEnabled();
 
     userMenu.innerHTML = `
-      <button id="theme-toggle" class="btn btn-sm btn-secondary" aria-label="Toggle theme">
+      <button id="theme-toggle" class="btn btn-sm btn-secondary" aria-label="${t('nav.toggleTheme')}">
         <span id="theme-icon">🌙</span>
       </button>
       <a href="#/login" class="btn btn-sm btn-secondary">${t('auth.login')}</a>
