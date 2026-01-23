@@ -39,6 +39,7 @@ class ApiClient {
     const url = `${this.baseUrl}${endpoint}`;
     const config = {
       ...options,
+      credentials: 'include',
       headers: {
         ...this.getAuthHeaders(),
         ...options.headers,
