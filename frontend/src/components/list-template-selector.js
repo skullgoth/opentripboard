@@ -189,7 +189,7 @@ export function createQuickTemplateButton(template) {
       class="quick-template-btn"
       data-action="quick-create-template"
       data-template-id="${template.id}"
-      title="Create ${escapeHtml(template.name)}"
+      title="${t('lists.templateSelector.createTemplate', { name: escapeHtml(template.name) })}"
     >
       <span class="template-btn-icon">${typeIcon}</span>
       <span class="template-btn-name">${escapeHtml(template.name)}</span>
