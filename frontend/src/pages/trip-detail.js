@@ -132,10 +132,21 @@ export async function tripDetailPage(params) {
               <span>⋮</span>
             </button>
             <div class="dropdown-menu trip-menu-dropdown" style="display: none;">
-              <button class="dropdown-item" data-action="export-pdf" title="${t('trip.exportPdf')}">
-                <span class="dropdown-item-icon">📄</span>
-                <span>${t('trip.exportPdf')}</span>
-              </button>
+              <div class="dropdown-item dropdown-item-has-submenu">
+                <span class="dropdown-item-icon">📥</span>
+                <span>${t('export.export')}</span>
+                <span class="dropdown-submenu-arrow">▶</span>
+                <div class="dropdown-submenu">
+                  <button class="dropdown-item" data-action="export-pdf">
+                    <span class="dropdown-item-icon">📄</span>
+                    <span>${t('export.pdf')}</span>
+                  </button>
+                  <button class="dropdown-item" data-action="export-json">
+                    <span class="dropdown-item-icon">📋</span>
+                    <span>${t('export.json')}</span>
+                  </button>
+                </div>
+              </div>
               <button class="dropdown-item" data-action="export-google-maps" title="${t('trip.openGoogleMaps')}">
                 <span class="dropdown-item-icon">🗺️</span>
                 <span>${t('trip.openGoogleMaps')}</span>
@@ -294,6 +305,11 @@ export async function tripDetailPage(params) {
     // Attach export PDF button
     container.querySelector('[data-action="export-pdf"]')?.addEventListener('click', () => {
       handleExportPdf(trip);
+    });
+
+    // Attach export JSON button
+    container.querySelector('[data-action="export-json"]')?.addEventListener('click', () => {
+      handleExportJson(trip);
     });
 
     // Attach export to Google Maps button
