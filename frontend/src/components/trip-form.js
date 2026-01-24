@@ -344,6 +344,23 @@ export function attachTripFormListeners(container, onSubmit, onClose, trip = nul
   startDateInput.addEventListener('change', validateAndUpdateUI);
   endDateInput.addEventListener('change', validateAndUpdateUI);
 
+  // Update end date min attribute when start date changes
+  const updateEndDateMin = () => {
+    if (startDateInput.value) {
+      const startDate = new Date(startDateInput.value);
+      const nextDay = new Date(startDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      endDateInput.min = formatDateForInput(nextDay);
+    } else {
+      endDateInput.min = '';
+    }
+  };
+
+  startDateInput.addEventListener('change', updateEndDateMin);
+
+  // Set initial end date min if editing a trip with existing start date
+  updateEndDateMin();
+
   // Initial validation state
   validateAndUpdateUI();
 
