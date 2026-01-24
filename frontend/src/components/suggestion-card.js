@@ -1,6 +1,7 @@
 /**
  * T107: SuggestionCard component - suggestion details, vote buttons, accept/reject for owner
  */
+import { t } from '../utils/i18n.js';
 
 /**
  * Create suggestion card component
@@ -18,6 +19,11 @@ export function createSuggestionCard(suggestion, currentUserId, userRole) {
   const userVote = suggestion.votes?.find(v => v.userId === currentUserId);
   const hasUpvoted = userVote?.vote === 'up';
   const hasDownvoted = userVote?.vote === 'down';
+
+  // Determine suggested by text
+  const suggestedByName = isOwn
+    ? t('expenses.you')
+    : escapeHtml(suggestion.suggestedByName || t('common.unknown'));
 
   return `
     <div class="suggestion-card ${suggestion.status}" data-suggestion-id="${suggestion.id}">
@@ -57,7 +63,7 @@ export function createSuggestionCard(suggestion, currentUserId, userRole) {
 
         <div class="suggestion-meta">
           <span class="suggestion-author">
-            Suggested by ${isOwn ? 'You' : escapeHtml(suggestion.suggestedByName || 'Unknown')}
+            ${t('suggestion.suggestedBy', { name: suggestedByName })}
           </span>
           <span class="suggestion-date">
             ${formatRelativeTime(suggestion.createdAt)}
@@ -73,7 +79,7 @@ export function createSuggestionCard(suggestion, currentUserId, userRole) {
               data-action="vote-suggestion"
               data-suggestion-id="${suggestion.id}"
               data-vote="up"
-              title="Upvote">
+              title="${t('suggestion.upvote')}">
               <span class="icon">👍</span>
               <span class="vote-count">${suggestion.upvotes || 0}</span>
             </button>
@@ -82,7 +88,7 @@ export function createSuggestionCard(suggestion, currentUserId, userRole) {
               data-action="vote-suggestion"
               data-suggestion-id="${suggestion.id}"
               data-vote="down"
-              title="Downvote">
+              title="${t('suggestion.downvote')}">
               <span class="icon">👎</span>
               <span class="vote-count">${suggestion.downvotes || 0}</span>
             </button>
@@ -94,15 +100,15 @@ export function createSuggestionCard(suggestion, currentUserId, userRole) {
                 class="btn btn-sm btn-success"
                 data-action="accept-suggestion"
                 data-suggestion-id="${suggestion.id}"
-                title="Accept and add to itinerary">
-                Accept
+                title="${t('suggestion.acceptAndAdd')}">
+                ${t('invitations.accept')}
               </button>
               <button
                 class="btn btn-sm btn-danger"
                 data-action="reject-suggestion"
                 data-suggestion-id="${suggestion.id}"
-                title="Reject suggestion">
-                Reject
+                title="${t('suggestion.rejectSuggestion')}">
+                ${t('invitations.decline')}
               </button>
             </div>
           ` : ''}
@@ -112,16 +118,16 @@ export function createSuggestionCard(suggestion, currentUserId, userRole) {
       ${suggestion.status === 'accepted' && suggestion.resolvedAt ? `
         <div class="suggestion-resolved">
           <span class="icon">✅</span>
-          Accepted and added to itinerary
-          ${suggestion.resolvedBy ? `by ${escapeHtml(suggestion.resolvedByName || 'someone')}` : ''}
+          ${t('suggestion.acceptedAndAdded')}
+          ${suggestion.resolvedBy ? `${t('cover.photoBy').toLowerCase().replace('photo ', '')} ${escapeHtml(suggestion.resolvedByName || t('common.unknown'))}` : ''}
         </div>
       ` : ''}
 
       ${suggestion.status === 'rejected' && suggestion.resolvedAt ? `
         <div class="suggestion-resolved">
           <span class="icon">❌</span>
-          Rejected
-          ${suggestion.resolvedBy ? `by ${escapeHtml(suggestion.resolvedByName || 'someone')}` : ''}
+          ${t('suggestion.rejected')}
+          ${suggestion.resolvedBy ? `${t('cover.photoBy').toLowerCase().replace('photo ', '')} ${escapeHtml(suggestion.resolvedByName || t('common.unknown'))}` : ''}
         </div>
       ` : ''}
     </div>
@@ -205,10 +211,10 @@ function formatRelativeTime(dateTimeStr) {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+  if (diffMins < 1) return t('time.justNow');
+  if (diffMins < 60) return t(diffMins === 1 ? 'time.minutesAgo' : 'time.minutesAgo_plural', { count: diffMins });
+  if (diffHours < 24) return t(diffHours === 1 ? 'time.hoursAgo' : 'time.hoursAgo_plural', { count: diffHours });
+  if (diffDays < 7) return t(diffDays === 1 ? 'time.daysAgo' : 'time.daysAgo_plural', { count: diffDays });
 
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }

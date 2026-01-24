@@ -120,6 +120,12 @@
     "exportPdfFailed": "Failed to export PDF. Please try again.",
     "noActivitiesForMap": "No activities with locations to show on map"
   },
+  "activityCard": {
+    "editActivity": "Edit activity",
+    "deleteActivity": "Delete activity",
+    "addedBy": "Added by {{name}}",
+    "updatedBy": "Updated by {{name}}"
+  },
   "activity": {
     "title": "Title",
     "type": "Type",
@@ -206,6 +212,24 @@
     "removeSuccess": "Trip buddy removed successfully",
     "removeFailed": "Failed to remove trip buddy",
     "confirmRemove": "Are you sure you want to remove this trip buddy?"
+  },
+  "inviteTripBuddy": {
+    "modalTitle": "Invite Trip Buddy",
+    "emailLabel": "Email Address *",
+    "emailPlaceholder": "colleague@example.com",
+    "emailHint": "Enter the email address of the person you want to invite",
+    "roleLabel": "Role *",
+    "selectRole": "Select a role...",
+    "roleEditorOption": "Editor - Can view and edit trip details",
+    "roleViewerOption": "Viewer - Can only view trip details",
+    "roleHint": "Choose the permission level for this trip buddy",
+    "sendInvitation": "Send Invitation",
+    "errors": {
+      "emailRequired": "Email address is required",
+      "emailInvalid": "Please enter a valid email address",
+      "roleRequired": "Role is required",
+      "roleInvalid": "Invalid role selected"
+    }
   },
   "map": {
     "loadFailed": "Failed to load map",
@@ -782,6 +806,15 @@
     "notFound": "The requested resource was not found.",
     "validationError": "Please check your input and try again."
   },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred",
+    "reloadPage": "Reload Page",
+    "reloadPageAriaLabel": "Reload the page",
+    "dismiss": "Dismiss",
+    "dismissAriaLabel": "Dismiss error message",
+    "technicalDetails": "Technical Details"
+  },
   "categories": {
     "activity": {
       "museum": "Museum",
@@ -879,5 +912,19 @@
     "inHours_plural": "in {{count}} hours",
     "inDays": "in {{count}} day",
     "inDays_plural": "in {{count}} days"
+  },
+  "dragDrop": {
+    "reorderFailed": "Failed to save new order. Please try again.",
+    "keyboardHint": "Press Space to pick up, arrow keys to move, Space to drop",
+    "activitiesFor": "Activities for {{date}}",
+    "unscheduled": "unscheduled",
+    "activityPickedUp": "Activity picked up. Use arrow keys to move, Space or Enter to drop, Escape to cancel.",
+    "activityDropped": "Activity dropped.",
+    "dragCancelled": "Drag cancelled.",
+    "movedUp": "Moved up.",
+    "movedDown": "Moved down.",
+    "movedToDay": "Moved to {{day}}.",
+    "previousDay": "previous day",
+    "nextDay": "next day"
   }
 }

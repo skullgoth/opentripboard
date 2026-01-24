@@ -4,6 +4,7 @@
  */
 
 import { formatTime } from '../utils/date-helpers.js';
+import { t } from '../utils/i18n.js';
 
 /**
  * Create activity card element
@@ -41,7 +42,7 @@ export function createActivityCard(activity, options = {}) {
     if (deleteBtn) {
       deleteBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (confirm('Are you sure you want to delete this activity?')) {
+        if (confirm(t('itinerary.confirmDeleteActivity'))) {
           await onDelete(activity.id);
         }
       });
@@ -79,10 +80,10 @@ export function createActivityCardContent(activity) {
           ${activity.location ? `<p class="activity-location">📍 ${escapeHtml(activity.location)}</p>` : ''}
         </div>
         <div class="activity-actions">
-          <button class="btn-icon" data-action="edit-activity" data-activity-id="${activity.id}" title="Edit" aria-label="Edit activity">
+          <button class="btn-icon" data-action="edit-activity" data-activity-id="${activity.id}" title="${t('common.edit')}" aria-label="${t('activityCard.editActivity')}">
             ✏️
           </button>
-          <button class="btn-icon" data-action="delete-activity" data-activity-id="${activity.id}" title="Delete" aria-label="Delete activity">
+          <button class="btn-icon" data-action="delete-activity" data-activity-id="${activity.id}" title="${t('common.delete')}" aria-label="${t('activityCard.deleteActivity')}">
             🗑️
           </button>
         </div>
@@ -196,11 +197,11 @@ function formatActivityAttribution(activity) {
   const parts = [];
 
   if (activity.createdByName) {
-    parts.push(`Added by ${escapeHtml(activity.createdByName)}`);
+    parts.push(t('activityCard.addedBy', { name: escapeHtml(activity.createdByName) }));
   }
 
   if (activity.updatedByName && activity.updatedByName !== activity.createdByName) {
-    parts.push(`Updated by ${escapeHtml(activity.updatedByName)}`);
+    parts.push(t('activityCard.updatedBy', { name: escapeHtml(activity.updatedByName) }));
   }
 
   if (parts.length === 0) {

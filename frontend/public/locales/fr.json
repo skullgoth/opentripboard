@@ -207,6 +207,24 @@
     "removeFailed": "Échec du retrait du compagnon",
     "confirmRemove": "Êtes-vous sûr de vouloir retirer ce compagnon de voyage ?"
   },
+  "inviteTripBuddy": {
+    "modalTitle": "Inviter un Compagnon de Voyage",
+    "emailLabel": "Adresse Email *",
+    "emailPlaceholder": "collegue@exemple.com",
+    "emailHint": "Entrez l'adresse email de la personne que vous souhaitez inviter",
+    "roleLabel": "Rôle *",
+    "selectRole": "Sélectionner un rôle...",
+    "roleEditorOption": "Éditeur - Peut voir et modifier les détails du voyage",
+    "roleViewerOption": "Lecteur - Peut uniquement voir les détails du voyage",
+    "roleHint": "Choisissez le niveau de permission pour ce compagnon",
+    "sendInvitation": "Envoyer l'Invitation",
+    "errors": {
+      "emailRequired": "L'adresse email est obligatoire",
+      "emailInvalid": "Veuillez entrer une adresse email valide",
+      "roleRequired": "Le rôle est obligatoire",
+      "roleInvalid": "Rôle sélectionné invalide"
+    }
+  },
   "map": {
     "loadFailed": "Échec du chargement de la carte",
     "noActivities": "Aucune activité à exporter",
@@ -782,6 +800,15 @@
     "notFound": "La ressource demandée n'a pas été trouvée.",
     "validationError": "Veuillez vérifier vos données et réessayer."
   },
+  "errorBoundary": {
+    "title": "Une erreur s'est produite",
+    "unexpectedError": "Une erreur inattendue s'est produite",
+    "reloadPage": "Recharger la Page",
+    "reloadPageAriaLabel": "Recharger la page",
+    "dismiss": "Fermer",
+    "dismissAriaLabel": "Fermer le message d'erreur",
+    "technicalDetails": "Détails Techniques"
+  },
   "categories": {
     "activity": {
       "museum": "Musée",
@@ -879,5 +906,19 @@
     "inHours_plural": "dans {{count}} heures",
     "inDays": "dans {{count}} jour",
     "inDays_plural": "dans {{count}} jours"
+  },
+  "dragDrop": {
+    "reorderFailed": "Échec de l'enregistrement du nouvel ordre. Veuillez réessayer.",
+    "keyboardHint": "Appuyez sur Espace pour saisir, touches fléchées pour déplacer, Espace pour déposer",
+    "activitiesFor": "Activités pour {{date}}",
+    "unscheduled": "non planifiées",
+    "activityPickedUp": "Activité saisie. Utilisez les touches fléchées pour déplacer, Espace ou Entrée pour déposer, Échap pour annuler.",
+    "activityDropped": "Activité déposée.",
+    "dragCancelled": "Glisser annulé.",
+    "movedUp": "Déplacé vers le haut.",
+    "movedDown": "Déplacé vers le bas.",
+    "movedToDay": "Déplacé vers {{day}}.",
+    "previousDay": "jour précédent",
+    "nextDay": "jour suivant"
   }
 }

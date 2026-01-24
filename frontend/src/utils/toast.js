@@ -1,6 +1,8 @@
 // Toast notification utility
 // Simple toast notification system for user feedback
 
+import { t } from './i18n.js';
+
 /**
  * Show toast notification
  * @param {string} message - Message to display
@@ -26,7 +28,7 @@ export function showToast(message, type = 'info', duration = 5000) {
     <div class="toast-content">
       <span class="toast-icon">${getToastIcon(type)}</span>
       <span class="toast-message">${escapeHtml(message)}</span>
-      <button class="toast-close" aria-label="Close">&times;</button>
+      <button class="toast-close" aria-label="${t('common.close')}">&times;</button>
     </div>
   `;
 

@@ -1,5 +1,6 @@
 // Trip Buddy List Component - Display and manage trip tripBuddies
 import { createPresenceIndicator } from './presence-indicator.js';
+import { t } from '../utils/i18n.js';
 
 /**
  * Create tripBuddy list component
@@ -17,19 +18,19 @@ export function createTripBuddyList(tripBuddies, tripOwnerId, currentUserId, isO
     return `
       <div class="trip-buddy-list">
         <div class="trip-buddy-header">
-          <h3>Trip Buddies</h3>
+          <h3>${t('tripBuddy.title')}</h3>
           ${isOwner ? `
             <button
               class="btn btn-sm btn-primary"
               data-action="invite-trip-buddy"
-              aria-label="Invite tripBuddy">
-              <span class="icon">+</span> Invite
+              aria-label="${t('tripBuddy.inviteBuddy')}">
+              <span class="icon">+</span> ${t('tripBuddy.invite')}
             </button>
           ` : ''}
         </div>
         <div class="empty-state-small">
-          <p>No trip buddies yet</p>
-          ${isOwner ? '<p class="text-muted">Invite others to help plan this trip</p>' : ''}
+          <p>${t('tripBuddy.noBuddies')}</p>
+          ${isOwner ? `<p class="text-muted">${t('tripBuddy.inviteHint')}</p>` : ''}
         </div>
       </div>
     `;
@@ -43,16 +44,16 @@ export function createTripBuddyList(tripBuddies, tripOwnerId, currentUserId, isO
 
     // Build tooltip text
     const displayName = tripBuddy.full_name || '';
-    const role = isTripBuddyOwner ? 'Owner' : capitalizeRole(tripBuddy.role);
+    const role = isTripBuddyOwner ? t('tripBuddy.owner') : capitalizeRole(tripBuddy.role);
     const tooltipParts = [];
 
     if (displayName) {
       tooltipParts.push(escapeHtml(displayName));
     }
     tooltipParts.push(escapeHtml(tripBuddy.email));
-    tooltipParts.push(`Role: ${role}${isCurrentUser ? ' (You)' : ''}`);
+    tooltipParts.push(`${t('tripBuddy.roleLabel')}: ${role}${isCurrentUser ? ` ${t('tripBuddy.you')}` : ''}`);
     if (isActive) {
-      tooltipParts.push('🟢 Online');
+      tooltipParts.push(`🟢 ${t('tripBuddy.online')}`);
     }
 
     const tooltipText = tooltipParts.join('\n');
@@ -73,8 +74,8 @@ export function createTripBuddyList(tripBuddies, tripOwnerId, currentUserId, isO
             class="btn-remove-buddy"
             data-action="remove-trip-buddy"
             data-trip-buddy-id="${tripBuddy.id}"
-            title="Remove buddy"
-            aria-label="Remove buddy">
+            title="${t('tripBuddy.removeBuddy')}"
+            aria-label="${t('tripBuddy.removeBuddy')}">
             ✕
           </button>
         ` : ''}
@@ -85,13 +86,13 @@ export function createTripBuddyList(tripBuddies, tripOwnerId, currentUserId, isO
   return `
     <div class="trip-buddy-list">
       <div class="trip-buddy-header">
-        <h3>Trip Buddies (${tripBuddies.length})</h3>
+        <h3>${t('tripBuddy.title')} (${tripBuddies.length})</h3>
         ${isOwner ? `
           <button
             class="btn btn-sm btn-primary"
             data-action="invite-trip-buddy"
-            aria-label="Invite tripBuddy">
-            <span class="icon">+</span> Invite
+            aria-label="${t('tripBuddy.inviteBuddy')}">
+            <span class="icon">+</span> ${t('tripBuddy.invite')}
           </button>
         ` : ''}
       </div>
@@ -142,8 +143,8 @@ export function createCompactTripBuddyList(tripBuddies, currentUserId, showInvit
         <button
           class="trip-buddy-avatar trip-buddy-avatar-sm trip-buddy-invite"
           data-action="invite-trip-buddy"
-          title="Invite buddy"
-          aria-label="Invite buddy">
+          title="${t('tripBuddy.inviteBuddy')}"
+          aria-label="${t('tripBuddy.inviteBuddy')}">
           <span class="icon">👤+</span>
         </button>
       ` : ''}

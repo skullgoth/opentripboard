@@ -2,6 +2,7 @@
 // T303: Integrated with error tracking (Sentry)
 
 import { captureError, initErrorTracking } from './error-tracking.js';
+import { t } from './i18n.js';
 
 /**
  * Global error state
@@ -120,18 +121,18 @@ function showErrorUI(errorInfo) {
     errorOverlay.innerHTML = `
       <div class="error-boundary-container">
         <div class="error-boundary-icon">!</div>
-        <h2 class="error-boundary-title">Something went wrong</h2>
+        <h2 class="error-boundary-title">${t('errorBoundary.title')}</h2>
         <p class="error-boundary-message"></p>
         <div class="error-boundary-actions">
-          <button class="btn btn-primary" onclick="window.location.reload()" aria-label="Reload the page">
-            Reload Page
+          <button class="btn btn-primary" onclick="window.location.reload()" aria-label="${t('errorBoundary.reloadPageAriaLabel')}">
+            ${t('errorBoundary.reloadPage')}
           </button>
-          <button class="btn btn-secondary" onclick="document.getElementById('global-error-overlay').style.display='none'" aria-label="Dismiss error message">
-            Dismiss
+          <button class="btn btn-secondary" onclick="document.getElementById('global-error-overlay').style.display='none'" aria-label="${t('errorBoundary.dismissAriaLabel')}">
+            ${t('errorBoundary.dismiss')}
           </button>
         </div>
         <details class="error-boundary-details">
-          <summary>Technical Details</summary>
+          <summary>${t('errorBoundary.technicalDetails')}</summary>
           <pre class="error-boundary-stack"></pre>
         </details>
       </div>
@@ -143,7 +144,7 @@ function showErrorUI(errorInfo) {
   const messageEl = errorOverlay.querySelector('.error-boundary-message');
   const stackEl = errorOverlay.querySelector('.error-boundary-stack');
 
-  messageEl.textContent = errorInfo.message || 'An unexpected error occurred';
+  messageEl.textContent = errorInfo.message || t('errorBoundary.unexpectedError');
   stackEl.textContent = errorInfo.error?.stack || JSON.stringify(errorInfo, null, 2);
 
   errorOverlay.style.display = 'flex';

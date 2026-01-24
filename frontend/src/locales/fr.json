@@ -20,7 +20,12 @@
     "success": "Succès",
     "warning": "Avertissement",
     "info": "Info",
-    "noResults": "Aucun résultat trouvé"
+    "noResults": "Aucun résultat trouvé",
+    "download": "Télécharger",
+    "upvote": "Vote positif",
+    "downvote": "Vote négatif",
+    "toggleTheme": "Changer le thème",
+    "userMenu": "Menu utilisateur"
   },
   "nav": {
     "myTrips": "Mes Voyages",
@@ -136,6 +141,11 @@
     "saveFailed": "Échec de l'enregistrement",
     "movedToDate": "Activité déplacée à la nouvelle date",
     "moveFailed": "Échec du déplacement de l'activité",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette activité ?",
+    "editActivity": "Modifier l'activité",
+    "deleteActivity": "Supprimer l'activité",
+    "addedBy": "Ajouté par {{name}}",
+    "updatedBy": "Mis à jour par {{name}}",
     "types": {
       "market": "Marché",
       "monument": "Monument",
@@ -198,14 +208,44 @@
     "deleteFailed": "Échec de la suppression de la suggestion. Veuillez réessayer.",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette suggestion ?",
     "showHistory": "Afficher l'Historique",
-    "hideHistory": "Masquer l'Historique"
+    "hideHistory": "Masquer l'Historique",
+    "upvote": "Vote positif",
+    "downvote": "Vote négatif",
+    "acceptAndAdd": "Accepter et ajouter à l'itinéraire",
+    "rejectSuggestion": "Rejeter la suggestion",
+    "suggestedBy": "Suggéré par {{name}}",
+    "acceptedAndAdded": "Accepté et ajouté à l'itinéraire",
+    "rejected": "Rejeté"
   },
   "tripBuddy": {
     "inviteSuccess": "Compagnon de voyage invité avec succès",
     "inviteFailed": "Échec de l'invitation du compagnon",
     "removeSuccess": "Compagnon de voyage retiré avec succès",
     "removeFailed": "Échec du retrait du compagnon",
-    "confirmRemove": "Êtes-vous sûr de vouloir retirer ce compagnon de voyage ?"
+    "confirmRemove": "Êtes-vous sûr de vouloir retirer ce compagnon de voyage ?",
+    "title": "Compagnons de Voyage",
+    "invite": "Inviter",
+    "noBuddies": "Aucun compagnon de voyage",
+    "inviteHint": "Invitez des amis pour collaborer sur ce voyage",
+    "owner": "Propriétaire",
+    "roleLabel": "Rôle",
+    "you": "(Vous)",
+    "online": "En ligne",
+    "removeBuddy": "Retirer le compagnon",
+    "inviteBuddy": "Inviter un compagnon",
+    "emailLabel": "Adresse Email",
+    "emailHint": "Entrez l'adresse email de la personne que vous souhaitez inviter",
+    "roleRequired": "Rôle *",
+    "selectRole": "Sélectionner un rôle...",
+    "editorRole": "Éditeur",
+    "viewerRole": "Lecteur",
+    "roleHint": "Les éditeurs peuvent modifier le voyage, les lecteurs peuvent uniquement le consulter",
+    "sendInvitation": "Envoyer l'Invitation",
+    "modalTitle": "Inviter un Compagnon de Voyage",
+    "emailRequired": "L'email est obligatoire",
+    "emailInvalid": "Veuillez entrer une adresse email valide",
+    "roleRequiredError": "Veuillez sélectionner un rôle",
+    "invalidRole": "Rôle sélectionné invalide"
   },
   "map": {
     "loadFailed": "Échec du chargement de la carte",
@@ -380,6 +420,7 @@
     "title": "Dépenses",
     "addExpense": "Ajouter une Dépense",
     "editExpense": "Modifier la Dépense",
+    "deleteExpense": "Supprimer la Dépense",
     "amountRequired": "Montant *",
     "categoryRequired": "Catégorie *",
     "categories": {
@@ -496,7 +537,8 @@
       "createList": "Créer la Liste",
       "saveChanges": "Enregistrer les Modifications",
       "titleRequired": "Veuillez entrer un titre"
-    }
+    },
+    "createTemplate": "Créer {{name}}"
   },
   "documents": {
     "title": "Documents",
@@ -786,7 +828,15 @@
     "unauthorized": "Veuillez vous connecter pour continuer.",
     "forbidden": "Vous n'avez pas la permission d'effectuer cette action.",
     "notFound": "La ressource demandée n'a pas été trouvée.",
-    "validationError": "Veuillez vérifier vos données et réessayer."
+    "validationError": "Veuillez vérifier vos données et réessayer.",
+    "somethingWrong": "Une erreur s'est produite",
+    "reloadPage": "Recharger la Page",
+    "dismiss": "Ignorer",
+    "reloadAriaLabel": "Recharger la page",
+    "dismissAriaLabel": "Ignorer le message d'erreur",
+    "technicalDetails": "Détails Techniques",
+    "unexpectedError": "Une erreur inattendue s'est produite",
+    "reorderFailed": "Échec de la réorganisation des éléments"
   },
   "categories": {
     "activity": {

@@ -134,10 +134,10 @@ export function createExpenseItem(expense, currency = 'USD', currentUserId = nul
       <div class="expense-item-amount">
         <span class="amount">${formatCurrency(expense.amount, currency)}</span>
         <div class="expense-item-actions">
-          <button class="btn btn-icon btn-sm" data-action="edit-expense" data-expense-id="${expense.id}" title="Edit" aria-label="Edit expense">
+          <button class="btn btn-icon btn-sm" data-action="edit-expense" data-expense-id="${expense.id}" title="${t('common.edit')}" aria-label="${t('expenses.editExpense')}">
             ✏️
           </button>
-          <button class="btn btn-icon btn-sm btn-danger" data-action="delete-expense" data-expense-id="${expense.id}" title="Delete" aria-label="Delete expense">
+          <button class="btn btn-icon btn-sm btn-danger" data-action="delete-expense" data-expense-id="${expense.id}" title="${t('common.delete')}" aria-label="${t('expenses.deleteExpense')}">
             🗑️
           </button>
         </div>
