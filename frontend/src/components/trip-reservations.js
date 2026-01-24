@@ -8,6 +8,7 @@ import { showToast } from '../utils/toast.js';
 import { t } from '../utils/i18n.js';
 import { getCategoryIcon, getCategoryName, buildCategoryOptions } from '../utils/category-resolver.js';
 import { getCategories as getCategoriesState } from '../state/categories-state.js';
+import { formatDate as formatDateLocale, formatTime as formatTimeLocale } from '../utils/date-helpers.js';
 
 // Nominatim API configuration
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
@@ -615,6 +616,7 @@ function createEditableField(fieldName, label, value, inputType) {
 
 /**
  * Format value for display based on type
+ * Uses preference-aware formatting from date-helpers.js
  */
 function formatDisplayValue(value, type) {
   if (!value && value !== 0) return '';
@@ -622,7 +624,7 @@ function formatDisplayValue(value, type) {
   if (type === 'date' && value) {
     try {
       const date = new Date(value + 'T12:00:00Z');
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return formatDateLocale(date, 'medium');
     } catch {
       return value;
     }
@@ -633,7 +635,7 @@ function formatDisplayValue(value, type) {
       const [hours, minutes] = value.split(':');
       const date = new Date();
       date.setHours(parseInt(hours), parseInt(minutes));
-      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      return formatTimeLocale(date);
     } catch {
       return value;
     }
