@@ -4,24 +4,21 @@ import { authenticate } from '../middleware/auth.js';
 import { validateBody, validateParams } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/error-handler.js';
 import { broadcastToRoom } from '../websocket/rooms.js';
+import { DEFAULT_ACTIVITY_TYPES } from '../utils/default-categories.js';
 
-// All valid activity/reservation types:
-// Lodging: hotel, rental
-// Transport: bus, car, cruise, ferry, flight, train
-// Dining: bar, restaurant
-// Activities: market, monument, museum, park, shopping, sightseeing
+// Build ALL_TYPES from default categories plus legacy types for backward compatibility
 const ALL_TYPES = [
-  // Lodging
-  'hotel', 'rental',
-  // Transport
-  'bus', 'car', 'cruise', 'ferry', 'flight', 'train',
-  // Dining
-  'bar', 'restaurant',
-  // Activities
-  'market', 'monument', 'museum', 'park', 'shopping', 'sightseeing',
+  ...DEFAULT_ACTIVITY_TYPES.map(cat => cat.key),
   // Legacy types (for backward compatibility)
-  'accommodation', 'transportation', 'attraction', 'meeting', 'event', 'other',
+  'accommodation', 'transportation', 'attraction', 'meeting', 'event',
+  // Reservation types that might be used as activity types
+  'hotel', 'rental', 'hostel', 'camping', 'resort',
+  'flight', 'train', 'bus', 'car', 'ferry', 'cruise', 'taxi', 'transfer',
+  'bar',
 ];
+
+// Regex pattern for custom category references (custom:uuid format)
+const CUSTOM_CATEGORY_PATTERN = '^custom:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
 
 const createActivitySchema = {
   type: 'object',
@@ -29,7 +26,10 @@ const createActivitySchema = {
   properties: {
     type: {
       type: 'string',
-      enum: ALL_TYPES,
+      oneOf: [
+        { enum: ALL_TYPES },
+        { pattern: CUSTOM_CATEGORY_PATTERN },
+      ],
     },
     title: {
       type: 'string',
@@ -77,7 +77,10 @@ const updateActivitySchema = {
   properties: {
     type: {
       type: 'string',
-      enum: ALL_TYPES,
+      oneOf: [
+        { enum: ALL_TYPES },
+        { pattern: CUSTOM_CATEGORY_PATTERN },
+      ],
     },
     title: {
       type: 'string',

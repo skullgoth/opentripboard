@@ -98,7 +98,7 @@ describe('Activity Service', () => {
 
       await expect(activityService.create(tripId, userId, invalidData))
         .rejects
-        .toThrow('Activity type must be one of:');
+        .toThrow('Activity type must be a valid default type or a custom category reference (custom:uuid)');
     });
 
     it('should throw ValidationError for missing activity type', async () => {
@@ -110,7 +110,22 @@ describe('Activity Service', () => {
 
       await expect(activityService.create(tripId, userId, invalidData))
         .rejects
-        .toThrow('Activity type must be one of:');
+        .toThrow('Activity type must be a valid default type or a custom category reference (custom:uuid)');
+    });
+
+    it('should accept custom category types', async () => {
+      const mockTrip = createMockTrip({ id: tripId, owner_id: userId });
+      const customCategoryData = { ...validActivityData, type: 'custom:11111111-2222-3333-4444-555555555555' };
+      const mockActivity = createMockActivity(customCategoryData);
+
+      vi.mocked(tripQueries.findById).mockResolvedValue(mockTrip);
+      vi.mocked(tripBuddyService.checkPermission).mockResolvedValue(true);
+      vi.mocked(activityQueries.create).mockResolvedValue(mockActivity);
+
+      const result = await activityService.create(tripId, userId, customCategoryData);
+
+      expect(result).toBeDefined();
+      expect(activityQueries.create).toHaveBeenCalled();
     });
 
     it('should throw ValidationError for missing title', async () => {
@@ -499,7 +514,21 @@ describe('Activity Service', () => {
 
       await expect(activityService.update(activityId, userId, invalidUpdates))
         .rejects
-        .toThrow('Activity type must be one of:');
+        .toThrow('Activity type must be a valid default type or a custom category reference (custom:uuid)');
+    });
+
+    it('should accept custom category types in update', async () => {
+      const mockActivity = createMockActivity({ id: activityId, trip_id: tripId });
+      const customUpdates = { type: 'custom:11111111-2222-3333-4444-555555555555' };
+      const updatedActivity = { ...mockActivity, type: 'custom:11111111-2222-3333-4444-555555555555' };
+
+      vi.mocked(activityQueries.findById).mockResolvedValue(mockActivity);
+      vi.mocked(tripBuddyService.checkPermission).mockResolvedValue(true);
+      vi.mocked(activityQueries.update).mockResolvedValue(updatedActivity);
+
+      const result = await activityService.update(activityId, userId, customUpdates);
+
+      expect(result.type).toBe('custom:11111111-2222-3333-4444-555555555555');
     });
 
     it('should throw ValidationError for empty title in update', async () => {

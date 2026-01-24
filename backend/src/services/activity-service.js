@@ -3,25 +3,27 @@ import * as activityQueries from '../db/queries/activities.js';
 import * as tripQueries from '../db/queries/trips.js';
 import { checkAccess, checkPermission } from './trip-buddy-service.js';
 import { ValidationError, NotFoundError, AuthorizationError } from '../middleware/error-handler.js';
+import { DEFAULT_ACTIVITY_TYPES, isCustomCategory } from '../utils/default-categories.js';
 
-// All valid activity/reservation types:
-// Lodging: hotel, rental
-// Transport: bus, car, cruise, ferry, flight, train
-// Dining: bar, restaurant
-// Activities: market, monument, museum, park, shopping, sightseeing
-// Legacy types (for backward compatibility): accommodation, transportation, attraction, meeting, event, other
+// Build valid types from default categories + legacy/reservation types
 const VALID_ACTIVITY_TYPES = [
-  // Lodging
-  'hotel', 'rental',
-  // Transport
-  'bus', 'car', 'cruise', 'ferry', 'flight', 'train',
-  // Dining
-  'bar', 'restaurant',
-  // Activities
-  'market', 'monument', 'museum', 'park', 'shopping', 'sightseeing',
-  // Legacy types
-  'accommodation', 'transportation', 'attraction', 'meeting', 'event', 'other',
+  ...DEFAULT_ACTIVITY_TYPES.map(cat => cat.key),
+  // Legacy types (for backward compatibility)
+  'accommodation', 'transportation', 'attraction', 'meeting', 'event',
+  // Reservation types that might be used as activity types
+  'hotel', 'rental', 'hostel', 'camping', 'resort',
+  'flight', 'train', 'bus', 'car', 'ferry', 'cruise', 'taxi', 'transfer',
+  'bar',
 ];
+
+/**
+ * Check if a type is valid (either in the list or a custom category reference)
+ * @param {string} type - Activity type to validate
+ * @returns {boolean} True if valid
+ */
+function isValidActivityType(type) {
+  return VALID_ACTIVITY_TYPES.includes(type) || isCustomCategory(type);
+}
 
 /**
  * Create a new activity
@@ -45,8 +47,8 @@ export async function create(tripId, userId, activityData) {
   // Validate activity data
   const { type, title, description, location, latitude, longitude, startTime, endTime, orderIndex, metadata } = activityData;
 
-  if (!type || !VALID_ACTIVITY_TYPES.includes(type)) {
-    throw new ValidationError(`Activity type must be one of: ${VALID_ACTIVITY_TYPES.join(', ')}`);
+  if (!type || !isValidActivityType(type)) {
+    throw new ValidationError('Activity type must be a valid default type or a custom category reference (custom:uuid)');
   }
 
   if (!title || title.trim().length === 0) {
@@ -156,8 +158,8 @@ export async function update(activityId, userId, updates) {
   }
 
   // Validate updates
-  if (updates.type && !VALID_ACTIVITY_TYPES.includes(updates.type)) {
-    throw new ValidationError(`Activity type must be one of: ${VALID_ACTIVITY_TYPES.join(', ')}`);
+  if (updates.type && !isValidActivityType(updates.type)) {
+    throw new ValidationError('Activity type must be a valid default type or a custom category reference (custom:uuid)');
   }
 
   if (updates.title !== undefined && updates.title.trim().length === 0) {
