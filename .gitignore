@@ -73,16 +73,14 @@ backend/uploads/
 Thumbs.db
 desktop.ini
 .venv
-.aider*
 
-# Auto Claude data directory
-.auto-claude/
-
-# Auto Claude generated files
-.auto-claude-security.json
-.auto-claude-status
-.claude_settings.json
-.worktrees/
-.security-key
+# Security logs
 logs/security/
+
+# Ningx config files
 nginx.conf
+
+# Claude files
+CLAUDE.md
+.claude_settings.json
+.claude/

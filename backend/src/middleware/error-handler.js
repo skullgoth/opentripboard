@@ -57,6 +57,19 @@ export class ConflictError extends AppError {
  * @param {Object} reply - Fastify reply
  */
 export function errorHandler(error, request, reply) {
+  // Handle rate limit errors (from @fastify/rate-limit)
+  // The plugin throws the errorResponseBuilder output as an error object
+  if (error.statusCode === 429 ||
+      error.code === 'RATE_LIMIT_EXCEEDED' ||
+      error.error === 'RATE_LIMIT_EXCEEDED' ||
+      (error.message && error.message.includes('Too many requests'))) {
+    return reply.code(429).send({
+      error: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many requests, please try again later',
+      retryAfter: error.retryAfter || 60,
+    });
+  }
+
   // Log error for debugging
   if (error.statusCode >= 500 || !error.isOperational) {
     console.error('Unhandled error:', {

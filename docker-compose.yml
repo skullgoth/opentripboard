@@ -35,6 +35,12 @@ services:
       DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@db:5432/opentripboard
     volumes:
       - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     networks:
       - opentripboard-network
 
@@ -53,8 +59,10 @@ services:
     container_name: opentripboard-nginx
     restart: unless-stopped
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
     ports:
       - "80:80"
     networks:

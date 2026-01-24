@@ -8,6 +8,7 @@ services:
       target: development
     environment:
       NODE_ENV: development
+      DEBUG_RATE_LIMIT: "true"
     volumes:
       - ./backend/src:/app/src
       - ./backend/tests:/app/tests

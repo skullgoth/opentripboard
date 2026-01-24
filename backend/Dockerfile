@@ -3,7 +3,7 @@
 # Stage 1: Base
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN apk add --no-cache dumb-init python3 make g++
+RUN apk add --no-cache dumb-init python3 make g++ curl
 
 # Stage 2: Dependencies
 FROM base AS dependencies

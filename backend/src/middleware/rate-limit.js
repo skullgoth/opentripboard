@@ -1,5 +1,58 @@
 // T291: Rate limiting middleware for API protection
 import rateLimit from '@fastify/rate-limit';
+import { extractTokenFromHeader, decodeToken } from '../utils/jwt.js';
+
+const RATE_LIMIT_DISABLED = process.env.RATE_LIMIT_DISABLED === 'true';
+
+/**
+ * Extract the best available client identifier for rate limiting
+ * Priority: User ID from JWT > Real client IP from X-Forwarded-For > request.ip
+ * @param {Object} request - Fastify request object
+ * @returns {string} Client identifier for rate limiting
+ */
+function getClientIdentifier(request) {
+  // 1. Try to get user ID from JWT token (works for authenticated requests)
+  try {
+    const authHeader = request.headers?.authorization;
+    if (authHeader) {
+      const token = extractTokenFromHeader(authHeader);
+      if (token) {
+        const decoded = decodeToken(token);
+        if (decoded?.userId) {
+          return `user:${decoded.userId}`;
+        }
+      }
+    }
+  } catch (err) {
+    // Ignore token extraction errors, fall back to IP
+  }
+
+  // 2. Try to get real client IP from X-Forwarded-For header
+  // This is set by nginx/load balancers with the original client IP
+  const forwardedFor = request.headers?.['x-forwarded-for'];
+  if (forwardedFor) {
+    // X-Forwarded-For can be a comma-separated list: "client, proxy1, proxy2"
+    // The first IP is the original client
+    const clientIp = forwardedFor.split(',')[0].trim();
+    if (clientIp && clientIp !== request.ip) {
+      return `ip:${clientIp}`;
+    }
+  }
+
+  // 3. Try X-Real-IP header (alternative to X-Forwarded-For)
+  const realIp = request.headers?.['x-real-ip'];
+  if (realIp && realIp !== request.ip) {
+    return `ip:${realIp}`;
+  }
+
+  // 4. Fall back to request.ip (may be Docker network IP in containerized environments)
+  if (request.ip) {
+    return `ip:${request.ip}`;
+  }
+
+  // 5. Ultimate fallback - should never happen
+  return `unknown:${Date.now()}`;
+}
 
 /**
  * Rate limiting configuration
@@ -8,7 +61,7 @@ import rateLimit from '@fastify/rate-limit';
 export const rateLimitConfig = {
   // Global rate limit (default for all routes)
   global: {
-    max: 100, // 100 requests
+    max: 100, // 100 requests per minute per client
     timeWindow: '1 minute',
   },
 
@@ -16,9 +69,18 @@ export const rateLimitConfig = {
   auth: {
     max: 10, // 10 requests
     timeWindow: '1 minute',
+    // Auth routes use IP-based limiting (no JWT available yet)
+    // Uses X-Forwarded-For to get real client IP in Docker/proxy setups
     keyGenerator: (request) => {
-      // Rate limit by IP for auth routes
-      return request.ip;
+      const forwardedFor = request.headers?.['x-forwarded-for'];
+      if (forwardedFor) {
+        return `auth:${forwardedFor.split(',')[0].trim()}`;
+      }
+      const realIp = request.headers?.['x-real-ip'];
+      if (realIp) {
+        return `auth:${realIp}`;
+      }
+      return `auth:${request.ip || 'unknown'}`;
     },
   },
 
@@ -27,7 +89,15 @@ export const rateLimitConfig = {
     max: 5, // 5 requests
     timeWindow: '15 minutes',
     keyGenerator: (request) => {
-      return request.ip;
+      const forwardedFor = request.headers?.['x-forwarded-for'];
+      if (forwardedFor) {
+        return `pwd:${forwardedFor.split(',')[0].trim()}`;
+      }
+      const realIp = request.headers?.['x-real-ip'];
+      if (realIp) {
+        return `pwd:${realIp}`;
+      }
+      return `pwd:${request.ip || 'unknown'}`;
     },
   },
 
@@ -67,6 +137,14 @@ export const rateLimitConfig = {
  * @param {FastifyInstance} fastify - Fastify instance
  */
 export async function registerRateLimit(fastify) {
+  // Allow completely disabling rate limiting (useful for development/testing)
+  if (RATE_LIMIT_DISABLED) {
+    fastify.log.info('Rate limiting is disabled via RATE_LIMIT_DISABLED env var');
+    return;
+  }
+
+  fastify.log.info(`Rate limiting enabled: ${rateLimitConfig.global.max} requests per ${rateLimitConfig.global.timeWindow}`);
+
   await fastify.register(rateLimit, {
     max: rateLimitConfig.global.max,
     timeWindow: rateLimitConfig.global.timeWindow,
@@ -75,26 +153,40 @@ export async function registerRateLimit(fastify) {
     cache: 10000, // Cache up to 10000 keys
     allowList: [], // IPs that bypass rate limiting
     keyGenerator: (request) => {
-      // Use user ID if authenticated, otherwise IP
-      return request.user?.userId || request.ip;
+      try {
+        const key = getClientIdentifier(request);
+        // Log the key being used (helpful for debugging rate limit issues)
+        if (process.env.DEBUG_RATE_LIMIT === 'true') {
+          console.log(`Rate limit key: ${key} for ${request.method} ${request.url}`);
+        }
+        return key;
+      } catch (err) {
+        // Safety fallback if any error occurs - use unique key to avoid blocking
+        console.error('Rate limit keyGenerator error:', err.message);
+        return `error:${Date.now()}-${Math.random()}`;
+      }
     },
     errorResponseBuilder: (request, context) => {
       return {
         error: 'RATE_LIMIT_EXCEEDED',
         message: 'Too many requests, please try again later',
-        retryAfter: context.after,
-        limit: context.max,
+        retryAfter: context?.after || 60,
+        limit: context?.max || 100,
         remaining: 0,
       };
     },
     onExceeded: (request, key) => {
-      request.log.warn({
-        msg: 'Rate limit exceeded',
-        key,
-        ip: request.ip,
-        url: request.url,
-        userId: request.user?.userId,
-      });
+      try {
+        console.warn('Rate limit exceeded:', {
+          key,
+          ip: request.ip,
+          url: request.url,
+          userId: request.user?.userId,
+        });
+      } catch (err) {
+        // Ignore logging errors to prevent request failure
+        console.warn('Rate limit logging failed:', err.message);
+      }
     },
   });
 }
