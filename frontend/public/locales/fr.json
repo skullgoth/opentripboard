@@ -247,9 +247,20 @@
     "estTravelTime": "Durée estimée :"
   },
   "export": {
+    "export": "Exporter",
+    "exportTrip": "Exporter le voyage",
+    "selectFormat": "Sélectionnez le format d'exportation",
+    "download": "Télécharger",
+    "pdf": "Document PDF",
+    "json": "Données JSON",
+    "pdfDescription": "Itinéraire imprimable avec tous les détails",
+    "jsonDescription": "Données brutes pour sauvegarde ou import",
     "generatingPdf": "Génération du PDF...",
+    "generatingJson": "Génération du JSON...",
     "pdfSuccess": "PDF téléchargé avec succès !",
-    "pdfFailed": "Échec de l'exportation PDF. Veuillez réessayer."
+    "jsonSuccess": "JSON téléchargé avec succès !",
+    "pdfFailed": "Échec de l'exportation PDF. Veuillez réessayer.",
+    "jsonFailed": "Échec de l'exportation JSON. Veuillez réessayer."
   },
   "cover": {
     "confirmRemove": "Êtes-vous sûr de vouloir supprimer l'image de couverture ?",

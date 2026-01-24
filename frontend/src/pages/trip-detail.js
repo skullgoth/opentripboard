@@ -13,6 +13,7 @@ import { createTripBuddyList, createCompactTripBuddyList } from '../components/t
 import { createInviteTripBuddyModal, validateInviteTripBuddyForm, displayFormErrors } from '../components/invite-trip-buddy-form.js';
 import { createLodgingSection, createTransportationSection, createDiningEventsSection, attachReservationSectionListeners } from '../components/trip-reservations.js';
 import { showShareDialog } from '../components/share-dialog.js';
+import { showExportModal } from '../components/export-modal.js';
 import { generateGoogleMapsUrl as generateRouteMapsUrl, openInGoogleMaps } from '../utils/google-maps.js';
 import { wsClient } from '../services/websocket-client.js';
 import { realtimeManager } from '../services/realtime-updates.js';
@@ -132,21 +133,10 @@ export async function tripDetailPage(params) {
               <span>⋮</span>
             </button>
             <div class="dropdown-menu trip-menu-dropdown" style="display: none;">
-              <div class="dropdown-item dropdown-item-has-submenu">
+              <button class="dropdown-item" data-action="export-trip" title="${t('export.export')}">
                 <span class="dropdown-item-icon">📥</span>
                 <span>${t('export.export')}</span>
-                <span class="dropdown-submenu-arrow">▶</span>
-                <div class="dropdown-submenu">
-                  <button class="dropdown-item" data-action="export-pdf">
-                    <span class="dropdown-item-icon">📄</span>
-                    <span>${t('export.pdf')}</span>
-                  </button>
-                  <button class="dropdown-item" data-action="export-json">
-                    <span class="dropdown-item-icon">📋</span>
-                    <span>${t('export.json')}</span>
-                  </button>
-                </div>
-              </div>
+              </button>
               <button class="dropdown-item" data-action="export-google-maps" title="${t('trip.openGoogleMaps')}">
                 <span class="dropdown-item-icon">🗺️</span>
                 <span>${t('trip.openGoogleMaps')}</span>
@@ -302,14 +292,9 @@ export async function tripDetailPage(params) {
       handleDeleteTrip(trip);
     });
 
-    // Attach export PDF button
-    container.querySelector('[data-action="export-pdf"]')?.addEventListener('click', () => {
-      handleExportPdf(trip);
-    });
-
-    // Attach export JSON button
-    container.querySelector('[data-action="export-json"]')?.addEventListener('click', () => {
-      handleExportJson(trip);
+    // Attach export trip button (opens modal)
+    container.querySelector('[data-action="export-trip"]')?.addEventListener('click', () => {
+      showExportModal(trip);
     });
 
     // Attach export to Google Maps button
@@ -1556,84 +1541,6 @@ async function handleDeleteTrip(trip) {
   } catch (error) {
     console.error('Failed to delete trip:', error);
     alert(t('trip.deleteFailed'));
-  }
-}
-
-/**
- * Handle export to PDF
- */
-async function handleExportPdf(trip) {
-  if (!trip) return;
-
-  try {
-    showToast(t('export.generatingPdf'), 'info');
-
-    // Fetch PDF from API
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
-    const response = await fetch(`${baseUrl}/trips/${trip.id}/export/pdf`, {
-      headers: {
-        Authorization: `Bearer ${getItem('auth_token')}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to generate PDF');
-    }
-
-    // Create blob and download
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${trip.name.replace(/[^a-z0-9]/gi, '_')}_itinerary.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-
-    showToast(t('export.pdfSuccess'), 'success');
-  } catch (error) {
-    console.error('Failed to export PDF:', error);
-    showToast(t('export.pdfFailed'), 'error');
-  }
-}
-
-/**
- * Handle export to JSON
- */
-async function handleExportJson(trip) {
-  if (!trip) return;
-
-  try {
-    showToast(t('export.generatingJson'), 'info');
-
-    // Fetch JSON from API
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
-    const response = await fetch(`${baseUrl}/trips/${trip.id}/export/json`, {
-      headers: {
-        Authorization: `Bearer ${getItem('auth_token')}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to generate JSON');
-    }
-
-    // Create blob and download
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${trip.name.replace(/[^a-z0-9]/gi, '_')}_trip.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-
-    showToast(t('export.jsonSuccess'), 'success');
-  } catch (error) {
-    console.error('Failed to export JSON:', error);
-    showToast(t('export.jsonFailed'), 'error');
   }
 }
 

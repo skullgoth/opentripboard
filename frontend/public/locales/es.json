@@ -299,9 +299,20 @@
     "estTravelTime": "Tiempo estimado:"
   },
   "export": {
+    "export": "Exportar",
+    "exportTrip": "Exportar viaje",
+    "selectFormat": "Selecciona el formato de exportación",
+    "download": "Descargar",
+    "pdf": "Documento PDF",
+    "json": "Datos JSON",
+    "pdfDescription": "Itinerario imprimible con todos los detalles",
+    "jsonDescription": "Datos sin procesar para copia de seguridad o importación",
     "generatingPdf": "Generando PDF...",
+    "generatingJson": "Generando JSON...",
     "pdfSuccess": "¡PDF descargado con éxito!",
-    "pdfFailed": "Error al exportar PDF. Por favor, inténtalo de nuevo."
+    "jsonSuccess": "¡JSON descargado con éxito!",
+    "pdfFailed": "Error al exportar PDF. Por favor, inténtalo de nuevo.",
+    "jsonFailed": "Error al exportar JSON. Por favor, inténtalo de nuevo."
   },
   "cover": {
     "confirmRemove": "¿Estás seguro de que quieres eliminar la imagen de portada?",

@@ -6494,6 +6494,89 @@ body:has(.trip-detail-page) {
 }
 
 /* ========================================
+   US9: Export Modal Styles
+   ======================================== */
+
+.export-format-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.export-format-option {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.export-format-option input[type='radio'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.export-format-label {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-4);
+  background: var(--color-gray-50);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.export-format-option input[type='radio']:checked + .export-format-label {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+
+.export-format-option input[type='radio']:focus + .export-format-label {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.export-format-option:hover .export-format-label {
+  border-color: var(--color-primary-300);
+}
+
+.export-format-icon {
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--spacing-1);
+}
+
+.export-format-name {
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+}
+
+.export-format-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-1);
+}
+
+[data-theme='dark'] .export-format-label {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+}
+
+[data-theme='dark'] .export-format-option input[type='radio']:checked + .export-format-label {
+  border-color: var(--color-primary);
+  background: var(--color-gray-200);
+}
+
+[data-theme='dark'] .export-format-name {
+  color: var(--color-gray-900);
+}
+
+[data-theme='dark'] .export-format-desc {
+  color: var(--color-gray-500);
+}
+
+/* ========================================
    US9: Shared Trip Page Styles
    ======================================== */
 
