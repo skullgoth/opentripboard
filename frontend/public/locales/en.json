@@ -20,7 +20,8 @@
     "success": "Success",
     "warning": "Warning",
     "info": "Info",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "unknown": "Unknown"
   },
   "nav": {
     "myTrips": "My Trips",
@@ -28,7 +29,9 @@
     "settings": "Settings",
     "profile": "Your Profile",
     "manageUsers": "Manage Users",
-    "logout": "Log out"
+    "logout": "Log out",
+    "toggleTheme": "Toggle Theme",
+    "userMenu": "User Menu"
   },
   "auth": {
     "login": "Login",
@@ -204,9 +207,21 @@
     "deleteFailed": "Failed to delete suggestion. Please try again.",
     "confirmDelete": "Are you sure you want to delete this suggestion?",
     "showHistory": "Show Suggestion History",
-    "hideHistory": "Hide Suggestion History"
+    "hideHistory": "Hide Suggestion History",
+    "suggestedBy": "Suggested by {{name}}",
+    "upvote": "Upvote",
+    "downvote": "Downvote",
+    "acceptAndAdd": "Accept and add to itinerary",
+    "rejectSuggestion": "Reject suggestion",
+    "acceptedAndAdded": "Accepted and added to itinerary",
+    "rejected": "Rejected"
   },
   "tripBuddy": {
+    "title": "Trip Buddies",
+    "inviteBuddy": "Invite Buddy",
+    "invite": "Invite",
+    "roleLabel": "Role",
+    "removeBuddy": "Remove Buddy",
     "inviteSuccess": "Trip buddy invited successfully",
     "inviteFailed": "Failed to invite trip buddy",
     "removeSuccess": "Trip buddy removed successfully",
@@ -512,7 +527,8 @@
       "packingLists": "Packing Lists",
       "otherTemplates": "Other Templates",
       "blank": "Blank",
-      "items": "{{count}} items"
+      "items": "{{count}} items",
+      "createTemplate": "Create {{name}}"
     },
     "form": {
       "createTitle": "Create {{type}} List",

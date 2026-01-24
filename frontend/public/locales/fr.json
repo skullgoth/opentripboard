@@ -20,7 +20,8 @@
     "success": "Succès",
     "warning": "Avertissement",
     "info": "Info",
-    "noResults": "Aucun résultat trouvé"
+    "noResults": "Aucun résultat trouvé",
+    "unknown": "Inconnu"
   },
   "nav": {
     "myTrips": "Mes Voyages",
@@ -28,7 +29,9 @@
     "settings": "Paramètres",
     "profile": "Votre Profil",
     "manageUsers": "Gérer les Utilisateurs",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "toggleTheme": "Changer le Thème",
+    "userMenu": "Menu Utilisateur"
   },
   "auth": {
     "login": "Connexion",
@@ -120,6 +123,12 @@
     "exportPdfFailed": "Échec de l'exportation PDF. Veuillez réessayer.",
     "noActivitiesForMap": "Aucune activité avec des coordonnées à afficher sur la carte"
   },
+  "activityCard": {
+    "editActivity": "Modifier l'activité",
+    "deleteActivity": "Supprimer l'activité",
+    "addedBy": "Ajouté par {{name}}",
+    "updatedBy": "Mis à jour par {{name}}"
+  },
   "activity": {
     "title": "Titre",
     "type": "Type",
@@ -198,9 +207,21 @@
     "deleteFailed": "Échec de la suppression de la suggestion. Veuillez réessayer.",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette suggestion ?",
     "showHistory": "Afficher l'Historique",
-    "hideHistory": "Masquer l'Historique"
+    "hideHistory": "Masquer l'Historique",
+    "suggestedBy": "Suggéré par {{name}}",
+    "upvote": "Voter pour",
+    "downvote": "Voter contre",
+    "acceptAndAdd": "Accepter et ajouter à l'itinéraire",
+    "rejectSuggestion": "Rejeter la suggestion",
+    "acceptedAndAdded": "Acceptée et ajoutée à l'itinéraire",
+    "rejected": "Rejetée"
   },
   "tripBuddy": {
+    "title": "Compagnons de Voyage",
+    "inviteBuddy": "Inviter un Compagnon",
+    "invite": "Inviter",
+    "roleLabel": "Rôle",
+    "removeBuddy": "Retirer le Compagnon",
     "inviteSuccess": "Compagnon de voyage invité avec succès",
     "inviteFailed": "Échec de l'invitation du compagnon",
     "removeSuccess": "Compagnon de voyage retiré avec succès",
@@ -506,7 +527,8 @@
       "packingLists": "Listes de Bagages",
       "otherTemplates": "Autres Modèles",
       "blank": "Vide",
-      "items": "{{count}} éléments"
+      "items": "{{count}} éléments",
+      "createTemplate": "Créer {{name}}"
     },
     "form": {
       "createTitle": "Créer une Liste {{type}}",

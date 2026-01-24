@@ -87,7 +87,7 @@ git clone https://github.com/skullgoth/opentripboard.git
 cd opentripboard
 
 # Setup development environment (creates all .env files automatically)
-./scripts/setup-env.sh dev
+bahs ./scripts/setup-env.sh dev
 
 # Start the application (--build required on first run)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
@@ -117,12 +117,13 @@ git clone https://github.com/skullgoth/opentripboard.git
 cd opentripboard
 
 # Setup production environment
-./scripts/setup-env.sh prod
+bash ./scripts/setup-env.sh prod
 
 # IMPORTANT: Edit configuration files with your production values
 nano .env              # Set a strong DB_PASSWORD
 nano backend/.env      # Set JWT_SECRET, PEXELS_API_KEY, CORS_ORIGIN (your domain)
 nano frontend/.env     # Set VITE_API_URL and VITE_WS_URL to your domain
+nano nginx.conf        # Set server_name
 
 # Build and start the application
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
