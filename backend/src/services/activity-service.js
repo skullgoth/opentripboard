@@ -65,6 +65,39 @@ export async function create(tripId, userId, activityData) {
     }
   }
 
+  // Validate activity dates are within trip date range
+  if (startTime) {
+    const activityStartDate = new Date(startTime).toISOString().split('T')[0];
+    if (trip.start_date) {
+      const tripStartDate = new Date(trip.start_date).toISOString().split('T')[0];
+      if (activityStartDate < tripStartDate) {
+        throw new ValidationError('Activity start time must be on or after the trip start date');
+      }
+    }
+    if (trip.end_date) {
+      const tripEndDate = new Date(trip.end_date).toISOString().split('T')[0];
+      if (activityStartDate > tripEndDate) {
+        throw new ValidationError('Activity start time must be on or before the trip end date');
+      }
+    }
+  }
+
+  if (endTime) {
+    const activityEndDate = new Date(endTime).toISOString().split('T')[0];
+    if (trip.start_date) {
+      const tripStartDate = new Date(trip.start_date).toISOString().split('T')[0];
+      if (activityEndDate < tripStartDate) {
+        throw new ValidationError('Activity end time must be on or after the trip start date');
+      }
+    }
+    if (trip.end_date) {
+      const tripEndDate = new Date(trip.end_date).toISOString().split('T')[0];
+      if (activityEndDate > tripEndDate) {
+        throw new ValidationError('Activity end time must be on or before the trip end date');
+      }
+    }
+  }
+
   // Validate coordinates
   if ((latitude !== undefined && latitude !== null) || (longitude !== undefined && longitude !== null)) {
     if (latitude < -90 || latitude > 90) {
@@ -172,6 +205,44 @@ export async function update(activityId, userId, updates) {
 
     if (end < start) {
       throw new ValidationError('End time must be after start time');
+    }
+  }
+
+  // Validate activity dates are within trip date range
+  if (updates.startTime || updates.endTime) {
+    const trip = await tripQueries.findById(activity.trip_id);
+    if (trip) {
+      if (updates.startTime) {
+        const activityStartDate = new Date(updates.startTime).toISOString().split('T')[0];
+        if (trip.start_date) {
+          const tripStartDate = new Date(trip.start_date).toISOString().split('T')[0];
+          if (activityStartDate < tripStartDate) {
+            throw new ValidationError('Activity start time must be on or after the trip start date');
+          }
+        }
+        if (trip.end_date) {
+          const tripEndDate = new Date(trip.end_date).toISOString().split('T')[0];
+          if (activityStartDate > tripEndDate) {
+            throw new ValidationError('Activity start time must be on or before the trip end date');
+          }
+        }
+      }
+
+      if (updates.endTime) {
+        const activityEndDate = new Date(updates.endTime).toISOString().split('T')[0];
+        if (trip.start_date) {
+          const tripStartDate = new Date(trip.start_date).toISOString().split('T')[0];
+          if (activityEndDate < tripStartDate) {
+            throw new ValidationError('Activity end time must be on or after the trip start date');
+          }
+        }
+        if (trip.end_date) {
+          const tripEndDate = new Date(trip.end_date).toISOString().split('T')[0];
+          if (activityEndDate > tripEndDate) {
+            throw new ValidationError('Activity end time must be on or before the trip end date');
+          }
+        }
+      }
     }
   }
 

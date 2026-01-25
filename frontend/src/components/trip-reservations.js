@@ -15,6 +15,20 @@ const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
 const NOMINATIM_RATE_LIMIT_MS = 1100; // 1 request per second + buffer
 let lastNominatimRequest = 0;
 
+// Module-level trip date constraints for reservation editing
+let tripDateConstraints = { minDate: '', maxDate: '' };
+
+/**
+ * Set trip date constraints for reservation forms
+ * @param {Object} trip - Trip object with startDate and endDate
+ */
+export function setTripDateConstraints(trip) {
+  tripDateConstraints = {
+    minDate: trip.startDate ? trip.startDate.split('T')[0] : '',
+    maxDate: trip.endDate ? trip.endDate.split('T')[0] : '',
+  };
+}
+
 /**
  * Filter activities to get only reservations of specific types
  * @param {Array} activities - All activities
@@ -368,6 +382,9 @@ function getEditableFields(type, reservation) {
   const { metadata = {}, location, startTime, endTime, description, latitude, longitude } = reservation;
   const fields = [];
 
+  // Date constraints from trip
+  const dateOpts = { min: tripDateConstraints.minDate, max: tripDateConstraints.maxDate };
+
   // Reservation Type dropdown (first field, allows changing type)
   fields.push(createReservationTypeField(type));
 
@@ -377,8 +394,8 @@ function getEditableFields(type, reservation) {
     case 'hotel':
       fields.push(createEditableField('propertyName', t('reservations.fields.hotelName'), metadata.propertyName || '', 'text'));
       fields.push(createEditableField('provider', t('reservations.fields.bookingProvider'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('checkInDate', t('reservations.fields.checkInDate'), metadata.checkInDate || extractDate(startTime), 'date'));
-      fields.push(createEditableField('checkOutDate', t('reservations.fields.checkOutDate'), metadata.checkOutDate || extractDate(endTime), 'date'));
+      fields.push(createEditableField('checkInDate', t('reservations.fields.checkInDate'), metadata.checkInDate || extractDate(startTime), 'date', dateOpts));
+      fields.push(createEditableField('checkOutDate', t('reservations.fields.checkOutDate'), metadata.checkOutDate || extractDate(endTime), 'date', dateOpts));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
       fields.push(createLocationField(t('reservations.fields.locationAddress'), location, latitude, longitude));
       break;
@@ -386,8 +403,8 @@ function getEditableFields(type, reservation) {
     case 'rental':
       fields.push(createEditableField('propertyName', t('reservations.fields.propertyName'), metadata.propertyName || '', 'text'));
       fields.push(createEditableField('provider', t('reservations.fields.rentalProvider'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('checkInDate', t('reservations.fields.checkInDate'), metadata.checkInDate || extractDate(startTime), 'date'));
-      fields.push(createEditableField('checkOutDate', t('reservations.fields.checkOutDate'), metadata.checkOutDate || extractDate(endTime), 'date'));
+      fields.push(createEditableField('checkInDate', t('reservations.fields.checkInDate'), metadata.checkInDate || extractDate(startTime), 'date', dateOpts));
+      fields.push(createEditableField('checkOutDate', t('reservations.fields.checkOutDate'), metadata.checkOutDate || extractDate(endTime), 'date', dateOpts));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
       fields.push(createLocationField(t('reservations.fields.locationAddress'), location, latitude, longitude));
       break;
@@ -398,7 +415,7 @@ function getEditableFields(type, reservation) {
       fields.push(createEditableField('busNumber', t('reservations.fields.busNumber'), metadata.busNumber || '', 'text'));
       fields.push(createEditableField('origin', t('reservations.fields.departureStation'), metadata.origin || '', 'text'));
       fields.push(createEditableField('destination', t('reservations.fields.arrivalStation'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date'));
+      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
       fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
       fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
@@ -408,8 +425,8 @@ function getEditableFields(type, reservation) {
       fields.push(createEditableField('provider', t('reservations.fields.rentalCompany'), metadata.provider || '', 'text'));
       fields.push(createEditableField('vehicleType', t('reservations.fields.vehicleType'), metadata.vehicleType || '', 'text'));
       fields.push(createEditableField('pickupLocation', t('reservations.fields.pickupLocation'), metadata.pickupLocation || '', 'text'));
-      fields.push(createEditableField('pickupDate', t('reservations.fields.pickupDate'), metadata.pickupDate || extractDate(startTime), 'date'));
-      fields.push(createEditableField('dropoffDate', t('reservations.fields.returnDate'), metadata.dropoffDate || extractDate(endTime), 'date'));
+      fields.push(createEditableField('pickupDate', t('reservations.fields.pickupDate'), metadata.pickupDate || extractDate(startTime), 'date', dateOpts));
+      fields.push(createEditableField('dropoffDate', t('reservations.fields.returnDate'), metadata.dropoffDate || extractDate(endTime), 'date', dateOpts));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
       fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
       break;
@@ -419,7 +436,7 @@ function getEditableFields(type, reservation) {
       fields.push(createEditableField('shipName', t('reservations.fields.shipName'), metadata.shipName || '', 'text'));
       fields.push(createEditableField('origin', t('reservations.fields.departurePort'), metadata.origin || '', 'text'));
       fields.push(createEditableField('destination', t('reservations.fields.arrivalPort'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date'));
+      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
       fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
       fields.push(createEditableField('cabinType', t('reservations.fields.cabinType'), metadata.cabinType || '', 'text'));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
@@ -430,7 +447,7 @@ function getEditableFields(type, reservation) {
       fields.push(createEditableField('provider', t('reservations.fields.ferryCompany'), metadata.provider || '', 'text'));
       fields.push(createEditableField('origin', t('reservations.fields.departurePort'), metadata.origin || '', 'text'));
       fields.push(createEditableField('destination', t('reservations.fields.arrivalPort'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date'));
+      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
       fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
       fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
@@ -441,7 +458,7 @@ function getEditableFields(type, reservation) {
       fields.push(createEditableField('flightNumber', t('reservations.fields.flightNumber'), metadata.flightNumbers?.[0] || '', 'text'));
       fields.push(createEditableField('origin', t('reservations.fields.origin'), metadata.origin || '', 'text'));
       fields.push(createEditableField('destination', t('reservations.fields.destination'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date'));
+      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
       fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
       fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
@@ -452,7 +469,7 @@ function getEditableFields(type, reservation) {
       fields.push(createEditableField('trainNumber', t('reservations.fields.trainNumber'), metadata.trainNumber || '', 'text'));
       fields.push(createEditableField('origin', t('reservations.fields.departureStation'), metadata.origin || '', 'text'));
       fields.push(createEditableField('destination', t('reservations.fields.arrivalStation'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date'));
+      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
       fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
       fields.push(createEditableField('seatClass', t('reservations.fields.class'), metadata.seatClass || '', 'text'));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
@@ -463,7 +480,7 @@ function getEditableFields(type, reservation) {
     case 'bar':
       fields.push(createEditableField('venueName', t('reservations.fields.barName'), metadata.venueName || '', 'text'));
       fields.push(createEditableField('provider', t('reservations.fields.bookingProvider'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('reservationDate', t('reservations.fields.reservationDate'), metadata.reservationDate || extractDate(startTime), 'date'));
+      fields.push(createEditableField('reservationDate', t('reservations.fields.reservationDate'), metadata.reservationDate || extractDate(startTime), 'date', dateOpts));
       fields.push(createEditableField('reservationTime', t('reservations.fields.reservationTime'), metadata.reservationTime || extractTime(startTime), 'time'));
       fields.push(createEditableField('partySize', t('reservations.fields.partySize'), metadata.partySize || '', 'number'));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
@@ -473,7 +490,7 @@ function getEditableFields(type, reservation) {
     case 'restaurant':
       fields.push(createEditableField('venueName', t('reservations.fields.restaurantName'), metadata.venueName || metadata.restaurantName || '', 'text'));
       fields.push(createEditableField('provider', t('reservations.fields.bookingProvider'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('reservationDate', t('reservations.fields.reservationDate'), metadata.reservationDate || extractDate(startTime), 'date'));
+      fields.push(createEditableField('reservationDate', t('reservations.fields.reservationDate'), metadata.reservationDate || extractDate(startTime), 'date', dateOpts));
       fields.push(createEditableField('reservationTime', t('reservations.fields.reservationTime'), metadata.reservationTime || extractTime(startTime), 'time'));
       fields.push(createEditableField('partySize', t('reservations.fields.partySize'), metadata.partySize || '', 'number'));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
@@ -483,8 +500,8 @@ function getEditableFields(type, reservation) {
     default:
       // Generic fallback for unknown types
       fields.push(createEditableField('provider', t('reservations.fields.providerCompany'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('startDate', t('trip.startDate'), extractDate(startTime), 'date'));
-      fields.push(createEditableField('endDate', t('trip.endDate'), extractDate(endTime), 'date'));
+      fields.push(createEditableField('startDate', t('trip.startDate'), extractDate(startTime), 'date', dateOpts));
+      fields.push(createEditableField('endDate', t('trip.endDate'), extractDate(endTime), 'date', dateOpts));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
       fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
       break;
@@ -573,12 +590,23 @@ function createLocationField(label, location, latitude, longitude) {
  * @param {string} label - Display label
  * @param {string} value - Current value
  * @param {string} inputType - Input type (text, date, time, number, textarea)
+ * @param {Object} options - Optional constraints { min, max }
  * @returns {string} HTML string
  */
-function createEditableField(fieldName, label, value, inputType) {
+function createEditableField(fieldName, label, value, inputType, options = {}) {
   const displayValue = formatDisplayValue(value, inputType);
   const isEmpty = !value && value !== 0;
   const addPlaceholder = t('itinerary.addField', { field: label.toLowerCase() });
+
+  // Build min/max attributes
+  let constraintAttrs = '';
+  if (inputType === 'number') {
+    constraintAttrs = `min="${options.min || 1}" max="${options.max || 100}"`;
+  } else if (inputType === 'date' || inputType === 'datetime-local') {
+    const minAttr = options.min ? `min="${options.min}"` : '';
+    const maxAttr = options.max ? `max="${options.max}"` : '';
+    constraintAttrs = `${minAttr} ${maxAttr}`.trim();
+  }
 
   // Use textarea for description/notes
   if (inputType === 'textarea') {
@@ -607,8 +635,8 @@ function createEditableField(fieldName, label, value, inputType) {
         type="${inputType}"
         class="inline-edit-input"
         value="${escapeAttr(value)}"
+        ${constraintAttrs}
         style="display: none;"
-        ${inputType === 'number' ? 'min="1" max="100"' : ''}
       />
     </div>
   `;

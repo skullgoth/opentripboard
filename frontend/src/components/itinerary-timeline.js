@@ -13,6 +13,9 @@ const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
 const NOMINATIM_RATE_LIMIT_MS = 1100; // 1 request per second + buffer
 let lastNominatimRequest = 0;
 
+// Module-level trip date constraints for activity editing
+let tripDateConstraints = { minDate: '', maxDate: '' };
+
 /**
  * Create itinerary timeline component
  * @param {Array} activities - Array of activity objects
@@ -20,6 +23,12 @@ let lastNominatimRequest = 0;
  * @returns {string} HTML string
  */
 export function createItineraryTimeline(activities, trip) {
+  // Store trip date constraints for activity editing
+  tripDateConstraints = {
+    minDate: trip.startDate ? `${trip.startDate.split('T')[0]}T00:00` : '',
+    maxDate: trip.endDate ? `${trip.endDate.split('T')[0]}T23:59` : '',
+  };
+
   if (!activities || activities.length === 0) {
     return `
       <div class="itinerary-timeline empty-state">
@@ -146,11 +155,17 @@ function getActivityEditableFields(activity) {
   // Activity Type (dropdown)
   fields.push(createTypeField(type));
 
-  // Start Time
-  fields.push(createEditableField('startTime', t('activity.startTime'), formatDateTimeForInput(startTime) || '', 'datetime-local'));
+  // Start Time - constrained to trip date range
+  fields.push(createEditableField('startTime', t('activity.startTime'), formatDateTimeForInput(startTime) || '', 'datetime-local', {
+    min: tripDateConstraints.minDate,
+    max: tripDateConstraints.maxDate,
+  }));
 
-  // End Time
-  fields.push(createEditableField('endTime', t('activity.endTime'), formatDateTimeForInput(endTime) || '', 'datetime-local'));
+  // End Time - constrained to trip date range
+  fields.push(createEditableField('endTime', t('activity.endTime'), formatDateTimeForInput(endTime) || '', 'datetime-local', {
+    min: tripDateConstraints.minDate,
+    max: tripDateConstraints.maxDate,
+  }));
 
   // Location with Nominatim search
   fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
@@ -226,12 +241,18 @@ function createTypeField(currentType) {
  * @param {string} label - Display label
  * @param {string} value - Current value
  * @param {string} inputType - Input type (text, date, time, datetime-local, number, textarea)
+ * @param {Object} options - Optional constraints { min, max }
  * @returns {string} HTML string
  */
-function createEditableField(fieldName, label, value, inputType) {
+function createEditableField(fieldName, label, value, inputType, options = {}) {
   const displayValue = formatDisplayValue(value, inputType);
   const isEmpty = !value && value !== 0;
   const addPlaceholder = t('itinerary.addField', { field: label.toLowerCase() });
+
+  // Build min/max attributes for date/datetime inputs
+  const minAttr = options.min ? `min="${options.min}"` : '';
+  const maxAttr = options.max ? `max="${options.max}"` : '';
+  const constraintAttrs = `${minAttr} ${maxAttr}`.trim();
 
   // Use textarea for description
   if (inputType === 'textarea') {
@@ -260,6 +281,7 @@ function createEditableField(fieldName, label, value, inputType) {
         type="${inputType}"
         class="inline-edit-input"
         value="${escapeAttr(value)}"
+        ${constraintAttrs}
         style="display: none;"
       />
     </div>

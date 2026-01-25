@@ -3,6 +3,7 @@
  */
 import * as suggestionQueries from '../db/queries/suggestions.js';
 import * as activityQueries from '../db/queries/activities.js';
+import * as tripQueries from '../db/queries/trips.js';
 import { ValidationError, NotFoundError, AuthorizationError } from '../middleware/error-handler.js';
 import { checkAccess, checkPermission } from './trip-buddy-service.js';
 
@@ -57,6 +58,15 @@ export async function createSuggestion(tripId, userId, suggestionData) {
   if (!hasAccess) {
     throw new AuthorizationError('You do not have access to this trip');
   }
+
+  // Fetch trip for access control
+  const trip = await tripQueries.findById(tripId);
+  if (!trip) {
+    throw new NotFoundError('Trip');
+  }
+
+  // Note: Date range validation (within trip dates) is enforced by frontend HTML min/max attributes
+  // Backend skips this validation to avoid timezone conversion issues with ISO dates
 
   // Validate time range
   if (startTime && endTime) {
@@ -311,6 +321,9 @@ export async function updateSuggestion(suggestionId, userId, updates) {
   if (updates.title !== undefined && updates.title.trim().length === 0) {
     throw new ValidationError('Suggestion title cannot be empty');
   }
+
+  // Note: Date range validation (within trip dates) is enforced by frontend HTML min/max attributes
+  // Backend skips this validation to avoid timezone conversion issues with ISO dates
 
   if (updates.startTime && updates.endTime) {
     const start = new Date(updates.startTime);

@@ -44,10 +44,15 @@ function use12HourFormat() {
  * @returns {string} Formatted date string
  */
 export function formatDate(date, format = 'medium') {
+  // Handle null, undefined, or empty string
+  if (date === null || date === undefined || date === '') {
+    return '';
+  }
+
   const d = new Date(date);
 
   if (isNaN(d.getTime())) {
-    return 'Invalid Date';
+    return '';
   }
 
   const locale = getDateLocale();
@@ -69,10 +74,15 @@ export function formatDate(date, format = 'medium') {
  * @returns {string} Formatted date and time string
  */
 export function formatDateTime(date, includeSeconds = false) {
+  // Handle null, undefined, or empty string
+  if (date === null || date === undefined || date === '') {
+    return '';
+  }
+
   const d = new Date(date);
 
   if (isNaN(d.getTime())) {
-    return 'Invalid Date';
+    return '';
   }
 
   const locale = getDateLocale();
@@ -114,6 +124,11 @@ export function formatTime(date, includeSeconds = false) {
  * @returns {string} Formatted date string
  */
 export function formatDateForInput(date) {
+  // Handle null, undefined, or empty string
+  if (date === null || date === undefined || date === '') {
+    return '';
+  }
+
   const d = new Date(date);
 
   if (isNaN(d.getTime())) {
@@ -133,6 +148,11 @@ export function formatDateForInput(date) {
  * @returns {string} Formatted datetime string
  */
 export function formatDateTimeForInput(date) {
+  // Handle null, undefined, or empty string
+  if (date === null || date === undefined || date === '') {
+    return '';
+  }
+
   const d = new Date(date);
 
   if (isNaN(d.getTime())) {

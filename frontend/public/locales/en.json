@@ -21,7 +21,8 @@
     "warning": "Warning",
     "info": "Info",
     "noResults": "No results found",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "optional": "optional"
   },
   "nav": {
     "myTrips": "My Trips",

@@ -54,12 +54,16 @@ const createActivitySchema = {
       maximum: 180,
     },
     startTime: {
-      type: 'string',
-      format: 'date-time',
+      oneOf: [
+        { type: 'string', format: 'date-time' },
+        { type: 'null' },
+      ],
     },
     endTime: {
-      type: 'string',
-      format: 'date-time',
+      oneOf: [
+        { type: 'string', format: 'date-time' },
+        { type: 'null' },
+      ],
     },
     orderIndex: {
       type: 'integer',
@@ -88,29 +92,40 @@ const updateActivitySchema = {
       maxLength: 255,
     },
     description: {
-      type: 'string',
+      oneOf: [
+        { type: 'string' },
+        { type: 'null' },
+      ],
     },
     location: {
-      type: 'string',
-      maxLength: 255,
+      oneOf: [
+        { type: 'string', maxLength: 255 },
+        { type: 'null' },
+      ],
     },
     latitude: {
-      type: 'number',
-      minimum: -90,
-      maximum: 90,
+      oneOf: [
+        { type: 'number', minimum: -90, maximum: 90 },
+        { type: 'null' },
+      ],
     },
     longitude: {
-      type: 'number',
-      minimum: -180,
-      maximum: 180,
+      oneOf: [
+        { type: 'number', minimum: -180, maximum: 180 },
+        { type: 'null' },
+      ],
     },
     startTime: {
-      type: 'string',
-      format: 'date-time',
+      oneOf: [
+        { type: 'string', format: 'date-time' },
+        { type: 'null' },
+      ],
     },
     endTime: {
-      type: 'string',
-      format: 'date-time',
+      oneOf: [
+        { type: 'string', format: 'date-time' },
+        { type: 'null' },
+      ],
     },
     orderIndex: {
       type: 'integer',

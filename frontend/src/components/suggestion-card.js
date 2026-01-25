@@ -2,6 +2,7 @@
  * T107: SuggestionCard component - suggestion details, vote buttons, accept/reject for owner
  */
 import { t } from '../utils/i18n.js';
+import { formatDateTime as formatDateTimePrefs, formatDate } from '../utils/date-helpers.js';
 
 /**
  * Create suggestion card component
@@ -181,19 +182,13 @@ function getStatusBadgeClass(status) {
 }
 
 /**
- * Format date and time
+ * Format date and time using user preferences
  * @param {string} dateTimeStr - ISO datetime string
  * @returns {string} Formatted datetime
  */
 function formatDateTime(dateTimeStr) {
   if (!dateTimeStr) return '';
-  const date = new Date(dateTimeStr);
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  return formatDateTimePrefs(dateTimeStr);
 }
 
 /**
@@ -216,7 +211,8 @@ function formatRelativeTime(dateTimeStr) {
   if (diffHours < 24) return t(diffHours === 1 ? 'time.hoursAgo' : 'time.hoursAgo_plural', { count: diffHours });
   if (diffDays < 7) return t(diffDays === 1 ? 'time.daysAgo' : 'time.daysAgo_plural', { count: diffDays });
 
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  // Use preference-aware date formatting for older dates
+  return formatDate(date, 'medium');
 }
 
 /**

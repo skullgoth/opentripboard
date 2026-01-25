@@ -21,7 +21,8 @@
     "warning": "Avertissement",
     "info": "Info",
     "noResults": "Aucun résultat trouvé",
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "optional": "facultatif"
   },
   "nav": {
     "myTrips": "Mes Voyages",

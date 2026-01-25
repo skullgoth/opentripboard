@@ -8,10 +8,10 @@ import { initializeDragDrop, destroyDragDrop, addDragDropStyles } from '../compo
 import { createPresenceIndicator } from '../components/presence-indicator.js';
 import { createMapView, initializeMap, generateGoogleMapsUrl } from '../components/map-view.js';
 import { showToast } from '../utils/toast.js';
-import { createSuggestionList, createSuggestionForm, renderPaginatedHistory } from '../components/suggestion-list.js';
+import { createSuggestionList, createSuggestionForm, attachSuggestionFormListeners, renderPaginatedHistory } from '../components/suggestion-list.js';
 import { createTripBuddyList, createCompactTripBuddyList } from '../components/trip-buddy-list.js';
 import { createInviteTripBuddyModal, validateInviteTripBuddyForm, displayFormErrors } from '../components/invite-trip-buddy-form.js';
-import { createLodgingSection, createTransportationSection, createDiningEventsSection, attachReservationSectionListeners } from '../components/trip-reservations.js';
+import { createLodgingSection, createTransportationSection, createDiningEventsSection, attachReservationSectionListeners, setTripDateConstraints } from '../components/trip-reservations.js';
 import { showShareDialog } from '../components/share-dialog.js';
 import { showExportModal } from '../components/export-modal.js';
 import { generateGoogleMapsUrl as generateRouteMapsUrl, openInGoogleMaps } from '../utils/google-maps.js';
@@ -174,6 +174,8 @@ export async function tripDetailPage(params) {
     `;
 
     // US4: Render reservation sections (Hotels, Transportation, Dining & Events)
+    // Set trip date constraints for reservation forms
+    setTripDateConstraints(trip);
     const lodgingSectionHtml = createLodgingSection(activities);
     const transportSectionHtml = createTransportationSection(activities);
     const diningEventsSectionHtml = createDiningEventsSection(activities);
@@ -1199,6 +1201,8 @@ function refreshTimeline() {
     });
 
     // US4: Regenerate reservation sections along with timeline
+    // Update trip date constraints for reservation forms
+    setTripDateConstraints(currentTrip);
     const lodgingSectionHtml = createLodgingSection(currentActivities);
     const transportSectionHtml = createTransportationSection(currentActivities);
     const diningEventsSectionHtml = createDiningEventsSection(currentActivities);
@@ -1728,7 +1732,7 @@ function handleAddSuggestion() {
 function showSuggestionModal(suggestion = null) {
   const modalContainer = document.createElement('div');
   modalContainer.id = 'suggestion-modal';
-  modalContainer.innerHTML = createSuggestionForm(currentTrip.id);
+  modalContainer.innerHTML = createSuggestionForm(currentTrip);
   document.body.appendChild(modalContainer);
 
   // Attach form submit listener
@@ -1739,6 +1743,9 @@ function showSuggestionModal(suggestion = null) {
       await handleSuggestionSubmit(new FormData(form), suggestion);
     });
   }
+
+  // Attach suggestion form listeners (for dynamic date constraints)
+  attachSuggestionFormListeners(modalContainer);
 
   // Attach cancel listeners (both close-modal buttons)
   modalContainer.querySelectorAll('[data-action="close-modal"]').forEach((btn) => {
@@ -1799,13 +1806,13 @@ async function handleSuggestionSubmit(formData, existingSuggestion) {
 
     const startTime = formData.get('startTime');
     if (startTime) {
-      // Convert datetime-local format to ISO 8601
+      // Convert to ISO for proper storage and display
       suggestionData.startTime = new Date(startTime).toISOString();
     }
 
     const endTime = formData.get('endTime');
     if (endTime) {
-      // Convert datetime-local format to ISO 8601
+      // Convert to ISO for proper storage and display
       suggestionData.endTime = new Date(endTime).toISOString();
     }
 

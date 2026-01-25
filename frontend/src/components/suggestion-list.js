@@ -139,10 +139,15 @@ export function renderPaginatedHistory(history, currentUserId, userRole, page = 
 
 /**
  * Create suggestion form modal
- * @param {string} tripId - Trip ID
+ * @param {Object} trip - Trip object with id, startDate, endDate
  * @returns {string} HTML string
  */
-export function createSuggestionForm(tripId) {
+export function createSuggestionForm(trip) {
+  const tripId = trip.id;
+  // Format dates for datetime-local input (YYYY-MM-DDTHH:mm)
+  const minDate = trip.startDate ? `${trip.startDate.split('T')[0]}T00:00` : '';
+  const maxDate = trip.endDate ? `${trip.endDate.split('T')[0]}T23:59` : '';
+
   return `
     <div class="modal-overlay" id="suggestion-form-modal" data-modal="suggestion-form">
       <div class="modal-dialog">
@@ -218,17 +223,20 @@ export function createSuggestionForm(tripId) {
               id="suggestion-start-time"
               name="startTime"
               class="form-input"
+              ${minDate ? `min="${minDate}"` : ''}
+              ${maxDate ? `max="${maxDate}"` : ''}
             />
             <div class="form-error" data-error="startTime"></div>
           </div>
 
           <div class="form-group">
-            <label for="suggestion-end-time" class="form-label">${t('activity.endTime')}</label>
+            <label for="suggestion-end-time" class="form-label">${t('activity.endTime')} <span class="form-label-optional">(${t('common.optional')})</span></label>
             <input
               type="datetime-local"
               id="suggestion-end-time"
               name="endTime"
               class="form-input"
+              ${maxDate ? `max="${maxDate}"` : ''}
             />
             <div class="form-error" data-error="endTime"></div>
           </div>
@@ -246,4 +254,27 @@ export function createSuggestionForm(tripId) {
       </div>
     </div>
   `;
+}
+
+/**
+ * Attach suggestion form listeners
+ * Sets up the dynamic min constraint for end time based on start time
+ * @param {HTMLElement} container - Modal container element
+ */
+export function attachSuggestionFormListeners(container) {
+  const startTimeInput = container.querySelector('#suggestion-start-time');
+  const endTimeInput = container.querySelector('#suggestion-end-time');
+
+  if (startTimeInput && endTimeInput) {
+    startTimeInput.addEventListener('change', () => {
+      if (startTimeInput.value) {
+        // Set end time min to start time value
+        endTimeInput.min = startTimeInput.value;
+        // If end time is before start time, clear it
+        if (endTimeInput.value && endTimeInput.value < startTimeInput.value) {
+          endTimeInput.value = '';
+        }
+      }
+    });
+  }
 }
