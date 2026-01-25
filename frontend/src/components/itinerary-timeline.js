@@ -7,11 +7,8 @@ import { showToast } from '../utils/toast.js';
 import { t } from '../utils/i18n.js';
 import { getCategoryIcon, getCategoryName, buildCategoryOptions } from '../utils/category-resolver.js';
 import { getCategories as getCategoriesState } from '../state/categories-state.js';
-
-// Nominatim API configuration
-const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
-const NOMINATIM_RATE_LIMIT_MS = 1100; // 1 request per second + buffer
-let lastNominatimRequest = 0;
+import { searchDestinations } from '../services/geocoding-api.js';
+import { getPreferences } from '../state/preferences-state.js';
 
 // Module-level trip date constraints for activity editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -840,39 +837,15 @@ function startTitleEditingWithPending(card, titleSpan, pendingChanges, originalT
  * @param {string} query - Search query
  * @returns {Promise<Array>} Array of location results
  */
-async function searchNominatim(query) {
-  if (!query || query.length < 3) {
+async function searchLocation(query) {
+  if (!query || query.length < 2) {
     return [];
   }
 
-  // Rate limiting
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastNominatimRequest;
-  if (timeSinceLastRequest < NOMINATIM_RATE_LIMIT_MS) {
-    await new Promise(resolve => setTimeout(resolve, NOMINATIM_RATE_LIMIT_MS - timeSinceLastRequest));
-  }
-  lastNominatimRequest = Date.now();
-
   try {
-    const params = new URLSearchParams({
-      q: query,
-      format: 'json',
-      addressdetails: '1',
-      limit: '5',
-    });
-
-    const response = await fetch(`${NOMINATIM_BASE_URL}/search?${params}`, {
-      headers: {
-        'User-Agent': 'OpenTripBoard/1.0 (travel planning app)',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Nominatim request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.map(item => ({
+    const { language } = getPreferences();
+    const result = await searchDestinations(query, { limit: 5, language });
+    return result.results.map(item => ({
       displayName: item.display_name,
       latitude: parseFloat(item.lat),
       longitude: parseFloat(item.lon),
@@ -880,7 +853,7 @@ async function searchNominatim(query) {
       address: item.address,
     }));
   } catch (error) {
-    console.error('Nominatim search error:', error);
+    console.error('Location search error:', error);
     return [];
   }
 }
@@ -1021,7 +994,7 @@ function attachLocationFieldListeners(field, activityId, onSave, pendingChanges)
     }
 
     // Hide suggestions if query is too short
-    if (query.length < 3) {
+    if (query.length < 2) {
       suggestionsContainer.style.display = 'none';
       suggestionsContainer.innerHTML = '';
       return;
@@ -1031,7 +1004,7 @@ function attachLocationFieldListeners(field, activityId, onSave, pendingChanges)
     searchDebounceTimer = setTimeout(async () => {
       searchIndicator.style.display = 'flex';
 
-      const results = await searchNominatim(query);
+      const results = await searchLocation(query);
 
       searchIndicator.style.display = 'none';
 

@@ -270,7 +270,12 @@
     "acceptAndAdd": "Aceptar y agregar al itinerario",
     "rejectSuggestion": "Rechazar sugerencia",
     "acceptedAndAdded": "Aceptada y agregada al itinerario",
-    "rejected": "Rechazada"
+    "rejected": "Rechazada",
+    "noLocationsFound": "No se encontraron ubicaciones",
+    "searchingLocations": "Buscando ubicaciones...",
+    "locationSearchError": "Búsqueda de ubicación no disponible",
+    "autocompleteUnavailable": "La búsqueda de ubicación no está disponible temporalmente. Puede escribir la ubicación manualmente.",
+    "validatedLocation": "Ubicación validada"
   },
   "tripBuddy": {
     "title": "Compañeros de Viaje",

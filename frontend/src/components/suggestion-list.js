@@ -3,6 +3,9 @@
  */
 import { createSuggestionCard } from './suggestion-card.js';
 import { t } from '../utils/i18n.js';
+import { createAutocomplete } from './autocomplete.js';
+import { searchDestinations } from '../services/geocoding-api.js';
+import { getPreferences } from '../state/preferences-state.js';
 
 /**
  * Create suggestion list component
@@ -205,14 +208,13 @@ export function createSuggestionForm(trip) {
 
         <div class="form-group">
           <label for="suggestion-location" class="form-label">${t('activity.location')}</label>
-          <input
-            type="text"
-            id="suggestion-location"
-            name="location"
-            class="form-input"
-            placeholder="${t('suggestion.locationPlaceholder')}"
-            maxlength="255"
-          />
+          <div id="suggestion-location-autocomplete-container"></div>
+          <input type="hidden" id="suggestion-latitude" name="latitude" />
+          <input type="hidden" id="suggestion-longitude" name="longitude" />
+          <div class="form-hint" id="suggestion-location-hint" style="display: none;">
+            <span class="hint-icon">ℹ️</span>
+            <span id="suggestion-location-hint-text"></span>
+          </div>
         </div>
 
         <div class="form-row">
@@ -259,7 +261,9 @@ export function createSuggestionForm(trip) {
 /**
  * Attach suggestion form listeners
  * Sets up the dynamic min constraint for end time based on start time
+ * and initializes the location autocomplete
  * @param {HTMLElement} container - Modal container element
+ * @returns {Object} Object with cleanup function and getLocationData method
  */
 export function attachSuggestionFormListeners(container) {
   const startTimeInput = container.querySelector('#suggestion-start-time');
@@ -277,4 +281,107 @@ export function attachSuggestionFormListeners(container) {
       }
     });
   }
+
+  // Initialize location autocomplete
+  const autocompleteContainer = container.querySelector('#suggestion-location-autocomplete-container');
+  const latitudeInput = container.querySelector('#suggestion-latitude');
+  const longitudeInput = container.querySelector('#suggestion-longitude');
+  const locationHint = container.querySelector('#suggestion-location-hint');
+  const locationHintText = container.querySelector('#suggestion-location-hint-text');
+
+  let selectedLocationData = null;
+  let autocomplete = null;
+
+  function showLocationHint(text, type = 'info') {
+    if (locationHintText && locationHint) {
+      locationHintText.textContent = text;
+      locationHint.className = `form-hint hint-${type}`;
+      locationHint.style.display = 'block';
+    }
+  }
+
+  function hideLocationHint() {
+    if (locationHint) {
+      locationHint.style.display = 'none';
+    }
+  }
+
+  if (autocompleteContainer) {
+    try {
+      autocomplete = createAutocomplete({
+        container: autocompleteContainer,
+        placeholder: t('suggestion.locationPlaceholder'),
+        minChars: 2,
+        debounceMs: 300,
+        noResultsText: t('suggestion.noLocationsFound', t('tripForm.noDestinationsFound', 'No locations found')),
+        loadingText: t('suggestion.searchingLocations', t('tripForm.searchingDestinations', 'Searching...')),
+        errorText: t('suggestion.locationSearchError', t('tripForm.destinationSearchError', 'Search unavailable')),
+        onSearch: async (query) => {
+          try {
+            const { language } = getPreferences();
+            const result = await searchDestinations(query, { limit: 5, language });
+            hideLocationHint();
+            return result.results;
+          } catch (error) {
+            if (error.message === 'SERVICE_UNAVAILABLE') {
+              showLocationHint(t('suggestion.autocompleteUnavailable', t('tripForm.autocompleteUnavailable', 'Location search is temporarily unavailable. You can type your location manually.')), 'warning');
+            }
+            throw error;
+          }
+        },
+        onSelect: (location) => {
+          selectedLocationData = location;
+          // Set hidden latitude/longitude inputs
+          if (latitudeInput && location.lat !== undefined) {
+            latitudeInput.value = location.lat;
+          }
+          if (longitudeInput && location.lon !== undefined) {
+            longitudeInput.value = location.lon;
+          }
+          showLocationHint(`✓ ${t('suggestion.validatedLocation', t('tripForm.validatedDestination', 'Validated location'))}: ${location.display_name}`, 'success');
+        },
+        formatResult: (location) => location.display_name,
+        getItemValue: (location) => location.display_name,
+      });
+
+      // Get the autocomplete input for form handling
+      const locationInput = autocomplete.getInput();
+      locationInput.id = 'suggestion-location';
+      locationInput.name = 'location';
+      locationInput.maxLength = 255;
+
+      // Track manual input changes (when user types without selecting from dropdown)
+      locationInput.addEventListener('input', () => {
+        if (selectedLocationData && locationInput.value !== selectedLocationData.display_name) {
+          // User modified the selected value - clear coordinates
+          selectedLocationData = null;
+          if (latitudeInput) latitudeInput.value = '';
+          if (longitudeInput) longitudeInput.value = '';
+          hideLocationHint();
+        }
+      });
+
+    } catch (error) {
+      console.error('Failed to initialize location autocomplete:', error);
+      // Fallback to plain text input
+      const fallbackInput = document.createElement('input');
+      fallbackInput.type = 'text';
+      fallbackInput.id = 'suggestion-location';
+      fallbackInput.name = 'location';
+      fallbackInput.className = 'form-input';
+      fallbackInput.placeholder = t('suggestion.locationPlaceholder');
+      fallbackInput.maxLength = 255;
+      autocompleteContainer.appendChild(fallbackInput);
+      showLocationHint(t('suggestion.autocompleteUnavailable', t('tripForm.autocompleteUnavailable', 'Location search is temporarily unavailable. You can type your location manually.')), 'warning');
+    }
+  }
+
+  return {
+    getLocationData: () => selectedLocationData,
+    destroy: () => {
+      if (autocomplete) {
+        autocomplete.destroy();
+      }
+    },
+  };
 }

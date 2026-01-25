@@ -1735,6 +1735,9 @@ function showSuggestionModal(suggestion = null) {
   modalContainer.innerHTML = createSuggestionForm(currentTrip);
   document.body.appendChild(modalContainer);
 
+  // Attach suggestion form listeners (for dynamic date constraints and location autocomplete)
+  const formHelpers = attachSuggestionFormListeners(modalContainer);
+
   // Attach form submit listener
   const form = modalContainer.querySelector('#suggestion-form');
   if (form) {
@@ -1743,9 +1746,6 @@ function showSuggestionModal(suggestion = null) {
       await handleSuggestionSubmit(new FormData(form), suggestion);
     });
   }
-
-  // Attach suggestion form listeners (for dynamic date constraints)
-  attachSuggestionFormListeners(modalContainer);
 
   // Attach cancel listeners (both close-modal buttons)
   modalContainer.querySelectorAll('[data-action="close-modal"]').forEach((btn) => {
@@ -1802,6 +1802,14 @@ async function handleSuggestionSubmit(formData, existingSuggestion) {
     const location = formData.get('location');
     if (location && location.trim()) {
       suggestionData.location = location.trim();
+    }
+
+    // Include coordinates if available (from location autocomplete)
+    const latitude = formData.get('latitude');
+    const longitude = formData.get('longitude');
+    if (latitude && longitude) {
+      suggestionData.latitude = parseFloat(latitude);
+      suggestionData.longitude = parseFloat(longitude);
     }
 
     const startTime = formData.get('startTime');

@@ -7270,6 +7270,22 @@ img.lazy-loaded {
   width: 100%;
 }
 
+/* Ensure autocomplete dropdown is clickable in modals */
+.modal-dialog .autocomplete-wrapper {
+  z-index: 1;
+}
+
+.modal-dialog .autocomplete-dropdown {
+  z-index: 9999;
+  position: absolute;
+  pointer-events: auto;
+}
+
+.modal-dialog .autocomplete-item {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .autocomplete-input {
   width: 100%;
   padding: var(--spacing-3);

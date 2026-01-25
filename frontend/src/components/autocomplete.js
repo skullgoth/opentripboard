@@ -70,6 +70,38 @@ export function createAutocomplete(options) {
   inputWrapper.appendChild(liveRegion);
   container.appendChild(inputWrapper);
 
+  // Event delegation for dropdown clicks - more reliable than per-item listeners
+  dropdown.addEventListener('mousedown', (e) => {
+    e.preventDefault(); // Prevent input blur
+
+    // Try to find the clicked item - first check if target is or contains an item
+    let item = e.target.closest('.autocomplete-item[data-index]');
+
+    // If not found (clicking on UL padding), use elementFromPoint to find actual element
+    if (!item) {
+      const elementUnderCursor = document.elementFromPoint(e.clientX, e.clientY);
+      item = elementUnderCursor?.closest('.autocomplete-item[data-index]');
+    }
+
+    // If still not found, try to get item from dropdown children at click position
+    if (!item) {
+      for (const child of dropdown.children) {
+        const childRect = child.getBoundingClientRect();
+        if (e.clientY >= childRect.top && e.clientY <= childRect.bottom) {
+          if (child.dataset.index !== undefined) {
+            item = child;
+            break;
+          }
+        }
+      }
+    }
+
+    if (item) {
+      const index = parseInt(item.dataset.index, 10);
+      selectItem(index);
+    }
+  });
+
   /**
    * Update dropdown content
    */

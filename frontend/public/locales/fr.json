@@ -215,7 +215,12 @@
     "acceptAndAdd": "Accepter et ajouter à l'itinéraire",
     "rejectSuggestion": "Rejeter la suggestion",
     "acceptedAndAdded": "Acceptée et ajoutée à l'itinéraire",
-    "rejected": "Rejetée"
+    "rejected": "Rejetée",
+    "noLocationsFound": "Aucun lieu trouvé",
+    "searchingLocations": "Recherche de lieux...",
+    "locationSearchError": "Recherche de lieu indisponible",
+    "autocompleteUnavailable": "La recherche de lieu n'est pas disponible temporairement. Vous pouvez saisir le lieu manuellement.",
+    "validatedLocation": "Lieu validé"
   },
   "tripBuddy": {
     "title": "Compagnons de Voyage",

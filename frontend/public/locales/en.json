@@ -215,7 +215,12 @@
     "acceptAndAdd": "Accept and add to itinerary",
     "rejectSuggestion": "Reject suggestion",
     "acceptedAndAdded": "Accepted and added to itinerary",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "noLocationsFound": "No locations found",
+    "searchingLocations": "Searching locations...",
+    "locationSearchError": "Location search unavailable",
+    "autocompleteUnavailable": "Location search is temporarily unavailable. You can type your location manually.",
+    "validatedLocation": "Validated location"
   },
   "tripBuddy": {
     "title": "Trip Buddies",
