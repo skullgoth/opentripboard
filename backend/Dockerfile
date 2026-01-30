@@ -15,6 +15,9 @@ FROM base AS development
 COPY package*.json ./
 RUN npm install
 COPY . .
+# Create uploads directory with proper ownership for development
+RUN mkdir -p /app/uploads/covers /app/uploads/cover-images && \
+    chown -R node:node /app/uploads
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
@@ -23,7 +26,10 @@ FROM base AS production
 ENV NODE_ENV=production
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-RUN chown -R node:node /app
+# Create uploads directory with proper ownership before switching to node user
+# This ensures Docker volumes inherit correct permissions
+RUN mkdir -p /app/uploads/covers /app/uploads/cover-images && \
+    chown -R node:node /app
 USER node
 EXPOSE 3000
 CMD ["dumb-init", "node", "src/server.js"]
