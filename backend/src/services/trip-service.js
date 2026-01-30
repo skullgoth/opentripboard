@@ -134,12 +134,17 @@ export async function create(userId, tripData) {
     coverImageAttribution: coverImageAttribution || null, // T013: New field
   });
 
-  // T027: Automatically fetch cover image if destination is validated
-  if (destinationData && destinationData.validated) {
+  // T027: Automatically fetch cover image if destination is available
+  // Priority: 1) validated destinationData.display_name, 2) plain destination text
+  const coverImageDestination = destinationData?.validated
+    ? destinationData.display_name
+    : destination?.trim();
+
+  if (coverImageDestination) {
     try {
       const coverImageService = getCoverImageService();
       const coverResult = await coverImageService.fetchCoverImage(
-        destinationData.display_name,
+        coverImageDestination,
         { tripId: trip.id }
       );
 
