@@ -4425,50 +4425,112 @@ body:has(.trip-detail-page) {
   font-size: var(--font-size-md);
 }
 
-.category-list {
+.category-breakdown-content {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
+  gap: var(--spacing-6);
+  align-items: stretch;
 }
 
-.category-item {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: var(--spacing-3);
-  padding: var(--spacing-2) 0;
+.category-table {
+  flex: 1 1 50%;
+  border-collapse: collapse;
 }
 
-.category-header {
+.category-pie-chart {
+  flex: 1 1 50%;
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
+  justify-content: center;
+  min-height: 160px;
 }
 
-.category-icon {
+.pie-chart {
+  width: 100%;
+  height: 100%;
+  max-width: 200px;
+  max-height: 200px;
+}
+
+.pie-chart-hole {
+  fill: var(--color-white);
+}
+
+.pie-chart--empty {
+  opacity: 0.5;
+}
+
+.pie-label {
+  font-size: 6px;
+  font-weight: 600;
+  fill: var(--color-white);
+  pointer-events: none;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.category-row:not(:last-child) .category-cell {
+  padding-bottom: var(--spacing-2);
+}
+
+.category-row:not(:first-child) .category-cell {
+  padding-top: var(--spacing-2);
+}
+
+.category-cell {
+  vertical-align: middle;
+}
+
+.category-cell--name {
+  white-space: nowrap;
+}
+
+.category-cell--name .category-icon {
   font-size: var(--font-size-lg);
+  margin-right: var(--spacing-2);
 }
 
-.category-name {
+.category-cell--name .category-name {
   font-size: var(--font-size-sm);
 }
 
-.category-amount {
+.category-cell--amount {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
+  text-align: right;
+  padding-left: var(--spacing-4);
+  padding-right: var(--spacing-4);
+  white-space: nowrap;
+}
+
+.category-cell--progress {
+  width: 100%;
 }
 
 .category-progress {
-  width: 100px;
+  position: relative;
+  width: 100%;
+  min-width: 80px;
   height: 8px;
   background: var(--color-gray-200);
   border-radius: var(--radius-full);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .category-progress-bar {
   height: 100%;
   border-radius: var(--radius-full);
+}
+
+.category-progress-tooltip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 0 2px var(--color-white), 0 0 2px var(--color-white);
 }
 
 .category-progress-bar.category-accommodation { background: #3b82f6; }
@@ -4478,13 +4540,6 @@ body:has(.trip-detail-page) {
 .category-progress-bar.category-shopping { background: #ec4899; }
 .category-progress-bar.category-entertainment { background: #f97316; }
 .category-progress-bar.category-other { background: #6b7280; }
-
-.category-percent {
-  font-size: var(--font-size-xs);
-  color: var(--color-gray-500);
-  text-align: right;
-  min-width: 40px;
-}
 
 /* Balance Sheet */
 .balance-sheet {
@@ -4846,6 +4901,10 @@ body:has(.trip-detail-page) {
 [data-theme='dark'] .category-progress,
 [data-theme='dark'] .compact-progress {
   background: var(--color-gray-300);
+}
+
+[data-theme='dark'] .pie-chart-hole {
+  fill: var(--color-gray-100);
 }
 
 [data-theme='dark'] .balance-table th {
