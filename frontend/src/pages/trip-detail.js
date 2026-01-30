@@ -2136,9 +2136,12 @@ async function initializeMapView(activities) {
     mapInstance = null;
   }
 
+  // Sort activities for correct route order
+  const sortedActivities = sortActivitiesForRoute(activities);
+
   // Initialize map with activities (or empty for world view)
   try {
-    mapInstance = await initializeMap('trip-map', activities, {
+    mapInstance = await initializeMap('trip-map', sortedActivities, {
       onMarkerClick: (activity) => {
         // When a marker is clicked, scroll to and expand the corresponding card
         scrollToAndExpandCard(activity.id);
@@ -2350,10 +2353,41 @@ function handleExportToGoogleMaps() {
 }
 
 /**
+ * Sort activities for map route display
+ * Order: by date (startTime), then by orderIndex within the same day, undated last
+ * @param {Array} activities - Activities to sort
+ * @returns {Array} Sorted activities
+ */
+function sortActivitiesForRoute(activities) {
+  return [...activities].sort((a, b) => {
+    // Undated activities go to the end
+    if (!a.startTime && b.startTime) return 1;
+    if (a.startTime && !b.startTime) return -1;
+    if (!a.startTime && !b.startTime) {
+      return (a.orderIndex || 0) - (b.orderIndex || 0);
+    }
+
+    // Sort by date first
+    const dateA = a.startTime.split('T')[0];
+    const dateB = b.startTime.split('T')[0];
+    if (dateA !== dateB) {
+      return dateA.localeCompare(dateB);
+    }
+
+    // Same day: sort by orderIndex, then by startTime
+    if ((a.orderIndex || 0) !== (b.orderIndex || 0)) {
+      return (a.orderIndex || 0) - (b.orderIndex || 0);
+    }
+    return new Date(a.startTime) - new Date(b.startTime);
+  });
+}
+
+/**
  * T188: Update map when activities change
  */
 function updateMap() {
   if (mapInstance) {
-    mapInstance.updateActivities(currentActivities);
+    const sortedActivities = sortActivitiesForRoute(currentActivities);
+    mapInstance.updateActivities(sortedActivities);
   }
 }
