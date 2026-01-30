@@ -82,9 +82,10 @@ async function applyMigration(filename) {
     await client.query(sql);
 
     // Record migration as applied
+    // Use ON CONFLICT to handle migrations that include their own INSERT statements
     const version = filename.replace('.sql', '');
     await client.query(
-      'INSERT INTO schema_migrations (version) VALUES ($1)',
+      'INSERT INTO schema_migrations (version) VALUES ($1) ON CONFLICT (version) DO NOTHING',
       [version]
     );
 
