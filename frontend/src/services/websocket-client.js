@@ -25,18 +25,15 @@ export class WebSocketClient {
   connect() {
     return new Promise((resolve, reject) => {
       try {
-        console.log('[WS] Connecting to:', WS_URL);
         this.ws = new WebSocket(WS_URL);
 
         this.ws.onopen = () => {
-          console.log('[WS] Connection opened');
           this.isConnected = true;
           this.reconnectAttempts = 0;
 
           // Authenticate immediately after connection
           this.authenticate()
             .then(() => {
-              console.log('[WS] Authentication successful');
               resolve();
             })
             .catch((error) => {
@@ -53,8 +50,7 @@ export class WebSocketClient {
           console.error('[WS] WebSocket error:', error);
         };
 
-        this.ws.onclose = (event) => {
-          console.log('[WS] Connection closed. Code:', event.code, 'Reason:', event.reason);
+        this.ws.onclose = () => {
           this.isConnected = false;
           this.isAuthenticated = false;
 
@@ -164,7 +160,6 @@ export class WebSocketClient {
       return;
     }
 
-    console.log('[WS] Joining trip room:', tripId);
     this.currentTripId = tripId;
     this.send({
       type: 'room:join',

@@ -1139,13 +1139,10 @@ function handleActivityCreatedEvent(event) {
  * T153: Handle activity updated via WebSocket
  */
 function handleActivityUpdatedEvent(event) {
-  console.log('[ACTIVITY DEBUG] handleActivityUpdatedEvent called:', event);
   // Update activity in the list
   const index = currentActivities.findIndex((a) => a.id === event.activityId);
-  console.log('[ACTIVITY DEBUG] Found activity at index:', index, 'Total activities:', currentActivities.length);
   if (index !== -1 && event.activity) {
     currentActivities[index] = event.activity;
-    console.log('[ACTIVITY DEBUG] Updated activity, refreshing timeline');
     refreshTimeline();
   }
 }

@@ -262,11 +262,7 @@ async function initApp() {
 
   // Register service worker for offline support (production only by default)
   addServiceWorkerStyles();
-  registerServiceWorker().then((registration) => {
-    if (registration) {
-      console.log('Service worker registered for offline support');
-    }
-  });
+  registerServiceWorker();
 }
 
 /**

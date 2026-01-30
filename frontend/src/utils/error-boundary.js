@@ -40,8 +40,6 @@ export function initErrorBoundary() {
       error: event.reason,
     });
   });
-
-  console.log('Error boundary initialized');
 }
 
 /**

@@ -20,7 +20,6 @@ export async function initErrorTracking(options = {}) {
   const dsn = options.dsn || import.meta.env.VITE_SENTRY_DSN;
 
   if (!dsn) {
-    console.log('[ErrorTracking] No DSN configured, error tracking disabled');
     return;
   }
 
@@ -30,7 +29,6 @@ export async function initErrorTracking(options = {}) {
 
   // Use fallback error tracking (Sentry SDK not installed)
   // To enable Sentry: npm install @sentry/browser, then uncomment Sentry code below
-  console.log('[ErrorTracking] Using built-in error tracking');
   setupFallbackTracking();
 }
 
@@ -103,16 +101,12 @@ export function captureError(error, context = {}) {
  */
 export function captureMessage(message, level = 'info', context = {}) {
   if (!config.enabled) {
-    console.log(`[ErrorTracking] ${level}:`, message, context);
     return;
   }
 
   if (initialized && window.Sentry) {
     window.Sentry.captureMessage(message, { level, extra: context });
-    return;
   }
-
-  console.log(`[ErrorTracking] ${level}:`, message, context);
 }
 
 /**

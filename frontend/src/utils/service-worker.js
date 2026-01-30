@@ -9,12 +9,10 @@ let registration = null;
 export async function registerServiceWorker() {
   // Skip in development unless explicitly enabled
   if (import.meta.env.DEV && !import.meta.env.VITE_ENABLE_SW) {
-    console.log('[SW] Skipping registration in development mode');
     return null;
   }
 
   if (!('serviceWorker' in navigator)) {
-    console.log('[SW] Service workers not supported');
     return null;
   }
 
@@ -22,8 +20,6 @@ export async function registerServiceWorker() {
     registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
     });
-
-    console.log('[SW] Registered with scope:', registration.scope);
 
     // Check for updates periodically
     setInterval(() => {
@@ -59,14 +55,12 @@ export async function unregisterServiceWorker() {
     const reg = await navigator.serviceWorker.getRegistration();
     if (reg) {
       await reg.unregister();
-      console.log('[SW] Unregistered');
     }
     return;
   }
 
   await registration.unregister();
   registration = null;
-  console.log('[SW] Unregistered');
 }
 
 /**
@@ -92,7 +86,6 @@ export async function clearCaches() {
   if ('caches' in window) {
     const names = await caches.keys();
     await Promise.all(names.map((name) => caches.delete(name)));
-    console.log('[SW] Caches cleared');
   }
 }
 

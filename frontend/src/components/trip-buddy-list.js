@@ -12,8 +12,6 @@ import { t } from '../utils/i18n.js';
  * @returns {string} HTML string
  */
 export function createTripBuddyList(tripBuddies, tripOwnerId, currentUserId, isOwner, activeUsers = []) {
-  console.log('[TripBuddyList] Rendering with activeUsers:', activeUsers);
-
   if (!tripBuddies || tripBuddies.length === 0) {
     return `
       <div class="trip-buddy-list">
@@ -57,8 +55,6 @@ export function createTripBuddyList(tripBuddies, tripOwnerId, currentUserId, isO
     }
 
     const tooltipText = tooltipParts.join('\n');
-
-    console.log('[TripBuddy] Rendering buddy:', tripBuddy.email, 'isActive:', isActive, 'userId:', userId);
 
     return `
       <div class="trip-buddy-item-compact ${isCurrentUser ? 'current-user' : ''}" data-trip-buddy-id="${tripBuddy.id}" data-user-id="${userId}">

@@ -236,11 +236,8 @@ class TripState {
    * @returns {Promise<Object>} Updated activity
    */
   async updateActivity(activityId, activityData) {
-    console.log('[TRIP-STATE] updateActivity called:', { activityId, activityData });
     try {
-      console.log('[TRIP-STATE] Calling apiClient.patch...');
       const updatedActivity = await apiClient.patch(`/activities/${activityId}`, activityData);
-      console.log('[TRIP-STATE] Received response:', updatedActivity);
 
       // Update in activities list
       const index = this.currentActivities.findIndex((a) => a.id === activityId);
@@ -248,12 +245,10 @@ class TripState {
         this.currentActivities[index] = updatedActivity;
       }
 
-      console.log('[TRIP-STATE] Calling notifyListeners...');
       this.notifyListeners();
-      console.log('[TRIP-STATE] updateActivity completed successfully');
       return updatedActivity;
     } catch (error) {
-      console.error('[TRIP-STATE] Failed to update activity:', error);
+      console.error('Failed to update activity:', error);
       throw error;
     }
   }
