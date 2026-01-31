@@ -29,10 +29,9 @@ const state = {
   defaults: null,
   /** @type {boolean} Flag to track if defaults have been loaded with translations */
   defaultsTranslated: false,
-  /** @type {Object} Custom categories by domain */
+  /** @type {Object} Custom categories by domain (reservation merged into activity) */
   custom: {
     activity: [],
-    reservation: [],
     expense: [],
     document: [],
   },
@@ -101,7 +100,7 @@ export function getCategories() {
 
 /**
  * Get categories for a specific domain
- * @param {string} domain - Category domain (activity, reservation, expense, document)
+ * @param {string} domain - Category domain (activity, expense, document)
  * @returns {Object} Categories for the domain { defaults: [], custom: [] }
  */
 export function getCategoriesByDomain(domain) {
@@ -303,7 +302,6 @@ export function resetCategories() {
   state.defaults = getDefaultCategories();
   state.custom = {
     activity: [],
-    reservation: [],
     expense: [],
     document: [],
   };

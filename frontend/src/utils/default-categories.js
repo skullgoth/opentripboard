@@ -1,82 +1,115 @@
-// Default category constants for activities, reservations, expenses, and documents
+// Default category constants for activities, expenses, and documents
 // These are system defaults that users cannot modify
+//
+// Unified Activity System:
+// All travel-related types (formerly split between "activities" and "reservations")
+// are now unified under a single "activity" domain with groups for organization.
 
 import { t } from './i18n.js';
 
 /**
- * Default activity types
+ * Activity groups for organizing types in UI
  */
-export const DEFAULT_ACTIVITY_TYPES = [
-  // Culture & History
-  { key: 'museum', icon: '🏛️', i18nKey: 'categories.activity.museum' },
-  { key: 'monument', icon: '🗽', i18nKey: 'categories.activity.monument' },
-  { key: 'historicSite', icon: '🏰', i18nKey: 'categories.activity.historicSite' },
-  { key: 'temple', icon: '⛩️', i18nKey: 'categories.activity.temple' },
-  { key: 'church', icon: '⛪', i18nKey: 'categories.activity.church' },
-  // Nature & Outdoors
-  { key: 'park', icon: '🌳', i18nKey: 'categories.activity.park' },
-  { key: 'beach', icon: '🏖️', i18nKey: 'categories.activity.beach' },
-  { key: 'garden', icon: '🌷', i18nKey: 'categories.activity.garden' },
-  { key: 'hiking', icon: '🥾', i18nKey: 'categories.activity.hiking' },
-  { key: 'viewpoint', icon: '🏔️', i18nKey: 'categories.activity.viewpoint' },
-  // Entertainment
-  { key: 'themePark', icon: '🎢', i18nKey: 'categories.activity.themePark' },
-  { key: 'zoo', icon: '🦁', i18nKey: 'categories.activity.zoo' },
-  { key: 'aquarium', icon: '🐠', i18nKey: 'categories.activity.aquarium' },
-  { key: 'show', icon: '🎭', i18nKey: 'categories.activity.show' },
-  { key: 'nightlife', icon: '🎉', i18nKey: 'categories.activity.nightlife' },
-  // Food & Drink
-  { key: 'restaurant', icon: '🍽️', i18nKey: 'categories.activity.restaurant' },
-  { key: 'cafe', icon: '☕', i18nKey: 'categories.activity.cafe' },
-  { key: 'market', icon: '🛒', i18nKey: 'categories.activity.market' },
-  { key: 'winery', icon: '🍷', i18nKey: 'categories.activity.winery' },
-  // Shopping & Leisure
-  { key: 'shopping', icon: '🛍️', i18nKey: 'categories.activity.shopping' },
-  { key: 'spa', icon: '💆', i18nKey: 'categories.activity.spa' },
-  // Tours & Activities
-  { key: 'tour', icon: '🚶', i18nKey: 'categories.activity.tour' },
-  { key: 'sightseeing', icon: '📸', i18nKey: 'categories.activity.sightseeing' },
-  { key: 'sports', icon: '⚽', i18nKey: 'categories.activity.sports' },
-  { key: 'watersports', icon: '🏄', i18nKey: 'categories.activity.watersports' },
-  // Other
-  { key: 'other', icon: '📍', i18nKey: 'categories.activity.other' },
+export const ACTIVITY_GROUPS = [
+  { key: 'culture', i18nKey: 'categories.groups.culture' },
+  { key: 'nature', i18nKey: 'categories.groups.nature' },
+  { key: 'entertainment', i18nKey: 'categories.groups.entertainment' },
+  { key: 'food', i18nKey: 'categories.groups.food' },
+  { key: 'shopping', i18nKey: 'categories.groups.shopping' },
+  { key: 'tours', i18nKey: 'categories.groups.tours' },
+  { key: 'lodging', i18nKey: 'categories.groups.lodging' },
+  { key: 'transport', i18nKey: 'categories.groups.transport' },
+  { key: 'dining', i18nKey: 'categories.groups.dining' },
+  { key: 'other', i18nKey: 'categories.groups.other' },
 ];
 
 /**
- * Default reservation types with grouping
+ * Types that have special form fields (former reservation types)
  */
-export const DEFAULT_RESERVATION_TYPES = [
-  // Lodging
-  { key: 'hotel', icon: '🏨', group: 'lodging', i18nKey: 'categories.reservation.hotel' },
-  { key: 'rental', icon: '🏠', group: 'lodging', i18nKey: 'categories.reservation.rental' },
-  { key: 'hostel', icon: '🛏️', group: 'lodging', i18nKey: 'categories.reservation.hostel' },
-  { key: 'camping', icon: '⛺', group: 'lodging', i18nKey: 'categories.reservation.camping' },
-  { key: 'resort', icon: '🏝️', group: 'lodging', i18nKey: 'categories.reservation.resort' },
-  // Transport
-  { key: 'flight', icon: '✈️', group: 'transport', i18nKey: 'categories.reservation.flight' },
-  { key: 'train', icon: '🚆', group: 'transport', i18nKey: 'categories.reservation.train' },
-  { key: 'bus', icon: '🚌', group: 'transport', i18nKey: 'categories.reservation.bus' },
-  { key: 'car', icon: '🚗', group: 'transport', i18nKey: 'categories.reservation.car' },
-  { key: 'ferry', icon: '⛴️', group: 'transport', i18nKey: 'categories.reservation.ferry' },
-  { key: 'cruise', icon: '🚢', group: 'transport', i18nKey: 'categories.reservation.cruise' },
-  { key: 'taxi', icon: '🚕', group: 'transport', i18nKey: 'categories.reservation.taxi' },
-  { key: 'transfer', icon: '🚐', group: 'transport', i18nKey: 'categories.reservation.transfer' },
-  // Dining
-  { key: 'restaurant', icon: '🍽️', group: 'dining', i18nKey: 'categories.reservation.restaurant' },
-  { key: 'bar', icon: '🍸', group: 'dining', i18nKey: 'categories.reservation.bar' },
-  { key: 'cafe', icon: '☕', group: 'dining', i18nKey: 'categories.reservation.cafe' },
-  // Activities & Entertainment
-  { key: 'tour', icon: '🚶', group: 'activities', i18nKey: 'categories.reservation.tour' },
-  { key: 'attraction', icon: '🎢', group: 'activities', i18nKey: 'categories.reservation.attraction' },
-  { key: 'show', icon: '🎭', group: 'activities', i18nKey: 'categories.reservation.show' },
-  { key: 'museum', icon: '🏛️', group: 'activities', i18nKey: 'categories.reservation.museum' },
-  { key: 'concert', icon: '🎵', group: 'activities', i18nKey: 'categories.reservation.concert' },
-  { key: 'sports', icon: '🎟️', group: 'activities', i18nKey: 'categories.reservation.sports' },
-  { key: 'spa', icon: '💆', group: 'activities', i18nKey: 'categories.reservation.spa' },
-  { key: 'class', icon: '📚', group: 'activities', i18nKey: 'categories.reservation.class' },
-  // Other
-  { key: 'other', icon: '📋', group: 'other', i18nKey: 'categories.reservation.other' },
+export const TYPES_WITH_SPECIAL_FIELDS = [
+  'hotel', 'rental', 'hostel', 'camping', 'resort',
+  'flight', 'train', 'bus', 'car', 'ferry', 'cruise', 'taxi', 'transfer',
+  'restaurant', 'bar', 'cafe',
 ];
+
+/**
+ * Lodging types (for multi-day detection)
+ */
+export const LODGING_TYPES = ['hotel', 'rental', 'hostel', 'camping', 'resort'];
+
+/**
+ * Default activity types - unified list including former reservation types
+ */
+export const DEFAULT_ACTIVITY_TYPES = [
+  // Culture & History
+  { key: 'museum', icon: '🏛️', i18nKey: 'categories.activity.museum', group: 'culture' },
+  { key: 'monument', icon: '🗽', i18nKey: 'categories.activity.monument', group: 'culture' },
+  { key: 'historicSite', icon: '🏰', i18nKey: 'categories.activity.historicSite', group: 'culture' },
+  { key: 'temple', icon: '⛩️', i18nKey: 'categories.activity.temple', group: 'culture' },
+  { key: 'church', icon: '⛪', i18nKey: 'categories.activity.church', group: 'culture' },
+
+  // Nature & Outdoors
+  { key: 'park', icon: '🌳', i18nKey: 'categories.activity.park', group: 'nature' },
+  { key: 'beach', icon: '🏖️', i18nKey: 'categories.activity.beach', group: 'nature' },
+  { key: 'garden', icon: '🌷', i18nKey: 'categories.activity.garden', group: 'nature' },
+  { key: 'hiking', icon: '🥾', i18nKey: 'categories.activity.hiking', group: 'nature' },
+  { key: 'viewpoint', icon: '🏔️', i18nKey: 'categories.activity.viewpoint', group: 'nature' },
+
+  // Entertainment
+  { key: 'themePark', icon: '🎢', i18nKey: 'categories.activity.themePark', group: 'entertainment' },
+  { key: 'zoo', icon: '🦁', i18nKey: 'categories.activity.zoo', group: 'entertainment' },
+  { key: 'aquarium', icon: '🐠', i18nKey: 'categories.activity.aquarium', group: 'entertainment' },
+  { key: 'show', icon: '🎭', i18nKey: 'categories.activity.show', group: 'entertainment' },
+  { key: 'concert', icon: '🎵', i18nKey: 'categories.activity.concert', group: 'entertainment' },
+  { key: 'nightlife', icon: '🎉', i18nKey: 'categories.activity.nightlife', group: 'entertainment' },
+  { key: 'sports', icon: '⚽', i18nKey: 'categories.activity.sports', group: 'entertainment' },
+
+  // Food & Drink (simple activities - no reservation fields)
+  { key: 'market', icon: '🛒', i18nKey: 'categories.activity.market', group: 'food' },
+  { key: 'winery', icon: '🍷', i18nKey: 'categories.activity.winery', group: 'food' },
+
+  // Shopping & Leisure
+  { key: 'shopping', icon: '🛍️', i18nKey: 'categories.activity.shopping', group: 'shopping' },
+  { key: 'spa', icon: '💆', i18nKey: 'categories.activity.spa', group: 'shopping' },
+
+  // Tours & Activities
+  { key: 'tour', icon: '🚶', i18nKey: 'categories.activity.tour', group: 'tours' },
+  { key: 'sightseeing', icon: '📸', i18nKey: 'categories.activity.sightseeing', group: 'tours' },
+  { key: 'watersports', icon: '🏄', i18nKey: 'categories.activity.watersports', group: 'tours' },
+  { key: 'class', icon: '📚', i18nKey: 'categories.activity.class', group: 'tours' },
+  { key: 'attraction', icon: '🎡', i18nKey: 'categories.activity.attraction', group: 'tours' },
+
+  // Lodging (has special fields)
+  { key: 'hotel', icon: '🏨', i18nKey: 'categories.activity.hotel', group: 'lodging', hasSpecialFields: true },
+  { key: 'rental', icon: '🏠', i18nKey: 'categories.activity.rental', group: 'lodging', hasSpecialFields: true },
+  { key: 'hostel', icon: '🛏️', i18nKey: 'categories.activity.hostel', group: 'lodging', hasSpecialFields: true },
+  { key: 'camping', icon: '⛺', i18nKey: 'categories.activity.camping', group: 'lodging', hasSpecialFields: true },
+  { key: 'resort', icon: '🏝️', i18nKey: 'categories.activity.resort', group: 'lodging', hasSpecialFields: true },
+
+  // Transport (has special fields)
+  { key: 'flight', icon: '✈️', i18nKey: 'categories.activity.flight', group: 'transport', hasSpecialFields: true },
+  { key: 'train', icon: '🚆', i18nKey: 'categories.activity.train', group: 'transport', hasSpecialFields: true },
+  { key: 'bus', icon: '🚌', i18nKey: 'categories.activity.bus', group: 'transport', hasSpecialFields: true },
+  { key: 'car', icon: '🚗', i18nKey: 'categories.activity.car', group: 'transport', hasSpecialFields: true },
+  { key: 'ferry', icon: '⛴️', i18nKey: 'categories.activity.ferry', group: 'transport', hasSpecialFields: true },
+  { key: 'cruise', icon: '🚢', i18nKey: 'categories.activity.cruise', group: 'transport', hasSpecialFields: true },
+  { key: 'taxi', icon: '🚕', i18nKey: 'categories.activity.taxi', group: 'transport', hasSpecialFields: true },
+  { key: 'transfer', icon: '🚐', i18nKey: 'categories.activity.transfer', group: 'transport', hasSpecialFields: true },
+
+  // Dining (has special fields for reservations)
+  { key: 'restaurant', icon: '🍽️', i18nKey: 'categories.activity.restaurant', group: 'dining', hasSpecialFields: true },
+  { key: 'bar', icon: '🍸', i18nKey: 'categories.activity.bar', group: 'dining', hasSpecialFields: true },
+  { key: 'cafe', icon: '☕', i18nKey: 'categories.activity.cafe', group: 'dining', hasSpecialFields: true },
+
+  // Other
+  { key: 'other', icon: '📍', i18nKey: 'categories.activity.other', group: 'other' },
+];
+
+/**
+ * Legacy: DEFAULT_RESERVATION_TYPES alias for backwards compatibility
+ * @deprecated Use DEFAULT_ACTIVITY_TYPES with hasSpecialFields flag instead
+ */
+export const DEFAULT_RESERVATION_TYPES = DEFAULT_ACTIVITY_TYPES.filter(t => t.hasSpecialFields);
 
 /**
  * Default expense categories
@@ -106,9 +139,9 @@ export const DEFAULT_DOCUMENT_TYPES = [
 ];
 
 /**
- * Valid domain values
+ * Valid domain values (reservation merged into activity)
  */
-export const VALID_DOMAINS = ['activity', 'reservation', 'expense', 'document'];
+export const VALID_DOMAINS = ['activity', 'expense', 'document'];
 
 /**
  * Maximum custom categories per user
@@ -127,15 +160,8 @@ export function getDefaultCategories() {
       icon: cat.icon,
       domain: 'activity',
       isCustom: false,
-      i18nKey: cat.i18nKey,
-    })),
-    reservation: DEFAULT_RESERVATION_TYPES.map(cat => ({
-      id: cat.key,
-      name: t(cat.i18nKey) || cat.key,
-      icon: cat.icon,
-      domain: 'reservation',
-      isCustom: false,
       group: cat.group,
+      hasSpecialFields: cat.hasSpecialFields || false,
       i18nKey: cat.i18nKey,
     })),
     expense: DEFAULT_EXPENSE_CATEGORIES.map(cat => ({
@@ -231,6 +257,56 @@ export function findDefaultCategory(domain, key) {
 export function getCategoryIcon(domain, key) {
   const category = findDefaultCategory(domain, key);
   return category ? category.icon : '📁';
+}
+
+/**
+ * Check if a type has special form fields
+ * @param {string} type - Activity type key
+ * @returns {boolean} True if type has special fields
+ */
+export function hasSpecialFields(type) {
+  return TYPES_WITH_SPECIAL_FIELDS.includes(type);
+}
+
+/**
+ * Check if a type is a lodging type (can span multiple days)
+ * @param {string} type - Activity type key
+ * @returns {boolean} True if lodging type
+ */
+export function isLodgingType(type) {
+  return LODGING_TYPES.includes(type);
+}
+
+/**
+ * Get the group for a given type
+ * @param {string} type - Activity type key
+ * @returns {string|null} Group key or null
+ */
+export function getTypeGroup(type) {
+  const activityType = DEFAULT_ACTIVITY_TYPES.find(t => t.key === type);
+  return activityType?.group || null;
+}
+
+/**
+ * Get translated group name
+ * @param {string} groupKey - Group key
+ * @returns {string} Translated group name or key as fallback
+ */
+export function getGroupName(groupKey) {
+  const group = ACTIVITY_GROUPS.find(g => g.key === groupKey);
+  return group ? (t(group.i18nKey) || groupKey) : groupKey;
+}
+
+/**
+ * Get activity types grouped by their group key
+ * @returns {Object} Types organized by group
+ */
+export function getActivityTypesByGroup() {
+  const grouped = {};
+  for (const group of ACTIVITY_GROUPS) {
+    grouped[group.key] = DEFAULT_ACTIVITY_TYPES.filter(t => t.group === group.key);
+  }
+  return grouped;
 }
 
 /**

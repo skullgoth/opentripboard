@@ -3988,6 +3988,440 @@ body:has(.trip-detail-page) {
 }
 
 /* ================================================
+   UNIFIED TIMELINE - Suggestions Inline
+   ================================================ */
+
+/* Unified timeline container */
+.unified-timeline {
+  margin-bottom: var(--spacing-6);
+}
+
+.unified-timeline.empty-state {
+  text-align: center;
+  padding: var(--spacing-8);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-lg);
+}
+
+/* Timeline day items container */
+.timeline-day-items {
+  display: flex;
+  flex-direction: column;
+  min-height: 40px;
+}
+
+.timeline-day-empty {
+  color: var(--color-gray-400);
+  font-style: italic;
+  padding: var(--spacing-2) 0;
+  text-align: center;
+}
+
+/* Timeline day actions (Add Activity + Suggest buttons) */
+.timeline-day-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+/* Timeline item base styling */
+.timeline-item {
+  margin-bottom: var(--spacing-2);
+  border-radius: var(--radius-md);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.timeline-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+}
+
+.timeline-item.drag-over {
+  border-top: 3px solid var(--color-primary);
+}
+
+/* ================================================
+   SUGGESTION CARD IN TIMELINE
+   ================================================ */
+
+.timeline-item--suggestion {
+  background: var(--color-primary-50, #f0f9ff);
+  border: 2px dashed var(--color-primary-300, #7dd3fc);
+  position: relative;
+}
+
+.timeline-item--suggestion:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(var(--color-primary-rgb, 59, 130, 246), 0.15);
+}
+
+.suggestion-card {
+  padding: var(--spacing-3);
+}
+
+.suggestion-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.suggestion-badge {
+  background: var(--color-warning-100, #fef3c7);
+  color: var(--color-warning-700, #b45309);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.suggestion-icon {
+  font-size: var(--font-size-lg);
+}
+
+.suggestion-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-time-display {
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.suggestion-header-spacer {
+  flex: 1;
+}
+
+.suggestion-card-body {
+  margin-bottom: var(--spacing-3);
+}
+
+.suggestion-description {
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--spacing-2);
+  line-height: 1.5;
+}
+
+.suggestion-location {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-2);
+}
+
+.suggestion-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  color: var(--color-gray-400);
+  font-size: var(--font-size-xs);
+}
+
+.suggestion-author {
+  font-style: italic;
+}
+
+.suggestion-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  padding-top: var(--spacing-2);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+/* Voting buttons */
+.suggestion-voting {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.btn-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-vote:hover {
+  background: var(--color-gray-50);
+  border-color: var(--color-gray-400);
+}
+
+.btn-vote.active {
+  background: var(--color-primary-100, #dbeafe);
+  border-color: var(--color-primary);
+  color: var(--color-primary-700, #1d4ed8);
+}
+
+.btn-vote.active:hover {
+  background: var(--color-primary-200, #bfdbfe);
+}
+
+.vote-count {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Accept/Reject actions */
+.suggestion-resolve-actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+/* Multi-day badge */
+.multi-day-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  background: var(--color-info-100, #e0f2fe);
+  color: var(--color-info-700, #0369a1);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* Multi-day reservation styling */
+.timeline-item.multi-day {
+  border-left: 4px solid var(--color-info-400, #38bdf8);
+}
+
+/* Inline reservation card styling */
+.inline-reservation-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inline-reservation-card:hover {
+  border-color: var(--color-gray-300);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.inline-reservation-card.expanded {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(var(--color-primary-rgb, 59, 130, 246), 0.1);
+}
+
+.inline-reservation-header {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-3);
+  cursor: pointer;
+  gap: var(--spacing-2);
+  transition: background-color 0.15s ease;
+}
+
+.inline-reservation-header:hover {
+  background-color: var(--color-gray-50);
+}
+
+.inline-reservation-icon {
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+}
+
+.inline-reservation-title {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-900);
+  flex: 1;
+  min-width: 0;
+  cursor: text;
+}
+
+.inline-reservation-title:hover {
+  background: var(--color-gray-100);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--spacing-1);
+  margin: 0 calc(-1 * var(--spacing-1));
+}
+
+.inline-reservation-header-spacer {
+  flex: 1;
+}
+
+.inline-reservation-chevron {
+  color: var(--color-gray-400);
+  font-size: var(--font-size-sm);
+  transition: transform 0.2s ease;
+}
+
+.inline-reservation-card.expanded .inline-reservation-chevron {
+  transform: rotate(90deg);
+}
+
+.inline-reservation-delete {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.inline-reservation-header:hover .inline-reservation-delete {
+  opacity: 1;
+}
+
+.inline-reservation-details {
+  padding: var(--spacing-3);
+  padding-top: 0;
+  background: var(--color-gray-50);
+  border-top: 1px solid var(--color-gray-100);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.inline-reservation-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* Inline card action buttons */
+.inline-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-2);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+/* Dark mode for unified timeline */
+[data-theme='dark'] .unified-timeline.empty-state {
+  background: var(--color-gray-100);
+}
+
+[data-theme='dark'] .timeline-day-empty {
+  color: var(--color-gray-500);
+}
+
+[data-theme='dark'] .timeline-item--suggestion {
+  background: rgba(var(--color-primary-rgb, 59, 130, 246), 0.1);
+  border-color: var(--color-primary-400);
+}
+
+[data-theme='dark'] .suggestion-badge {
+  background: var(--color-warning-200);
+  color: var(--color-warning-800);
+}
+
+[data-theme='dark'] .suggestion-title {
+  color: var(--color-gray-800);
+}
+
+[data-theme='dark'] .suggestion-icon {
+  color: var(--color-gray-600);
+}
+
+[data-theme='dark'] .suggestion-time-display {
+  color: var(--color-gray-500);
+}
+
+[data-theme='dark'] .suggestion-description {
+  color: var(--color-gray-400);
+}
+
+[data-theme='dark'] .suggestion-location {
+  color: var(--color-gray-400);
+}
+
+[data-theme='dark'] .suggestion-meta {
+  color: var(--color-gray-500);
+}
+
+[data-theme='dark'] .suggestion-card-footer {
+  border-color: var(--color-gray-600);
+}
+
+[data-theme='dark'] .btn-vote {
+  background: var(--color-gray-700);
+  border-color: var(--color-gray-600);
+  color: var(--color-gray-300);
+}
+
+[data-theme='dark'] .btn-vote:hover {
+  background: var(--color-gray-600);
+  border-color: var(--color-gray-500);
+}
+
+[data-theme='dark'] .btn-vote.active {
+  background: var(--color-primary-800);
+  border-color: var(--color-primary);
+  color: var(--color-primary-200);
+}
+
+[data-theme='dark'] .multi-day-badge {
+  background: var(--color-info-800);
+  color: var(--color-info-200);
+}
+
+[data-theme='dark'] .inline-reservation-card {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+}
+
+[data-theme='dark'] .inline-reservation-card:hover {
+  border-color: var(--color-gray-300);
+}
+
+[data-theme='dark'] .inline-reservation-card.expanded {
+  border-color: var(--color-primary);
+}
+
+[data-theme='dark'] .inline-reservation-header:hover {
+  background-color: var(--color-gray-200);
+}
+
+[data-theme='dark'] .inline-reservation-title {
+  color: var(--color-gray-800);
+}
+
+[data-theme='dark'] .inline-reservation-title:hover {
+  background: var(--color-gray-200);
+}
+
+[data-theme='dark'] .inline-reservation-icon {
+  color: var(--color-gray-600);
+}
+
+[data-theme='dark'] .inline-reservation-chevron {
+  color: var(--color-gray-500);
+}
+
+[data-theme='dark'] .inline-reservation-details {
+  background: var(--color-gray-50);
+  border-color: var(--color-gray-200);
+}
+
+[data-theme='dark'] .inline-reservation-fields .inline-edit-label {
+  color: var(--color-gray-500);
+}
+
+[data-theme='dark'] .inline-reservation-fields .inline-edit-value {
+  color: var(--color-gray-600);
+}
+
+[data-theme='dark'] .inline-card-actions {
+  border-color: var(--color-gray-300);
+}
+
+/* ================================================
    EXPENSE & BUDGET COMPONENTS
    ================================================ */
 

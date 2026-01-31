@@ -20,8 +20,11 @@ import {
 } from '../state/categories-state.js';
 import { showToast } from '../utils/toast.js';
 
+import { ACTIVITY_GROUPS, getGroupName } from '../utils/default-categories.js';
+
 const MAX_CATEGORIES = 100;
-const VALID_DOMAINS = ['activity', 'reservation', 'expense', 'document'];
+// Note: 'reservation' domain has been merged into 'activity' domain
+const VALID_DOMAINS = ['activity', 'expense', 'document'];
 
 /**
  * Create a category manager component
@@ -58,7 +61,7 @@ export function createCategoryManager(container) {
 
     const subtitle = document.createElement('p');
     subtitle.className = 'category-manager-subtitle';
-    subtitle.textContent = t('settings.tripCategories.subtitle') || 'Manage your custom categories for activities, reservations, expenses, and documents';
+    subtitle.textContent = t('settings.tripCategories.subtitle') || 'Manage your custom categories for activities, expenses, and documents';
 
     header.appendChild(title);
     header.appendChild(subtitle);
@@ -166,29 +169,31 @@ export function createCategoryManager(container) {
       defaultsLabel.textContent = t('settings.tripCategories.defaultCategories') || 'Default Categories';
       defaultsGroup.appendChild(defaultsLabel);
 
-      // T054: Group reservation defaults by sub-category (lodging/transport/dining)
-      if (domain === 'reservation') {
-        const groups = { lodging: [], transport: [], dining: [] };
+      // Group activity defaults by their group (culture, nature, lodging, transport, dining, etc.)
+      if (domain === 'activity') {
+        // Build groups object from ACTIVITY_GROUPS
+        const groups = {};
+        ACTIVITY_GROUPS.forEach((g) => {
+          groups[g.key] = [];
+        });
+
+        // Categorize defaults by group
         defaults.forEach((cat) => {
           if (cat.group && groups[cat.group]) {
             groups[cat.group].push(cat);
           }
         });
 
-        const groupNames = {
-          lodging: t('reservations.lodging') || 'Lodging',
-          transport: t('reservations.transport') || 'Transport',
-          dining: t('reservations.dining') || 'Dining',
-        };
-
-        Object.entries(groups).forEach(([groupKey, items]) => {
-          if (items.length > 0) {
+        // Render each group that has items
+        ACTIVITY_GROUPS.forEach((groupDef) => {
+          const items = groups[groupDef.key];
+          if (items && items.length > 0) {
             const subGroup = document.createElement('div');
             subGroup.className = 'category-subgroup';
 
             const subLabel = document.createElement('span');
             subLabel.className = 'category-subgroup-label';
-            subLabel.textContent = groupNames[groupKey];
+            subLabel.textContent = getGroupName(groupDef.key);
             subGroup.appendChild(subLabel);
 
             const subList = document.createElement('div');

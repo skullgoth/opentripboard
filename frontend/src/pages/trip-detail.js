@@ -1,17 +1,16 @@
 // T077: TripDetail page - display itinerary timeline and manage activities
 // T187-T189: Map view integration with activities
-// US4: Reservation sections (Hotels & Lodging, Transportation)
+// US4: Unified timeline with all item types
 // US9: Export and sharing functionality
-import { createItineraryTimeline, attachTimelineListeners } from '../components/itinerary-timeline.js';
+import { createUnifiedTimeline, attachUnifiedTimelineListeners } from '../components/unified-timeline.js';
 import { createTripForm, attachTripFormListeners } from '../components/trip-form.js';
 import { initializeDragDrop, destroyDragDrop, addDragDropStyles } from '../components/drag-drop.js';
 import { createPresenceIndicator } from '../components/presence-indicator.js';
 import { createMapView, initializeMap, generateGoogleMapsUrl } from '../components/map-view.js';
 import { showToast } from '../utils/toast.js';
-import { createSuggestionList, createSuggestionForm, attachSuggestionFormListeners, renderPaginatedHistory } from '../components/suggestion-list.js';
+import { createSuggestionForm, attachSuggestionFormListeners } from '../components/suggestion-list.js';
 import { createTripBuddyList, createCompactTripBuddyList } from '../components/trip-buddy-list.js';
 import { createInviteTripBuddyModal, validateInviteTripBuddyForm, displayFormErrors } from '../components/invite-trip-buddy-form.js';
-import { createLodgingSection, createTransportationSection, createDiningEventsSection, attachReservationSectionListeners, setTripDateConstraints } from '../components/trip-reservations.js';
 import { showShareDialog } from '../components/share-dialog.js';
 import { showExportModal } from '../components/export-modal.js';
 import { generateGoogleMapsUrl as generateRouteMapsUrl, openInGoogleMaps } from '../utils/google-maps.js';
@@ -37,9 +36,6 @@ let presenceUnsubscribe = null;
 let suggestionUnsubscribe = null;
 let tripBuddyUnsubscribe = null;
 let activityUnsubscribe = null; // T152: Track activity update subscription
-let historyVisible = false;
-let historyCurrentPage = 1;
-const HISTORY_PER_PAGE = 5;
 let mapInstance = null; // T187: Track map instance for cleanup and updates
 
 /**
@@ -173,24 +169,12 @@ export async function tripDetailPage(params) {
       </div>
     `;
 
-    // US4: Render reservation sections (Hotels, Transportation, Dining & Events)
-    // Set trip date constraints for reservation forms
-    setTripDateConstraints(trip);
-    const lodgingSectionHtml = createLodgingSection(activities);
-    const transportSectionHtml = createTransportationSection(activities);
-    const diningEventsSectionHtml = createDiningEventsSection(activities);
-
-    // Render timeline (filter out reservation activities to avoid duplicates)
-    const nonReservationActivities = activities.filter(a => !a.metadata?.isReservation);
-    const timelineHtml = createItineraryTimeline(nonReservationActivities, trip);
-
-    // Render suggestion list
-    const suggestionListHtml = createSuggestionList(
-      suggestions,
-      currentUser?.id,
-      'editor', // TODO: Get actual user role from collaboration state
-      () => handleAddSuggestion()
-    );
+    // US4: Render unified timeline with all activities, reservations, and suggestions
+    const userRole = trip.userRole || (isOwner ? 'owner' : 'viewer');
+    const timelineHtml = createUnifiedTimeline(activities, suggestions, trip, {
+      currentUserId: currentUser?.id,
+      userRole,
+    });
 
     // T187: Render map view HTML
     const hasActivitiesWithCoords = currentActivities.some(
@@ -221,15 +205,7 @@ export async function tripDetailPage(params) {
               </a>
             </div>
             <div class="trip-main-content">
-              ${lodgingSectionHtml}
-              ${transportSectionHtml}
-              ${diningEventsSectionHtml}
               ${timelineHtml}
-            </div>
-            <div class="trip-sidebar">
-              <div class="suggestions-section">
-                ${suggestionListHtml}
-              </div>
             </div>
           </div>
           <div class="trip-map-section">
@@ -239,36 +215,25 @@ export async function tripDetailPage(params) {
       </div>
     `;
 
-    // Attach timeline listeners with inline editing support
-    const timelineContainer = container.querySelector('.itinerary-timeline');
-    attachTimelineListeners(timelineContainer, {
-      onAddActivity: handleAddActivity,
-      onEditActivity: handleEditActivity,
-      onDeleteActivity: handleDeleteActivity,
-      onSaveActivity: handleSaveActivityField,
-    });
-
-    // US4: Attach reservation section listeners with inline editing
-    const mainContent = container.querySelector('.trip-main-content');
-    if (mainContent) {
-      attachReservationSectionListeners(mainContent, {
-        onAddLodging: () => handleAddReservation('hotel'),
-        onAddTransport: () => handleAddReservation('flight'),
-        onAddDiningEvent: () => handleAddReservation('restaurant'),
-        onSave: handleSaveReservationField,
-        onDelete: handleDeleteReservation,
-        onTypeChange: handleReservationTypeChange,
-        onSaveComplete: handleReservationSaveComplete,
+    // Attach unified timeline listeners
+    const timelineContainer = container.querySelector('.unified-timeline');
+    if (timelineContainer) {
+      attachUnifiedTimelineListeners(timelineContainer, {
+        onAddActivity: handleAddActivity,
+        onAddSuggestion: handleAddSuggestion,
+        onEditActivity: handleEditActivity,
+        onDeleteActivity: handleDeleteActivity,
+        onSaveActivity: handleSaveActivityField,
+        onDeleteReservation: handleDeleteReservation,
+        onSaveReservation: handleSaveReservationField,
+        onReservationTypeChange: handleReservationTypeChange,
+        onVoteSuggestion: handleVoteSuggestion,
+        onAcceptSuggestion: handleAcceptSuggestion,
+        onRejectSuggestion: handleRejectSuggestion,
       });
     }
 
-    // Attach suggestion listeners
-    attachSuggestionListeners();
-
-    // Attach trip buddy listeners
-    attachTripBuddyListeners();
-
-    // Initialize drag-and-drop
+    // Initialize drag-and-drop for unified timeline
     if (timelineContainer) {
       // Add drag-drop styles if not already added
       if (!document.getElementById('drag-drop-styles')) {
@@ -279,6 +244,9 @@ export async function tripDetailPage(params) {
 
       sortableInstances = initializeDragDrop(timelineContainer, handleReorder, handleActivityDateChange);
     }
+
+    // Attach trip buddy listeners
+    attachTripBuddyListeners();
 
     // T187-T189: Initialize map and attach map listeners
     await initializeMapView(activities);
@@ -601,33 +569,32 @@ async function handleAddReservation(defaultType) {
   if (!currentTrip) return;
 
   try {
-    // Create a new reservation with default values
-    const newReservation = await tripState.createActivity(currentTrip.id, {
+    // Create a new activity with special fields type (no isReservation flag needed - type determines fields)
+    const newActivity = await tripState.createActivity(currentTrip.id, {
       type: defaultType,
       title: t('reservation.new', { type: getTypeLabel(defaultType) }),
       metadata: {
-        isReservation: true,
-        reservationType: defaultType,
+        // Type-specific metadata can be added here as needed
       },
     });
 
     // Mark this ID as pending so WebSocket handler knows we're handling it
-    pendingActivityIds.add(newReservation.id);
+    pendingActivityIds.add(newActivity.id);
 
     // Add to current activities list (only if not already present)
-    if (!currentActivities.find(a => a.id === newReservation.id)) {
-      currentActivities.push(newReservation);
+    if (!currentActivities.find(a => a.id === newActivity.id)) {
+      currentActivities.push(newActivity);
     }
 
-    // Refresh the timeline to show the new reservation
+    // Refresh the timeline to show the new activity
     refreshTimeline();
 
-    // Auto-expand the new reservation card for editing
+    // Auto-expand the new activity card for editing
     setTimeout(() => {
-      const card = document.querySelector(`.inline-reservation-card[data-id="${newReservation.id}"]`);
+      const card = document.querySelector(`.activity-card[data-activity-id="${newActivity.id}"]`);
       if (card) {
-        const details = card.querySelector('.inline-reservation-details');
-        const chevron = card.querySelector('.inline-reservation-chevron');
+        const details = card.querySelector('.activity-card-details');
+        const chevron = card.querySelector('.activity-chevron');
         if (details && chevron) {
           details.style.display = 'block';
           chevron.textContent = '▼';
@@ -638,11 +605,11 @@ async function handleAddReservation(defaultType) {
       }
       // Clear the pending flag after a delay (WebSocket event should have arrived by now)
       setTimeout(() => {
-        pendingActivityIds.delete(newReservation.id);
+        pendingActivityIds.delete(newActivity.id);
       }, 2000);
     }, 100);
   } catch (error) {
-    console.error('Failed to create reservation:', error);
+    console.error('Failed to create activity:', error);
   }
 }
 
@@ -789,23 +756,6 @@ async function handleSaveReservationField(reservationId, reservationType, fieldN
   }
 }
 
-/**
- * US4: Handle reservation save complete - refresh timeline if date changed for reordering
- * @param {string} reservationId - Reservation (activity) ID
- * @param {Map} savedChanges - Map of field names to saved values
- */
-function handleReservationSaveComplete(reservationId, savedChanges) {
-  // Check if any date-related field was changed that affects ordering
-  const dateFields = ['departureDate', 'checkInDate', 'pickupDate', 'reservationDate', 'eventDate', 'startDate'];
-
-  for (const [fieldName] of savedChanges) {
-    if (dateFields.includes(fieldName)) {
-      // A date field changed, refresh to reorder by date
-      refreshTimeline();
-      return;
-    }
-  }
-}
 
 /**
  * US4: Handle reservation type change - refresh to show new type-specific fields
@@ -855,16 +805,24 @@ async function handleDeleteReservation(reservationId) {
 }
 
 /**
- * Handle activity reorder (T083: Wire drag-and-drop reorder flow)
- * @param {Array} activities - Array of {id, orderIndex}
+ * Handle timeline item reorder (T083: Wire drag-and-drop reorder flow)
+ * @param {Array} items - Array of {id, itemType, orderIndex}
  */
-async function handleReorder(activities) {
+async function handleReorder(items) {
   try {
+    // All items are now unified as activities (no separate reservation itemType)
+    const activities = items.filter(item => item.itemType === 'activity').map(item => ({
+      id: item.id,
+      orderIndex: item.orderIndex,
+    }));
+
     // T083: Save new order to API
-    await tripState.reorderActivities(currentTrip.id, activities);
+    if (activities.length > 0) {
+      await tripState.reorderActivities(currentTrip.id, activities);
+    }
   } catch (error) {
     // T084: Error handling
-    console.error('Failed to reorder activities:', error);
+    console.error('Failed to reorder items:', error);
     throw error;
   }
 }
@@ -1181,7 +1139,7 @@ function handleActivityReorderedEvent(event) {
 }
 
 /**
- * Refresh the timeline UI with current activities
+ * Refresh the timeline UI with current activities and suggestions
  */
 function refreshTimeline() {
   const mainContent = document.querySelector('.trip-main-content');
@@ -1197,32 +1155,34 @@ function refreshTimeline() {
       return true;
     });
 
-    // US4: Regenerate reservation sections along with timeline
-    // Update trip date constraints for reservation forms
-    setTripDateConstraints(currentTrip);
-    const lodgingSectionHtml = createLodgingSection(currentActivities);
-    const transportSectionHtml = createTransportationSection(currentActivities);
-    const diningEventsSectionHtml = createDiningEventsSection(currentActivities);
+    // Get current user info for timeline
+    const currentUser = authState.getCurrentUser();
+    const isOwner = currentTrip.ownerId === currentUser?.id;
+    const userRole = currentTrip.userRole || (isOwner ? 'owner' : 'viewer');
 
-    // Filter out reservation activities for the timeline
-    const nonReservationActivities = currentActivities.filter(a => !a.metadata?.isReservation);
-    const timelineHtml = createItineraryTimeline(nonReservationActivities, currentTrip);
+    // Regenerate unified timeline with all items
+    const timelineHtml = createUnifiedTimeline(currentActivities, currentSuggestions, currentTrip, {
+      currentUserId: currentUser?.id,
+      userRole,
+    });
 
-    mainContent.innerHTML = `
-      ${lodgingSectionHtml}
-      ${transportSectionHtml}
-      ${diningEventsSectionHtml}
-      ${timelineHtml}
-    `;
+    mainContent.innerHTML = timelineHtml;
 
-    // Reattach timeline listeners
-    const timelineContainer = mainContent.querySelector('.itinerary-timeline');
+    // Reattach unified timeline listeners
+    const timelineContainer = mainContent.querySelector('.unified-timeline');
     if (timelineContainer) {
-      attachTimelineListeners(timelineContainer, {
+      attachUnifiedTimelineListeners(timelineContainer, {
         onAddActivity: handleAddActivity,
+        onAddSuggestion: handleAddSuggestion,
         onEditActivity: handleEditActivity,
         onDeleteActivity: handleDeleteActivity,
         onSaveActivity: handleSaveActivityField,
+        onDeleteReservation: handleDeleteReservation,
+        onSaveReservation: handleSaveReservationField,
+        onReservationTypeChange: handleReservationTypeChange,
+        onVoteSuggestion: handleVoteSuggestion,
+        onAcceptSuggestion: handleAcceptSuggestion,
+        onRejectSuggestion: handleRejectSuggestion,
       });
 
       // Reinitialize drag and drop
@@ -1233,18 +1193,7 @@ function refreshTimeline() {
       sortableInstances = initializeDragDrop(timelineContainer, handleReorder, handleActivityDateChange);
     }
 
-    // US4: Reattach reservation section listeners
-    attachReservationSectionListeners(mainContent, {
-      onAddLodging: () => handleAddReservation('hotel'),
-      onAddTransport: () => handleAddReservation('flight'),
-      onAddDiningEvent: () => handleAddReservation('restaurant'),
-      onSave: handleSaveReservationField,
-      onDelete: handleDeleteReservation,
-      onTypeChange: handleReservationTypeChange,
-      onSaveComplete: handleReservationSaveComplete,
-    });
-
-    // US3: Update map when timeline changes
+    // Update map when timeline changes
     updateMap();
   }
 }
@@ -1333,21 +1282,11 @@ function handleSuggestionDeletedEvent(event) {
 }
 
 /**
- * Update suggestion list in the UI
+ * Update suggestions in the unified timeline
  */
 function updateSuggestionList() {
-  const container = document.querySelector('.suggestions-section');
-  if (container) {
-    const currentUser = authState.getCurrentUser();
-    const suggestionListHtml = createSuggestionList(
-      currentSuggestions,
-      currentUser?.id,
-      'editor', // TODO: Get actual user role
-      () => handleAddSuggestion()
-    );
-    container.innerHTML = suggestionListHtml;
-    attachSuggestionListeners();
-  }
+  // Refresh the entire timeline to show updated suggestions
+  refreshTimeline();
 }
 
 /**
@@ -1564,173 +1503,34 @@ function handleExportGoogleMaps() {
   showToast(t('map.openingGoogleMaps'), 'info');
 }
 
-/**
- * Attach suggestion event listeners
- */
-function attachSuggestionListeners() {
-  const container = document.getElementById('page-container');
-
-  // Add suggestion button (matches "create-suggestion" from suggestion-list.js)
-  container.querySelectorAll('[data-action="create-suggestion"]').forEach((btn) => {
-    btn.addEventListener('click', () => handleAddSuggestion());
-  });
-
-  // Toggle history button
-  container.querySelectorAll('[data-action="toggle-history"]').forEach((btn) => {
-    btn.addEventListener('click', () => handleToggleHistory());
-  });
-
-  // Pagination buttons
-  container.querySelectorAll('[data-action="prev-page"]').forEach((btn) => {
-    btn.addEventListener('click', () => handleHistoryPrevPage());
-  });
-
-  container.querySelectorAll('[data-action="next-page"]').forEach((btn) => {
-    btn.addEventListener('click', () => handleHistoryNextPage());
-  });
-
-  // Vote buttons
-  container.querySelectorAll('[data-action="vote-suggestion"]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const suggestionId = e.currentTarget.dataset.suggestionId;
-      const vote = e.currentTarget.dataset.vote;
-      handleVoteSuggestion(suggestionId, vote);
-    });
-  });
-
-  // Accept buttons
-  container.querySelectorAll('[data-action="accept-suggestion"]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const suggestionId = e.currentTarget.dataset.suggestionId;
-      handleAcceptSuggestion(suggestionId);
-    });
-  });
-
-  // Reject buttons
-  container.querySelectorAll('[data-action="reject-suggestion"]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const suggestionId = e.currentTarget.dataset.suggestionId;
-      handleRejectSuggestion(suggestionId);
-    });
-  });
-
-  // Delete suggestion buttons
-  container.querySelectorAll('[data-action="delete-suggestion"]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const suggestionId = e.currentTarget.dataset.suggestionId;
-      handleDeleteSuggestion(suggestionId);
-    });
-  });
-
-  // Edit suggestion buttons
-  container.querySelectorAll('[data-action="edit-suggestion"]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const suggestionId = e.currentTarget.dataset.suggestionId;
-      handleEditSuggestion(suggestionId);
-    });
-  });
-}
-
-/**
- * Handle toggle history button click
- */
-function handleToggleHistory() {
-  historyVisible = !historyVisible;
-  historyCurrentPage = 1; // Reset to page 1 when toggling
-
-  const toggleButton = document.querySelector('[data-action="toggle-history"]');
-  const historySection = document.querySelector('.suggestion-history');
-
-  if (!toggleButton || !historySection) return;
-
-  if (historyVisible) {
-    // Show history
-    toggleButton.innerHTML = `<span class="icon">📜</span> ${t('suggestion.hideHistory')}`;
-    toggleButton.setAttribute('aria-expanded', 'true');
-    historySection.style.display = 'block';
-
-    // Render first page
-    renderHistoryPage();
-  } else {
-    // Hide history
-    const historyCount = currentSuggestions.filter(s => s.status === 'accepted' || s.status === 'rejected').length;
-    toggleButton.innerHTML = `<span class="icon">📜</span> ${t('suggestion.showHistory')} (${historyCount})`;
-    toggleButton.setAttribute('aria-expanded', 'false');
-    historySection.style.display = 'none';
-  }
-}
-
-/**
- * Handle history previous page button click
- */
-function handleHistoryPrevPage() {
-  if (historyCurrentPage > 1) {
-    historyCurrentPage--;
-    renderHistoryPage();
-  }
-}
-
-/**
- * Handle history next page button click
- */
-function handleHistoryNextPage() {
-  const history = currentSuggestions.filter(s => s.status === 'accepted' || s.status === 'rejected');
-  const totalPages = Math.ceil(history.length / HISTORY_PER_PAGE);
-
-  if (historyCurrentPage < totalPages) {
-    historyCurrentPage++;
-    renderHistoryPage();
-  }
-}
-
-/**
- * Render current history page
- */
-function renderHistoryPage() {
-  const history = currentSuggestions.filter(s => s.status === 'accepted' || s.status === 'rejected');
-  const currentUser = authState.getCurrentUser();
-  const userRole = currentTrip?.userRole || 'viewer';
-
-  const { contentHtml, paginationHtml, totalPages } = renderPaginatedHistory(
-    history,
-    currentUser?.id,
-    userRole,
-    historyCurrentPage,
-    HISTORY_PER_PAGE
-  );
-
-  const contentContainer = document.querySelector('.suggestion-history-content');
-  const paginationContainer = document.querySelector('.suggestion-history-pagination');
-
-  if (contentContainer) {
-    contentContainer.innerHTML = contentHtml;
-  }
-
-  if (paginationContainer) {
-    paginationContainer.innerHTML = paginationHtml;
-    paginationContainer.style.display = totalPages > 1 ? 'block' : 'none';
-  }
-
-  // Re-attach suggestion listeners for the history items
-  attachSuggestionListeners();
-}
 
 /**
  * Handle add suggestion button click
+ * @param {string} defaultDate - Default date for the suggestion (optional)
  */
-function handleAddSuggestion() {
-  showSuggestionModal();
+function handleAddSuggestion(defaultDate) {
+  showSuggestionModal(null, defaultDate);
 }
 
 /**
  * Show suggestion modal
  * @param {Object} suggestion - Existing suggestion (for edit mode)
+ * @param {string} defaultDate - Default date to pre-fill (optional)
  */
-function showSuggestionModal(suggestion = null) {
+function showSuggestionModal(suggestion = null, defaultDate = null) {
   const modalContainer = document.createElement('div');
   modalContainer.id = 'suggestion-modal';
   modalContainer.innerHTML = createSuggestionForm(currentTrip);
   document.body.appendChild(modalContainer);
+
+  // Pre-fill date if provided
+  if (defaultDate) {
+    const startTimeInput = modalContainer.querySelector('#suggestion-start-time');
+    if (startTimeInput) {
+      // Set to noon on the specified date
+      startTimeInput.value = `${defaultDate}T12:00`;
+    }
+  }
 
   // Attach suggestion form listeners (for dynamic date constraints and location autocomplete)
   const formHelpers = attachSuggestionFormListeners(modalContainer);
@@ -1888,33 +1688,6 @@ async function handleRejectSuggestion(suggestionId) {
   }
 }
 
-/**
- * Handle edit suggestion
- * @param {string} suggestionId - Suggestion ID
- */
-function handleEditSuggestion(suggestionId) {
-  const suggestion = currentSuggestions.find((s) => s.id === suggestionId);
-  if (suggestion) {
-    showSuggestionModal(suggestion);
-  }
-}
-
-/**
- * Handle delete suggestion
- * @param {string} suggestionId - Suggestion ID
- */
-async function handleDeleteSuggestion(suggestionId) {
-  const confirmed = confirm(t('suggestion.confirmDelete'));
-  if (!confirmed) return;
-
-  try {
-    await suggestionState.deleteSuggestion(suggestionId);
-    await refreshSuggestions();
-  } catch (error) {
-    console.error('Failed to delete suggestion:', error);
-    alert(t('suggestion.deleteFailed'));
-  }
-}
 
 /**
  * Refresh suggestions list
@@ -1924,19 +1697,8 @@ async function refreshSuggestions() {
     const suggestions = await suggestionState.loadSuggestions(currentTrip.id);
     currentSuggestions = suggestions;
 
-    // Re-render suggestion list
-    const container = document.querySelector('.suggestions-section');
-    if (container) {
-      const currentUser = authState.getCurrentUser();
-      const suggestionListHtml = createSuggestionList(
-        suggestions,
-        currentUser?.id,
-        'editor', // TODO: Get actual user role
-        () => handleAddSuggestion()
-      );
-      container.innerHTML = suggestionListHtml;
-      attachSuggestionListeners();
-    }
+    // Refresh the unified timeline to show updated suggestions
+    refreshTimeline();
   } catch (error) {
     console.error('Failed to refresh suggestions:', error);
   }
@@ -2152,20 +1914,15 @@ async function initializeMapView(activities) {
 }
 
 /**
- * Scroll to and expand a card (activity or reservation) by ID
- * @param {string} activityId - The activity/reservation ID
+ * Scroll to and expand an activity card by ID
+ * @param {string} activityId - The activity ID
  */
 function scrollToAndExpandCard(activityId) {
   const container = document.getElementById('page-container');
   if (!container) return;
 
-  // Try to find as an activity card first
-  let card = container.querySelector(`.activity-card[data-activity-id="${activityId}"]`);
-
-  // If not found, try as a reservation card
-  if (!card) {
-    card = container.querySelector(`.inline-reservation-card[data-id="${activityId}"]`);
-  }
+  // All items are now activity cards (unified - no separate reservation cards)
+  const card = container.querySelector(`.activity-card[data-activity-id="${activityId}"]`);
 
   if (!card) {
     console.warn(`Card not found for activity ID: ${activityId}`);
@@ -2185,19 +1942,10 @@ function scrollToAndExpandCard(activityId) {
       return;
     }
 
-    // Expand the card
-    if (card.classList.contains('activity-card')) {
-      // Activity card - simulate click on header to expand
-      const header = card.querySelector('.activity-card-header');
-      if (header) {
-        header.click();
-      }
-    } else if (card.classList.contains('inline-reservation-card')) {
-      // Reservation card - simulate click on header to expand
-      const header = card.querySelector('.inline-reservation-header');
-      if (header) {
-        header.click();
-      }
+    // Expand the card by clicking the header
+    const header = card.querySelector('.activity-card-header');
+    if (header) {
+      header.click();
     }
 
     // Add highlight effect

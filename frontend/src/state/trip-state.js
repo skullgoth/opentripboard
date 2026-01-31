@@ -300,6 +300,34 @@ class TripState {
   }
 
   /**
+   * Reorder reservations (uses same endpoint as activities since they're stored together)
+   * @param {string} tripId - Trip ID
+   * @param {Array} reservations - Array of {id, orderIndex}
+   * @returns {Promise<void>}
+   */
+  async reorderReservations(tripId, reservations) {
+    try {
+      // Reservations are stored as activities, so use the same reorder endpoint
+      await apiClient.post(`/trips/${tripId}/activities/reorder`, {
+        order: reservations,
+      });
+
+      // Update order in current activities (reservations are stored there with metadata.isReservation)
+      reservations.forEach(({ id, orderIndex }) => {
+        const activity = this.currentActivities.find((a) => a.id === id);
+        if (activity) {
+          activity.orderIndex = orderIndex;
+        }
+      });
+
+      this.notifyListeners();
+    } catch (error) {
+      console.error('Failed to reorder reservations:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get all trips
    * @returns {Array} Array of trips
    */

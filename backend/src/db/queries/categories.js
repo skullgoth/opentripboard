@@ -4,8 +4,9 @@ import { query } from '../connection.js';
 
 /**
  * Valid domains for categories
+ * Note: 'reservation' domain has been merged into 'activity' domain
  */
-export const VALID_DOMAINS = ['activity', 'reservation', 'expense', 'document'];
+export const VALID_DOMAINS = ['activity', 'expense', 'document'];
 
 /**
  * Maximum number of custom categories per user
@@ -31,7 +32,7 @@ export async function getUserCategories(userId) {
 /**
  * Get custom categories for a user filtered by domain
  * @param {string} userId - User UUID
- * @param {string} domain - Category domain (activity, reservation, expense, document)
+ * @param {string} domain - Category domain (activity, expense, document)
  * @returns {Promise<Array>} Array of category objects
  */
 export async function getUserCategoriesByDomain(userId, domain) {

@@ -32,6 +32,7 @@ export function initializeDragDrop(timelineContainer, onReorder, onDateChange) {
       group: 'activities', // Allow dragging between days
       animation: 150,
       handle: '.activity-drag-handle', // Only drag handle is draggable
+      draggable: '.timeline-item', // Both activity and reservation cards
       ghostClass: 'activity-ghost', // Class for ghost element
       dragClass: 'activity-dragging', // Class while dragging
       chosenClass: 'activity-chosen', // Class when element is chosen
@@ -75,43 +76,46 @@ export function initializeDragDrop(timelineContainer, onReorder, onDateChange) {
 async function handleReorder(evt, onReorder, onDateChange) {
   try {
     const movedItem = evt.item;
-    const activityId = movedItem.getAttribute('data-activity-id');
+    const itemType = movedItem.getAttribute('data-item-type');
+    const itemId = movedItem.getAttribute('data-activity-id') || movedItem.getAttribute('data-id');
     const fromZone = evt.from;
     const toZone = evt.to;
     const fromDate = fromZone.getAttribute('data-drop-zone');
     const toDate = toZone.getAttribute('data-drop-zone');
 
-    // Check if activity moved to a different day
+    // Check if item moved to a different day
     const dateChanged = fromDate !== toDate && toDate !== 'zzz-undated';
 
-    // If date changed, update the activity's date first
-    if (dateChanged && onDateChange && activityId) {
-      await onDateChange(activityId, toDate);
+    // If date changed, update the item's date first (only for activities, not multi-day reservations)
+    if (dateChanged && onDateChange && itemId && itemType === 'activity') {
+      await onDateChange(itemId, toDate);
     }
 
-    // Get all activities in the new order
-    const allActivities = [];
+    // Get all timeline items in the new order
+    const allItems = [];
     const dropZones = document.querySelectorAll('[data-drop-zone]');
 
     dropZones.forEach((zone) => {
-      const cards = zone.querySelectorAll('.activity-card');
-      cards.forEach((card, index) => {
-        const cardActivityId = card.getAttribute('data-activity-id');
-        if (cardActivityId) {
-          allActivities.push({
-            id: cardActivityId,
-            orderIndex: allActivities.length, // Global order index
+      const cards = zone.querySelectorAll('.timeline-item');
+      cards.forEach((card) => {
+        const cardItemType = card.getAttribute('data-item-type');
+        const cardId = card.getAttribute('data-activity-id') || card.getAttribute('data-id');
+        if (cardId) {
+          allItems.push({
+            id: cardId,
+            itemType: cardItemType,
+            orderIndex: allItems.length, // Global order index
           });
         }
       });
     });
 
     // Call reorder callback with new order
-    if (onReorder && allActivities.length > 0) {
-      await onReorder(allActivities);
+    if (onReorder && allItems.length > 0) {
+      await onReorder(allItems);
     }
   } catch (error) {
-    console.error('Failed to reorder activities:', error);
+    console.error('Failed to reorder items:', error);
 
     // Show error message
     showToast(t('dragDrop.reorderFailed'), 'error');
@@ -197,8 +201,8 @@ function escapeHtml(text) {
  * @param {Function} onDateChange - Date change callback
  */
 function initializeKeyboardNavigation(container, onReorder, onDateChange) {
-  // Make activity cards focusable
-  const cards = container.querySelectorAll('.activity-card');
+  // Make timeline items focusable
+  const cards = container.querySelectorAll('.timeline-item');
   cards.forEach((card, index) => {
     if (!card.hasAttribute('tabindex')) {
       card.setAttribute('tabindex', '0');
@@ -232,7 +236,7 @@ function initializeKeyboardNavigation(container, onReorder, onDateChange) {
  * @param {Function} onDateChange - Date change callback
  */
 async function handleKeyboardNavigation(e, container, onReorder, onDateChange) {
-  const card = e.target.closest('.activity-card');
+  const card = e.target.closest('.timeline-item');
   if (!card) return;
 
   switch (e.key) {
@@ -293,7 +297,7 @@ async function toggleKeyboardDrag(card, container, onReorder, onDateChange) {
  */
 function pickUpCard(card, container) {
   const zone = card.closest('[data-drop-zone]');
-  const cards = Array.from(zone.querySelectorAll('.activity-card'));
+  const cards = Array.from(zone.querySelectorAll('.timeline-item'));
 
   keyboardDragState = {
     isActive: true,
@@ -321,7 +325,7 @@ async function dropCard(container, onReorder, onDateChange) {
   if (!sourceCard) return;
 
   const currentZone = sourceCard.closest('[data-drop-zone]');
-  const cards = Array.from(currentZone.querySelectorAll('.activity-card'));
+  const cards = Array.from(currentZone.querySelectorAll('.timeline-item'));
   const currentIndex = cards.indexOf(sourceCard);
 
   // Check if moved to a different day
@@ -329,8 +333,9 @@ async function dropCard(container, onReorder, onDateChange) {
   const toDate = currentZone.dataset.dropZone;
   const dateChanged = fromDate !== toDate && toDate !== 'zzz-undated';
 
-  // Update date if needed
-  if (dateChanged && onDateChange) {
+  // Update date if needed (only for activities, not multi-day reservations)
+  const itemType = sourceCard.dataset.itemType;
+  if (dateChanged && onDateChange && itemType === 'activity') {
     const activityId = sourceCard.dataset.activityId;
     await onDateChange(activityId, toDate);
   }
@@ -368,7 +373,7 @@ function cancelKeyboardDrag(container) {
   // Move card back to original position
   const currentZone = sourceCard.closest('[data-drop-zone]');
   if (currentZone !== sourceZone) {
-    const cards = Array.from(sourceZone.querySelectorAll('.activity-card'));
+    const cards = Array.from(sourceZone.querySelectorAll('.timeline-item'));
     if (sourceIndex >= cards.length) {
       sourceZone.appendChild(sourceCard);
     } else {
@@ -405,7 +410,7 @@ async function moveCardUp(container, onReorder, onDateChange) {
   const zone = sourceCard.closest('[data-drop-zone]');
   const prevSibling = sourceCard.previousElementSibling;
 
-  if (prevSibling && prevSibling.classList.contains('activity-card')) {
+  if (prevSibling && prevSibling.classList.contains('timeline-item')) {
     // Move within same zone
     zone.insertBefore(sourceCard, prevSibling);
     sourceCard.focus();
@@ -437,7 +442,7 @@ async function moveCardDown(container, onReorder, onDateChange) {
   const zone = sourceCard.closest('[data-drop-zone]');
   const nextSibling = sourceCard.nextElementSibling;
 
-  if (nextSibling && nextSibling.classList.contains('activity-card')) {
+  if (nextSibling && nextSibling.classList.contains('timeline-item')) {
     // Move within same zone
     zone.insertBefore(nextSibling, sourceCard);
     sourceCard.focus();
@@ -449,7 +454,7 @@ async function moveCardDown(container, onReorder, onDateChange) {
 
     if (zoneIndex < dropZones.length - 1) {
       const nextZone = dropZones[zoneIndex + 1];
-      const firstCard = nextZone.querySelector('.activity-card');
+      const firstCard = nextZone.querySelector('.timeline-item');
       if (firstCard) {
         nextZone.insertBefore(sourceCard, firstCard);
       } else {
@@ -467,7 +472,7 @@ async function moveCardDown(container, onReorder, onDateChange) {
  * @param {HTMLElement} container - Container element
  */
 function focusPreviousCard(currentCard, container) {
-  const allCards = Array.from(container.querySelectorAll('.activity-card'));
+  const allCards = Array.from(container.querySelectorAll('.timeline-item'));
   const currentIndex = allCards.indexOf(currentCard);
 
   if (currentIndex > 0) {
@@ -476,12 +481,12 @@ function focusPreviousCard(currentCard, container) {
 }
 
 /**
- * Focus next activity card
+ * Focus next timeline item
  * @param {HTMLElement} currentCard - Current card
  * @param {HTMLElement} container - Container element
  */
 function focusNextCard(currentCard, container) {
-  const allCards = Array.from(container.querySelectorAll('.activity-card'));
+  const allCards = Array.from(container.querySelectorAll('.timeline-item'));
   const currentIndex = allCards.indexOf(currentCard);
 
   if (currentIndex < allCards.length - 1) {
@@ -490,28 +495,30 @@ function focusNextCard(currentCard, container) {
 }
 
 /**
- * Get all activities in current order
+ * Get all timeline items in current order
  * @param {HTMLElement} container - Container element
- * @returns {Array} Array of activity objects with id and orderIndex
+ * @returns {Array} Array of item objects with id, itemType, and orderIndex
  */
 function getAllActivitiesInOrder(container) {
-  const allActivities = [];
+  const allItems = [];
   const dropZones = container.querySelectorAll('[data-drop-zone]');
 
   dropZones.forEach((zone) => {
-    const cards = zone.querySelectorAll('.activity-card');
+    const cards = zone.querySelectorAll('.timeline-item');
     cards.forEach((card) => {
-      const activityId = card.dataset.activityId;
-      if (activityId) {
-        allActivities.push({
-          id: activityId,
-          orderIndex: allActivities.length,
+      const itemId = card.dataset.activityId || card.dataset.id;
+      const itemType = card.dataset.itemType;
+      if (itemId) {
+        allItems.push({
+          id: itemId,
+          itemType: itemType,
+          orderIndex: allItems.length,
         });
       }
     });
   });
 
-  return allActivities;
+  return allItems;
 }
 
 /**
@@ -545,7 +552,7 @@ export function addDragDropStyles() {
   const style = document.createElement('style');
   style.textContent = `
     /* Drag and drop styles */
-    .is-dragging .activity-card:not(.activity-dragging) {
+    .is-dragging .timeline-item:not(.activity-dragging) {
       opacity: 0.6;
     }
 
@@ -569,30 +576,30 @@ export function addDragDropStyles() {
       opacity: 0.8;
     }
 
-    .activity-card {
+    .timeline-item {
       cursor: grab;
       transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     }
 
-    .activity-card:hover {
+    .timeline-item:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-md);
     }
 
-    .activity-card:focus {
+    .timeline-item:focus {
       outline: 2px solid var(--color-primary);
       outline-offset: 2px;
     }
 
     /* Keyboard drag styles */
-    .activity-card.keyboard-dragging {
+    .timeline-item.keyboard-dragging {
       outline: 3px solid var(--color-primary);
       outline-offset: 2px;
       box-shadow: var(--shadow-lg);
       background: var(--color-primary-light);
     }
 
-    .keyboard-drag-active .activity-card:not(.keyboard-dragging) {
+    .keyboard-drag-active .timeline-item:not(.keyboard-dragging) {
       opacity: 0.6;
     }
 

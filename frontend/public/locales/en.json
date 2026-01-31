@@ -220,7 +220,8 @@
     "searchingLocations": "Searching locations...",
     "locationSearchError": "Location search unavailable",
     "autocompleteUnavailable": "Location search is temporarily unavailable. You can type your location manually.",
-    "validatedLocation": "Validated location"
+    "validatedLocation": "Validated location",
+    "pending": "💡 Suggested"
   },
   "tripBuddy": {
     "title": "Trip Buddies",
@@ -311,6 +312,9 @@
     "fields": {
       "notes": "Notes / Description",
       "hotelName": "Hotel Name",
+      "hostelName": "Hostel Name",
+      "campgroundName": "Campground Name",
+      "resortName": "Resort Name",
       "propertyName": "Property Name",
       "bookingProvider": "Booking Provider",
       "checkInDate": "Check-in Date",
@@ -327,7 +331,9 @@
       "rentalCompany": "Rental Company",
       "vehicleType": "Vehicle Type",
       "pickupLocation": "Pickup Location",
+      "dropoffLocation": "Drop-off Location",
       "pickupDate": "Pickup Date",
+      "pickupTime": "Pickup Time",
       "returnDate": "Return Date",
       "cruiseLine": "Cruise Line",
       "shipName": "Ship Name",
@@ -344,8 +350,11 @@
       "class": "Class",
       "rentalProvider": "Provider (Airbnb, VRBO, etc.)",
       "providerCompany": "Provider / Company",
+      "taxiCompany": "Taxi Company",
+      "transferCompany": "Transfer Company",
       "barName": "Bar Name",
       "restaurantName": "Restaurant Name",
+      "cafeName": "Cafe Name",
       "reservationDate": "Reservation Date",
       "reservationTime": "Reservation Time",
       "partySize": "Party Size"
@@ -674,7 +683,12 @@
     "longitudePlaceholder": "e.g., 2.2945",
     "confirmDeleteActivity": "Are you sure you want to delete this activity?",
     "someChangesFailed": "Some changes failed to save",
-    "noLocationsFound": "No locations found. Try a different search or enter coordinates manually."
+    "noLocationsFound": "No locations found. Try a different search or enter coordinates manually.",
+    "noDayActivities": "No activities for this day"
+  },
+  "timeline": {
+    "multiDay": "Multi-day",
+    "day": "Day"
   },
   "settings": {
     "title": "Settings",
@@ -864,20 +878,18 @@
       "zoo": "Zoo",
       "aquarium": "Aquarium",
       "show": "Show",
+      "concert": "Concert",
       "nightlife": "Nightlife",
-      "restaurant": "Restaurant",
-      "cafe": "Cafe",
+      "sports": "Sports",
       "market": "Market",
       "winery": "Winery",
       "shopping": "Shopping",
       "spa": "Spa",
       "tour": "Tour",
       "sightseeing": "Sightseeing",
-      "sports": "Sports",
       "watersports": "Water Sports",
-      "other": "Other"
-    },
-    "reservation": {
+      "class": "Class/Workshop",
+      "attraction": "Attraction",
       "hotel": "Hotel",
       "rental": "Rental",
       "hostel": "Hostel",
@@ -894,14 +906,18 @@
       "restaurant": "Restaurant",
       "bar": "Bar",
       "cafe": "Cafe",
-      "tour": "Tour",
-      "attraction": "Attraction",
-      "show": "Show",
-      "museum": "Museum",
-      "concert": "Concert",
-      "sports": "Sports Event",
-      "spa": "Spa",
-      "class": "Class/Workshop",
+      "other": "Other"
+    },
+    "groups": {
+      "culture": "Culture & History",
+      "nature": "Nature & Outdoors",
+      "entertainment": "Entertainment",
+      "food": "Food & Drink",
+      "shopping": "Shopping & Leisure",
+      "tours": "Tours & Activities",
+      "lodging": "Lodging",
+      "transport": "Transportation",
+      "dining": "Dining",
       "other": "Other"
     },
     "expense": {
@@ -925,7 +941,6 @@
     },
     "domains": {
       "activity": "Activities",
-      "reservation": "Reservations",
       "expense": "Expenses",
       "document": "Documents"
     },

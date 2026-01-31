@@ -220,7 +220,8 @@
     "searchingLocations": "Recherche de lieux...",
     "locationSearchError": "Recherche de lieu indisponible",
     "autocompleteUnavailable": "La recherche de lieu n'est pas disponible temporairement. Vous pouvez saisir le lieu manuellement.",
-    "validatedLocation": "Lieu validé"
+    "validatedLocation": "Lieu validé",
+    "pending": "💡 Suggéré"
   },
   "tripBuddy": {
     "title": "Compagnons de Voyage",
@@ -311,6 +312,9 @@
     "fields": {
       "notes": "Notes / Description",
       "hotelName": "Nom de l'Hôtel",
+      "hostelName": "Nom de l'Auberge",
+      "campgroundName": "Nom du Camping",
+      "resortName": "Nom du Complexe",
       "propertyName": "Nom de la Propriété",
       "bookingProvider": "Fournisseur de Réservation",
       "checkInDate": "Date d'Arrivée",
@@ -327,7 +331,9 @@
       "rentalCompany": "Société de Location",
       "vehicleType": "Type de Véhicule",
       "pickupLocation": "Lieu de Prise en Charge",
+      "dropoffLocation": "Lieu de Dépôt",
       "pickupDate": "Date de Prise en Charge",
+      "pickupTime": "Heure de Prise en Charge",
       "returnDate": "Date de Retour",
       "cruiseLine": "Compagnie de Croisière",
       "shipName": "Nom du Navire",
@@ -344,8 +350,11 @@
       "class": "Classe",
       "rentalProvider": "Fournisseur (Airbnb, VRBO, etc.)",
       "providerCompany": "Fournisseur / Entreprise",
+      "taxiCompany": "Compagnie de Taxi",
+      "transferCompany": "Compagnie de Transfert",
       "barName": "Nom du Bar",
       "restaurantName": "Nom du Restaurant",
+      "cafeName": "Nom du Café",
       "reservationDate": "Date de Réservation",
       "reservationTime": "Heure de Réservation",
       "partySize": "Nombre de Personnes"
@@ -674,7 +683,12 @@
     "longitudePlaceholder": "ex: 2.2945",
     "confirmDeleteActivity": "Êtes-vous sûr de vouloir supprimer cette activité ?",
     "someChangesFailed": "Certaines modifications n'ont pas pu être enregistrées",
-    "noLocationsFound": "Aucun lieu trouvé. Essayez une autre recherche ou entrez les coordonnées manuellement."
+    "noLocationsFound": "Aucun lieu trouvé. Essayez une autre recherche ou entrez les coordonnées manuellement.",
+    "noDayActivities": "Aucune activité pour ce jour"
+  },
+  "timeline": {
+    "multiDay": "Multi-jours",
+    "day": "Jour"
   },
   "settings": {
     "title": "Paramètres",
@@ -864,20 +878,18 @@
       "zoo": "Zoo",
       "aquarium": "Aquarium",
       "show": "Spectacle",
+      "concert": "Concert",
       "nightlife": "Vie Nocturne",
-      "restaurant": "Restaurant",
-      "cafe": "Café",
+      "sports": "Sports",
       "market": "Marché",
       "winery": "Vignoble",
       "shopping": "Shopping",
       "spa": "Spa",
       "tour": "Visite Guidée",
       "sightseeing": "Tourisme",
-      "sports": "Sports",
       "watersports": "Sports Nautiques",
-      "other": "Autre"
-    },
-    "reservation": {
+      "class": "Cours/Atelier",
+      "attraction": "Attraction",
       "hotel": "Hôtel",
       "rental": "Location",
       "hostel": "Auberge",
@@ -894,14 +906,18 @@
       "restaurant": "Restaurant",
       "bar": "Bar",
       "cafe": "Café",
-      "tour": "Visite Guidée",
-      "attraction": "Attraction",
-      "show": "Spectacle",
-      "museum": "Musée",
-      "concert": "Concert",
-      "sports": "Événement Sportif",
-      "spa": "Spa",
-      "class": "Cours/Atelier",
+      "other": "Autre"
+    },
+    "groups": {
+      "culture": "Culture & Histoire",
+      "nature": "Nature & Plein Air",
+      "entertainment": "Divertissement",
+      "food": "Nourriture & Boissons",
+      "shopping": "Shopping & Loisirs",
+      "tours": "Visites & Activités",
+      "lodging": "Hébergement",
+      "transport": "Transport",
+      "dining": "Restauration",
       "other": "Autre"
     },
     "expense": {
@@ -925,7 +941,6 @@
     },
     "domains": {
       "activity": "Activités",
-      "reservation": "Réservations",
       "expense": "Dépenses",
       "document": "Documents"
     },

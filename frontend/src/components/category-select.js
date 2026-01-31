@@ -14,7 +14,7 @@ const SEARCH_THRESHOLD = 10;
  * Create a category select dropdown
  * @param {Object} options - Configuration options
  * @param {HTMLElement} options.container - Container element
- * @param {string} options.domain - Category domain (activity, reservation, expense, document)
+ * @param {string} options.domain - Category domain (activity, expense, document)
  * @param {string} options.value - Initial selected value
  * @param {Function} options.onChange - Callback when selection changes
  * @param {string} options.tripId - Trip ID (for fetching owner's categories)

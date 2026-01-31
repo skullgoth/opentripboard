@@ -251,7 +251,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-07-10T11:00:00.000Z',
       orderIndex: 100,
       metadata: {
-        isReservation: true,
         checkInDate: '2026-07-01',
         checkOutDate: '2026-07-10',
         confirmationCode: 'PLAZA78901',
@@ -269,7 +268,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-07-01T10:00:00.000Z',
       orderIndex: 101,
       metadata: {
-        isReservation: true,
         provider: 'Air France',
         flightNumbers: ['AF123'],
         origin: 'JFK',
@@ -290,7 +288,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-07-10T18:00:00.000Z',
       orderIndex: 102,
       metadata: {
-        isReservation: true,
         provider: 'Air France',
         flightNumbers: ['AF456'],
         origin: 'CDG',
@@ -311,7 +308,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-07-08T11:00:00.000Z',
       orderIndex: 103,
       metadata: {
-        isReservation: true,
         provider: 'Eurostar',
         trainNumber: '9012',
         origin: 'Paris Gare du Nord',
@@ -333,7 +329,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-07-07T18:00:00.000Z',
       orderIndex: 104,
       metadata: {
-        isReservation: true,
         provider: 'Hertz',
         vehicleType: 'Compact SUV',
         pickupLocation: 'CDG Airport Terminal 2',
@@ -354,7 +349,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-07-02T22:00:00.000Z',
       orderIndex: 105,
       metadata: {
-        isReservation: true,
         venueName: 'Le Jules Verne',
         provider: 'OpenTable',
         reservationDate: '2026-07-02',
@@ -374,7 +368,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-07-04T14:00:00.000Z',
       orderIndex: 106,
       metadata: {
-        isReservation: true,
         venueName: 'Café de Flore',
         provider: 'Direct Booking',
         reservationDate: '2026-07-04',
@@ -394,7 +387,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-07-06T23:00:00.000Z',
       orderIndex: 107,
       metadata: {
-        isReservation: true,
         venueName: 'Harry\'s New York Bar',
         provider: 'Direct Booking',
         reservationDate: '2026-07-06',
@@ -418,7 +410,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-10T11:00:00.000Z',
       orderIndex: 100,
       metadata: {
-        isReservation: true,
         checkInDate: '2026-08-01',
         checkOutDate: '2026-08-10',
         confirmationCode: 'RITZ456789',
@@ -435,7 +426,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-05T10:00:00.000Z',
       orderIndex: 101,
       metadata: {
-        isReservation: true,
         propertyName: 'Machiya Residence Inn',
         provider: 'Airbnb',
         checkInDate: '2026-08-04',
@@ -455,7 +445,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-01T08:00:00.000Z',
       orderIndex: 102,
       metadata: {
-        isReservation: true,
         provider: 'Japan Airlines',
         flightNumbers: ['JL002'],
         origin: 'LAX',
@@ -476,7 +465,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-10T18:00:00.000Z',
       orderIndex: 103,
       metadata: {
-        isReservation: true,
         provider: 'Japan Airlines',
         flightNumbers: ['JL001'],
         origin: 'NRT',
@@ -497,7 +485,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-04T09:15:00.000Z',
       orderIndex: 104,
       metadata: {
-        isReservation: true,
         provider: 'JR Central',
         trainNumber: 'Nozomi 7',
         origin: 'Tokyo Station',
@@ -519,7 +506,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-05T18:15:00.000Z',
       orderIndex: 105,
       metadata: {
-        isReservation: true,
         provider: 'JR Central',
         trainNumber: 'Nozomi 42',
         origin: 'Kyoto Station',
@@ -542,7 +528,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-03T20:00:00.000Z',
       orderIndex: 106,
       metadata: {
-        isReservation: true,
         venueName: 'Sukiyabashi Jiro',
         provider: 'Direct Booking',
         reservationDate: '2026-08-03',
@@ -562,7 +547,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-08T22:00:00.000Z',
       orderIndex: 107,
       metadata: {
-        isReservation: true,
         venueName: 'Narisawa',
         provider: 'Direct Booking',
         reservationDate: '2026-08-08',
@@ -582,7 +566,6 @@ const DEMO_RESERVATIONS = {
       endTime: '2026-08-09T23:00:00.000Z',
       orderIndex: 108,
       metadata: {
-        isReservation: true,
         venueName: 'Bar High Five',
         provider: 'Direct Booking',
         reservationDate: '2026-08-09',

@@ -19,7 +19,7 @@ import { t } from './i18n.js';
  * Uses state for custom categories, falls back to defaults for unknown
  *
  * @param {string} value - Category value (key for defaults, 'custom:uuid' for custom)
- * @param {string} domain - Category domain (activity, reservation, expense, document)
+ * @param {string} domain - Category domain (activity, expense, document)
  * @param {Array} [customCategories] - Optional custom categories array (for optimization)
  * @returns {ResolvedCategory} Resolved category with name and icon
  */
@@ -114,7 +114,6 @@ export function getFallbackCategory(domain) {
 export function getDefaultIconForDomain(domain) {
   const icons = {
     activity: '📍',
-    reservation: '📋',
     expense: '💰',
     document: '📄',
   };
@@ -177,7 +176,7 @@ export function buildCategoryOptions(domain, defaultCategories, customCategories
       group: cat.group || null,
     }));
 
-    // Group by 'group' property if present (for reservations)
+    // Group by 'group' property if present (for activities)
     const grouped = {};
     const ungrouped = [];
 
@@ -198,7 +197,7 @@ export function buildCategoryOptions(domain, defaultCategories, customCategories
     // Add grouped defaults
     for (const [groupName, groupOptions] of Object.entries(grouped)) {
       options.push({
-        groupLabel: t(`reservations.${groupName.toLowerCase()}`) || groupName,
+        groupLabel: t(`categories.groups.${groupName}`) || groupName,
         options: groupOptions,
       });
     }

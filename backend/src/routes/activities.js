@@ -7,15 +7,12 @@ import { broadcastToRoom } from '../websocket/rooms.js';
 import { DEFAULT_ACTIVITY_TYPES } from '../utils/default-categories.js';
 
 // Build ALL_TYPES from default categories plus legacy types for backward compatibility
-const ALL_TYPES = [
+// Use Set to deduplicate since reservation types are now merged into DEFAULT_ACTIVITY_TYPES
+const ALL_TYPES = [...new Set([
   ...DEFAULT_ACTIVITY_TYPES.map(cat => cat.key),
-  // Legacy types (for backward compatibility)
-  'accommodation', 'transportation', 'attraction', 'meeting', 'event',
-  // Reservation types that might be used as activity types
-  'hotel', 'rental', 'hostel', 'camping', 'resort',
-  'flight', 'train', 'bus', 'car', 'ferry', 'cruise', 'taxi', 'transfer',
-  'bar',
-];
+  // Legacy types (for backward compatibility with old data)
+  'accommodation', 'transportation', 'meeting', 'event',
+])];
 
 // Regex pattern for custom category references (custom:uuid format)
 const CUSTOM_CATEGORY_PATTERN = '^custom:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
