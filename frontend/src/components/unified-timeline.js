@@ -81,10 +81,12 @@ export function createUnifiedTimeline(activities, suggestions, trip, options = {
         previousDayLastActivity = activities[activities.length - 1];
       }
 
-      // Day totals display
-      const totalsDisplay = dayTotals.totalDuration || dayTotals.totalDistance
-        ? `<span class="timeline-day-totals">${dayTotals.totalDuration ? formatDuration(dayTotals.totalDuration) : ''}${dayTotals.totalDuration && dayTotals.totalDistance ? ', ' : ''}${dayTotals.totalDistance ? formatDistance(dayTotals.totalDistance) : ''}</span>`
-        : '';
+      // Day totals display - always show, with placeholder when no data
+      const hasTotalsContent = dayTotals.totalDuration || dayTotals.totalDistance;
+      const totalsContent = hasTotalsContent
+        ? `${dayTotals.totalDuration ? formatDuration(dayTotals.totalDuration) : ''}${dayTotals.totalDuration && dayTotals.totalDistance ? ', ' : ''}${dayTotals.totalDistance ? formatDistance(dayTotals.totalDistance) : ''}`
+        : '—';
+      const totalsDisplay = `<span class="timeline-day-totals" data-date="${date}">${totalsContent}</span>`;
 
       return `
         <div class="timeline-day" data-date="${date}">
@@ -218,11 +220,29 @@ function groupItemsByDay(items, trip) {
 /**
  * Calculate day totals from transport data
  * @param {Array} activities - Activities for a single day
- * @returns {Object} { totalDuration, totalDistance }
+ * @param {Object} previousDayLastActivity - Last activity from previous day (for cross-day transport)
+ * @returns {Object} { totalDuration, totalDistance, hasTransportData }
  */
-function calculateDayTotals(activities) {
+function calculateDayTotals(activities, previousDayLastActivity) {
   let totalDuration = 0;
   let totalDistance = 0;
+  let hasTransportData = false;
+
+  // Include cross-day transport from previous day's last activity to this day's first
+  if (previousDayLastActivity && activities.length > 0) {
+    const isMultiDayNonLast = previousDayLastActivity._isMultiDay && !previousDayLastActivity._isLastDay;
+    if (!isMultiDayNonLast) {
+      const crossDayTransport = previousDayLastActivity.metadata?.transportToNext;
+      if (crossDayTransport?.cachedDuration) {
+        totalDuration += crossDayTransport.cachedDuration;
+        hasTransportData = true;
+      }
+      if (crossDayTransport?.cachedDistance) {
+        totalDistance += crossDayTransport.cachedDistance;
+        hasTransportData = true;
+      }
+    }
+  }
 
   // Add transport between activities within the day
   // Skip multi-day items that are not on their last day (they shouldn't have transport to next)
@@ -233,11 +253,17 @@ function calculateDayTotals(activities) {
       continue;
     }
     const transport = activity.metadata?.transportToNext;
-    if (transport?.cachedDuration) totalDuration += transport.cachedDuration;
-    if (transport?.cachedDistance) totalDistance += transport.cachedDistance;
+    if (transport?.cachedDuration) {
+      totalDuration += transport.cachedDuration;
+      hasTransportData = true;
+    }
+    if (transport?.cachedDistance) {
+      totalDistance += transport.cachedDistance;
+      hasTransportData = true;
+    }
   }
 
-  return { totalDuration, totalDistance };
+  return { totalDuration, totalDistance, hasTransportData };
 }
 
 /**
@@ -1383,11 +1409,22 @@ async function autoCalculateRoutes(container, onTransportChange) {
     }
   }
 
-  // Save persistent results - always skip refresh to avoid wiping ephemeral UI updates
+  // Save persistent results and update their UI
   if (onTransportChange && persistentResults.length > 0) {
     for (const { activityId, transportData } of persistentResults) {
+      // Update the UI for persistent routes too (they were in loading state)
+      const lineElement = document.querySelector(`.transport-line--loading[data-activity-id="${activityId}"]`);
+      if (lineElement) {
+        updateTransportLineUI(lineElement, transportData);
+      }
+      // Save to backend (skip refresh to avoid wiping ephemeral UI updates)
       await onTransportChange(activityId, transportData, { skipRefresh: true });
     }
+  }
+
+  // Update day totals after transport calculations
+  if (ephemeralResults.length > 0 || persistentResults.length > 0) {
+    updateAllDayTotalsUI();
   }
 
   autoCalculationInProgress = false;
@@ -1436,12 +1473,53 @@ function updateTransportLineUI(lineElement, transportData) {
   // Update the line element
   lineElement.classList.remove('transport-line--loading');
   lineElement.dataset.mode = mode;
+  lineElement.dataset.duration = cachedDuration || 0;
+  lineElement.dataset.distance = cachedDistance || 0;
   lineElement.innerHTML = `
     <span class="transport-line-content">
       <span class="transport-line-icon">${icon}</span>
       <span class="transport-line-info">${displayText}</span>
     </span>
   `;
+}
+
+/**
+ * Update all day totals in the DOM based on current transport data
+ * Reads transport data from data attributes on transport line elements
+ */
+function updateAllDayTotalsUI() {
+  const timeline = document.querySelector('.unified-timeline');
+  if (!timeline) return;
+
+  const dayElements = timeline.querySelectorAll('.timeline-day');
+
+  dayElements.forEach((dayElement) => {
+    const totalsSpan = dayElement.querySelector('.timeline-day-totals');
+    if (!totalsSpan) return;
+
+    // Collect all transport data for this day from transport lines
+    let totalDuration = 0;
+    let totalDistance = 0;
+
+    // Get transport lines within this day's items (exclude loading ones)
+    const dayItems = dayElement.querySelector('.timeline-day-items');
+    if (dayItems) {
+      const transportLines = dayItems.querySelectorAll('.transport-line:not(.transport-line--loading)');
+      transportLines.forEach((line) => {
+        const duration = parseFloat(line.dataset.duration) || 0;
+        const distance = parseFloat(line.dataset.distance) || 0;
+        totalDuration += duration;
+        totalDistance += distance;
+      });
+    }
+
+    // Update the totals display
+    const hasTotalsContent = totalDuration || totalDistance;
+    const totalsContent = hasTotalsContent
+      ? `${totalDuration ? formatDuration(totalDuration) : ''}${totalDuration && totalDistance ? ', ' : ''}${totalDistance ? formatDistance(totalDistance) : ''}`
+      : '—';
+    totalsSpan.textContent = totalsContent;
+  });
 }
 
 /**

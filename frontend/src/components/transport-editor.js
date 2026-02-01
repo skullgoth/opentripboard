@@ -236,6 +236,8 @@ export function createTransportBox(options) {
     <div class="transport-line ${isCrossDay ? 'transport-line--cross-day' : ''}"
          data-activity-id="${activityId}"
          data-mode="${mode}"
+         data-duration="${cachedDuration || 0}"
+         data-distance="${cachedDistance || 0}"
          data-action="edit-transport"
          title="${t('transport.editTransport', 'Click to change transport mode')}">
       ${crossDayLabel}
