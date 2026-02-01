@@ -298,15 +298,35 @@ export async function initializeMap(containerId, activities = [], options = {}) 
     }
   }
 
+  // Track transport polylines (multiple segments with different styles)
+  let transportPolylines = [];
+
+  /**
+   * Transport mode polyline styles
+   */
+  const TRANSPORT_STYLES = {
+    walk: { color: '#22c55e', weight: 3, dashArray: '5, 10', opacity: 0.8 },
+    bike: { color: '#3b82f6', weight: 3, dashArray: '5, 10', opacity: 0.8 },
+    drive: { color: '#3b82f6', weight: 4, dashArray: null, opacity: 0.8 },
+    fly: { color: '#a855f7', weight: 2, dashArray: '10, 15', opacity: 0.7 },
+    boat: { color: '#06b6d4', weight: 3, dashArray: '8, 12', opacity: 0.8 },
+    default: { color: '#6b7280', weight: 2, dashArray: '3, 6', opacity: 0.5 },
+  };
+
   /**
    * Draw route line connecting activities in order
+   * Uses transport-specific styling based on activity.metadata.transportToNext
    */
   function drawRoute(activitiesToConnect) {
-    // Remove existing route
+    // Remove existing route polyline (legacy single line)
     if (routePolyline) {
       map.removeLayer(routePolyline);
       routePolyline = null;
     }
+
+    // Remove existing transport polylines
+    transportPolylines.forEach(pl => map.removeLayer(pl));
+    transportPolylines = [];
 
     const validActivities = activitiesToConnect.filter(
       activity => activity.latitude && activity.longitude
@@ -316,17 +336,45 @@ export async function initializeMap(containerId, activities = [], options = {}) 
       return; // Need at least 2 points for a route
     }
 
-    // Create polyline connecting activities in order
-    const coordinates = validActivities.map(a => [a.latitude, a.longitude]);
+    // Draw segment between each consecutive pair of activities
+    for (let i = 0; i < validActivities.length - 1; i++) {
+      const fromActivity = validActivities[i];
+      const toActivity = validActivities[i + 1];
+      const transport = fromActivity.metadata?.transportToNext;
+      const mode = transport?.mode || null;
 
-    routePolyline = L.polyline(coordinates, {
-      color: '#3b82f6',
-      weight: 3,
-      opacity: 0.7,
-      smoothFactor: 1
-    });
+      // Get style for this transport mode
+      const style = mode ? TRANSPORT_STYLES[mode] : TRANSPORT_STYLES.default;
 
-    routePolyline.addTo(map);
+      let segmentCoords;
+
+      // Use cached route geometry if available (for road-following routes)
+      if (transport?.routeGeometry && Array.isArray(transport.routeGeometry) && transport.routeGeometry.length > 1) {
+        // RouteGeometry is in [lng, lat] format, convert to [lat, lng] for Leaflet
+        segmentCoords = transport.routeGeometry.map(coord => [coord[1], coord[0]]);
+      } else {
+        // Straight line between points
+        segmentCoords = [
+          [fromActivity.latitude, fromActivity.longitude],
+          [toActivity.latitude, toActivity.longitude]
+        ];
+      }
+
+      const polylineOptions = {
+        color: style.color,
+        weight: style.weight,
+        opacity: style.opacity,
+        smoothFactor: 1,
+      };
+
+      if (style.dashArray) {
+        polylineOptions.dashArray = style.dashArray;
+      }
+
+      const polyline = L.polyline(segmentCoords, polylineOptions);
+      polyline.addTo(map);
+      transportPolylines.push(polyline);
+    }
   }
 
   /**
@@ -340,9 +388,15 @@ export async function initializeMap(containerId, activities = [], options = {}) 
         activity => activity.latitude && activity.longitude
       );
       drawRoute(validActivities);
-    } else if (routePolyline) {
-      map.removeLayer(routePolyline);
-      routePolyline = null;
+    } else {
+      // Remove legacy route polyline
+      if (routePolyline) {
+        map.removeLayer(routePolyline);
+        routePolyline = null;
+      }
+      // Remove transport polylines
+      transportPolylines.forEach(pl => map.removeLayer(pl));
+      transportPolylines = [];
     }
 
     // Update icon
@@ -548,6 +602,9 @@ export async function initializeMap(containerId, activities = [], options = {}) 
     if (routePolyline) {
       map.removeLayer(routePolyline);
     }
+    // Clean up transport polylines
+    transportPolylines.forEach(pl => map.removeLayer(pl));
+    transportPolylines = [];
     // Clean up distance labels
     distanceLabels.forEach(label => map.removeLayer(label));
     distanceLabels = [];

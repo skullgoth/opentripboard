@@ -15,6 +15,9 @@ import { getCategories as getCategoriesState } from '../state/categories-state.j
 import { searchDestinations } from '../services/geocoding-api.js';
 import { getPreferences } from '../state/preferences-state.js';
 import { hasSpecialFields, isLodgingType as isLodgingTypeUtil } from '../utils/default-categories.js';
+import { createTransportBox, createTransportEditor, attachTransportEditorListeners, calculateRoute, DEFAULT_TRANSPORT_MODE } from './transport-editor.js';
+import { getTransportIcon } from './transport-icons.js';
+import { formatDuration, formatDistance } from '../services/routing-api.js';
 
 // Module-level trip date constraints for activity editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -56,18 +59,38 @@ export function createUnifiedTimeline(activities, suggestions, trip, options = {
   // Group items by day (expand multi-day items)
   const itemsByDay = groupItemsByDay(allItems, trip);
 
-  // Build timeline HTML
-  const dayGroups = Object.entries(itemsByDay)
-    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-    .map(([date, dayItems]) => {
-      const itemsHtml = dayItems
-        .map((item) => createTimelineItem(item, currentUserId, userRole))
-        .join('');
+  // Build timeline HTML with cross-day transport support
+  const sortedDays = Object.entries(itemsByDay)
+    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB));
+
+  let previousDayLastActivity = null;
+
+  const dayGroups = sortedDays
+    .map(([date, dayItems], dayIndex) => {
+      // Get activities only (not suggestions)
+      const activities = dayItems.filter((item) => item.itemType === 'activity');
+
+      // Calculate day totals from transport data
+      const dayTotals = calculateDayTotals(activities, previousDayLastActivity);
+
+      // Build items with transport lines between consecutive activities
+      const itemsHtml = buildDayItemsWithTransport(dayItems, currentUserId, userRole, previousDayLastActivity);
+
+      // Update previous day's last activity for next iteration
+      if (activities.length > 0) {
+        previousDayLastActivity = activities[activities.length - 1];
+      }
+
+      // Day totals display
+      const totalsDisplay = dayTotals.totalDuration || dayTotals.totalDistance
+        ? `<span class="timeline-day-totals">${dayTotals.totalDuration ? formatDuration(dayTotals.totalDuration) : ''}${dayTotals.totalDuration && dayTotals.totalDistance ? ', ' : ''}${dayTotals.totalDistance ? formatDistance(dayTotals.totalDistance) : ''}</span>`
+        : '';
 
       return `
         <div class="timeline-day" data-date="${date}">
           <div class="timeline-day-header">
             <h3 class="timeline-day-title">${formatDate(date, 'full')}</h3>
+            ${totalsDisplay}
             <div class="timeline-day-actions">
               <button class="btn btn-sm btn-secondary" data-action="add-activity" data-date="${date}">
                 + ${t('trip.addActivity')}
@@ -190,6 +213,130 @@ function groupItemsByDay(items, trip) {
   });
 
   return scheduled;
+}
+
+/**
+ * Calculate day totals from transport data
+ * @param {Array} activities - Activities for a single day
+ * @returns {Object} { totalDuration, totalDistance }
+ */
+function calculateDayTotals(activities) {
+  let totalDuration = 0;
+  let totalDistance = 0;
+
+  // Add transport between activities within the day
+  // Skip multi-day items that are not on their last day (they shouldn't have transport to next)
+  for (let i = 0; i < activities.length - 1; i++) {
+    const activity = activities[i];
+    // Skip if this is a multi-day item not on its last day
+    if (activity._isMultiDay && !activity._isLastDay) {
+      continue;
+    }
+    const transport = activity.metadata?.transportToNext;
+    if (transport?.cachedDuration) totalDuration += transport.cachedDuration;
+    if (transport?.cachedDistance) totalDistance += transport.cachedDistance;
+  }
+
+  return { totalDuration, totalDistance };
+}
+
+/**
+ * Build day items HTML with transport lines between consecutive activities
+ * @param {Array} dayItems - Items for a single day
+ * @param {string} currentUserId - Current user ID
+ * @param {string} userRole - User role
+ * @param {Object} previousDayLastActivity - Last activity from previous day (for cross-day transport)
+ * @returns {string} HTML string
+ */
+function buildDayItemsWithTransport(dayItems, currentUserId, userRole, previousDayLastActivity) {
+  if (!dayItems || dayItems.length === 0) {
+    return '';
+  }
+
+  const htmlParts = [];
+  const activities = dayItems.filter((item) => item.itemType === 'activity');
+
+  // Add cross-day transport line at the beginning if applicable
+  if (previousDayLastActivity && activities.length > 0) {
+    const firstActivity = activities[0];
+    const hasCoordinates = previousDayLastActivity.latitude && previousDayLastActivity.longitude &&
+                          firstActivity.latitude && firstActivity.longitude;
+
+    if (hasCoordinates) {
+      // For multi-day items NOT on their last day, ignore stored transportToNext
+      // (that data is for checkout day, not for intermediate days)
+      const isMultiDayNonLast = previousDayLastActivity._isMultiDay && !previousDayLastActivity._isLastDay;
+      const transportData = isMultiDayNonLast ? null : (previousDayLastActivity.metadata?.transportToNext || null);
+      const fromLocationName = previousDayLastActivity.title || previousDayLastActivity.location || '';
+      const needsCalculation = !transportData && hasCoordinates;
+
+      // For cross-day transport, embed coordinates directly since multi-day items
+      // have same ID across days and querySelector would find wrong one
+      htmlParts.push(createTransportBox({
+        activityId: previousDayLastActivity.id,
+        transportData,
+        hasCoordinates: true,
+        fromLocationName,
+        isCrossDay: true,
+        isLoading: needsCalculation,
+        isEphemeral: isMultiDayNonLast,
+        // Embed coordinates for cross-day calculation
+        fromLat: previousDayLastActivity.latitude,
+        fromLng: previousDayLastActivity.longitude,
+        toLat: firstActivity.latitude,
+        toLng: firstActivity.longitude,
+      }));
+    }
+  }
+
+  for (let i = 0; i < dayItems.length; i++) {
+    const item = dayItems[i];
+
+    // Render the item
+    htmlParts.push(createTimelineItem(item, currentUserId, userRole));
+
+    // After activities (not suggestions), add transport line if there's a next activity
+    if (item.itemType === 'activity') {
+      // Find the next activity (skipping suggestions)
+      const currentActivityIndex = activities.indexOf(item);
+      const nextActivity = activities[currentActivityIndex + 1];
+
+      if (nextActivity) {
+        // Check if both activities have coordinates
+        const hasCoordinates = item.latitude && item.longitude && nextActivity.latitude && nextActivity.longitude;
+
+        if (hasCoordinates) {
+          // For multi-day items NOT on their last day, ignore stored transportToNext
+          // (that data is for checkout day, not for intermediate days)
+          const isMultiDayNonLast = item._isMultiDay && !item._isLastDay;
+          const transportData = isMultiDayNonLast ? null : (item.metadata?.transportToNext || null);
+          // Mark as needing calculation if no valid transport data
+          const needsCalculation = !transportData && hasCoordinates;
+
+          // For ephemeral routes (multi-day non-last), embed coordinates directly
+          // because the same activity ID appears on multiple days and querySelector would find wrong one
+          const boxOptions = {
+            activityId: item.id,
+            transportData,
+            hasCoordinates,
+            isLoading: needsCalculation,
+            isEphemeral: isMultiDayNonLast,
+          };
+
+          if (isMultiDayNonLast) {
+            boxOptions.fromLat = item.latitude;
+            boxOptions.fromLng = item.longitude;
+            boxOptions.toLat = nextActivity.latitude;
+            boxOptions.toLng = nextActivity.longitude;
+          }
+
+          htmlParts.push(createTransportBox(boxOptions));
+        }
+      }
+    }
+  }
+
+  return htmlParts.join('');
 }
 
 /**
@@ -948,6 +1095,7 @@ export function attachUnifiedTimelineListeners(container, callbacks) {
     onVoteSuggestion,
     onAcceptSuggestion,
     onRejectSuggestion,
+    onTransportChange,
     // Legacy callback aliases for backwards compatibility
     onDeleteReservation,
     onSaveReservation,
@@ -986,6 +1134,14 @@ export function attachUnifiedTimelineListeners(container, callbacks) {
   container.querySelectorAll('.suggestion-card[data-item-type="suggestion"]').forEach((card) => {
     setupSuggestionCard(card, onVoteSuggestion, onAcceptSuggestion, onRejectSuggestion);
   });
+
+  // Handle transport lines (auto-calculate routes for loading ones)
+  container.querySelectorAll('.transport-line').forEach((line) => {
+    setupTransportLine(line, container, onTransportChange);
+  });
+
+  // Auto-calculate routes for lines that are loading
+  autoCalculateRoutes(container, onTransportChange);
 
   // Remove previous document click handler if exists
   if (currentTimelineDocClickHandler) {
@@ -1109,6 +1265,270 @@ function setupSuggestionCard(card, onVoteSuggestion, onAcceptSuggestion, onRejec
     e.stopPropagation();
     if (onRejectSuggestion) onRejectSuggestion(suggestionId);
   });
+}
+
+/**
+ * Setup transport line with editor popup on click
+ */
+function setupTransportLine(line, container, onTransportChange) {
+  const activityId = line.dataset.activityId;
+
+  // The line itself is clickable
+  line.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    // Close any existing transport editor
+    const existingEditor = container.querySelector('.transport-editor-popup');
+    if (existingEditor) {
+      existingEditor.remove();
+    }
+
+    // Find the activity card to get coordinates
+    const activityCard = container.querySelector(`.activity-card[data-activity-id="${activityId}"]`);
+    if (!activityCard) return;
+
+    const activityData = activityCard.dataset.activityData;
+    let currentActivity;
+    try {
+      currentActivity = JSON.parse(activityData);
+    } catch {
+      return;
+    }
+
+    // Find next activity card
+    const allActivityCards = Array.from(container.querySelectorAll('.activity-card[data-item-type="activity"]'));
+    const currentIndex = allActivityCards.indexOf(activityCard);
+    const nextActivityCard = allActivityCards[currentIndex + 1];
+
+    let nextActivity;
+    if (nextActivityCard) {
+      try {
+        nextActivity = JSON.parse(nextActivityCard.dataset.activityData);
+      } catch {
+        nextActivity = null;
+      }
+    }
+
+    const fromCoords = currentActivity?.latitude && currentActivity?.longitude
+      ? { lat: currentActivity.latitude, lng: currentActivity.longitude }
+      : null;
+
+    const toCoords = nextActivity?.latitude && nextActivity?.longitude
+      ? { lat: nextActivity.latitude, lng: nextActivity.longitude }
+      : null;
+
+    const currentTransport = currentActivity?.metadata?.transportToNext || null;
+
+    // Create and position the editor popup
+    const editorPopup = document.createElement('div');
+    editorPopup.className = 'transport-editor-popup';
+    editorPopup.innerHTML = createTransportEditor({
+      activityId,
+      fromCoords,
+      toCoords,
+      currentTransport,
+    });
+
+    // Position below the transport line
+    line.style.position = 'relative';
+    line.appendChild(editorPopup);
+
+    // Attach listeners
+    attachTransportEditorListeners(editorPopup.querySelector('.transport-editor'), {
+      activityId,
+      fromCoords,
+      toCoords,
+      onTransportChange,
+      onClose: () => {
+        editorPopup.remove();
+      },
+    });
+  });
+}
+
+// Track if auto-calculation is already in progress to prevent re-entrancy
+let autoCalculationInProgress = false;
+
+/**
+ * Auto-calculate routes for transport lines that are in loading state
+ * Batches all calculations and only refreshes once at the end
+ * For ephemeral routes (multi-day non-last items), updates UI directly without saving
+ * @param {HTMLElement} container - Timeline container
+ * @param {Function} onTransportChange - Callback for transport change
+ */
+async function autoCalculateRoutes(container, onTransportChange) {
+  // Prevent re-entrancy - if already calculating, skip (will check for remaining after current finishes)
+  if (autoCalculationInProgress) {
+    return;
+  }
+
+  const loadingLines = container.querySelectorAll('.transport-line--loading');
+  if (loadingLines.length === 0) {
+    return;
+  }
+
+  autoCalculationInProgress = true;
+
+  // Collect all routes that need calculation
+  const routesToCalculate = [];
+
+  for (const line of loadingLines) {
+    const activityId = line.dataset.activityId;
+    const isEphemeral = line.dataset.ephemeral === 'true';
+
+    // Check for embedded coordinates first (used for cross-day transport with multi-day items)
+    const embeddedFromLat = line.dataset.fromLat;
+    const embeddedFromLng = line.dataset.fromLng;
+    const embeddedToLat = line.dataset.toLat;
+    const embeddedToLng = line.dataset.toLng;
+
+    let fromCoords = null;
+    let toCoords = null;
+
+    if (embeddedFromLat && embeddedFromLng && embeddedToLat && embeddedToLng) {
+      // Use embedded coordinates (cross-day transport)
+      fromCoords = { lat: parseFloat(embeddedFromLat), lng: parseFloat(embeddedFromLng) };
+      toCoords = { lat: parseFloat(embeddedToLat), lng: parseFloat(embeddedToLng) };
+    } else {
+      // Look up from DOM (regular transport between activities)
+      const activityCard = container.querySelector(`.activity-card[data-activity-id="${activityId}"]`);
+      if (!activityCard) continue;
+
+      let currentActivity;
+      try {
+        currentActivity = JSON.parse(activityCard.dataset.activityData);
+      } catch {
+        continue;
+      }
+
+      // Find next activity card
+      const allActivityCards = Array.from(container.querySelectorAll('.activity-card[data-item-type="activity"]'));
+      const currentIndex = allActivityCards.indexOf(activityCard);
+      const nextActivityCard = allActivityCards[currentIndex + 1];
+
+      if (!nextActivityCard) continue;
+
+      let nextActivity;
+      try {
+        nextActivity = JSON.parse(nextActivityCard.dataset.activityData);
+      } catch {
+        continue;
+      }
+
+      fromCoords = currentActivity?.latitude && currentActivity?.longitude
+        ? { lat: currentActivity.latitude, lng: currentActivity.longitude }
+        : null;
+
+      toCoords = nextActivity?.latitude && nextActivity?.longitude
+        ? { lat: nextActivity.latitude, lng: nextActivity.longitude }
+        : null;
+    }
+
+    if (fromCoords && toCoords) {
+      routesToCalculate.push({ activityId, fromCoords, toCoords, isEphemeral, lineElement: line });
+    }
+  }
+
+  // Calculate all routes (with a small delay between to avoid hammering the API)
+  const persistentResults = [];
+  const ephemeralResults = [];
+
+  for (const route of routesToCalculate) {
+    try {
+      const transportData = await calculateRoute(route.fromCoords, route.toCoords, DEFAULT_TRANSPORT_MODE);
+      if (transportData) {
+        if (route.isEphemeral) {
+          // For ephemeral routes, store coordinates to re-find element later
+          ephemeralResults.push({
+            transportData,
+            fromLat: route.fromCoords.lat,
+            fromLng: route.fromCoords.lng,
+            toLat: route.toCoords.lat,
+            toLng: route.toCoords.lng,
+          });
+        } else {
+          // For persistent routes, collect to save
+          persistentResults.push({ activityId: route.activityId, transportData });
+        }
+      }
+      // Small delay to avoid rate limiting
+      if (routesToCalculate.indexOf(route) < routesToCalculate.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    } catch (error) {
+      console.error('Failed to calculate route for activity:', route.activityId, error);
+    }
+  }
+
+  // Update ephemeral routes UI - query from document (container may have been replaced)
+  for (const { transportData, fromLat, fromLng, toLat, toLng } of ephemeralResults) {
+    // Find the transport line by its embedded coordinates (globally, not in potentially stale container)
+    const selector = `.transport-line--loading[data-from-lat="${fromLat}"][data-from-lng="${fromLng}"][data-to-lat="${toLat}"][data-to-lng="${toLng}"]`;
+    const lineElement = document.querySelector(selector);
+    if (lineElement) {
+      updateTransportLineUI(lineElement, transportData);
+    }
+  }
+
+  // Save persistent results - always skip refresh to avoid wiping ephemeral UI updates
+  if (onTransportChange && persistentResults.length > 0) {
+    for (const { activityId, transportData } of persistentResults) {
+      await onTransportChange(activityId, transportData, { skipRefresh: true });
+    }
+  }
+
+  autoCalculationInProgress = false;
+
+  // Check if there are still loading spinners anywhere in the document
+  // (container may have been replaced, so query globally)
+  const remainingLines = document.querySelectorAll('.transport-line--loading');
+  if (remainingLines.length > 0) {
+    // Find the current timeline container
+    const currentContainer = document.querySelector('.unified-timeline');
+    if (currentContainer) {
+      // Use setTimeout to avoid blocking and allow DOM to settle
+      setTimeout(() => autoCalculateRoutes(currentContainer, onTransportChange), 50);
+    }
+  }
+}
+
+/**
+ * Update transport line UI directly with calculated data
+ * Used for ephemeral routes that shouldn't be saved to database
+ * @param {HTMLElement} lineElement - The transport line element
+ * @param {Object} transportData - Calculated transport data
+ */
+function updateTransportLineUI(lineElement, transportData) {
+  // Safety check: ensure element exists and is still in the DOM
+  if (!lineElement || !transportData || !document.body.contains(lineElement)) return;
+
+  const mode = transportData.mode || DEFAULT_TRANSPORT_MODE;
+  const { cachedDistance, cachedDuration } = transportData;
+  const icon = getTransportIcon(mode, { size: 16 });
+
+  // Format duration and distance
+  const durationText = cachedDuration ? formatDuration(cachedDuration) : '';
+  const distanceText = cachedDistance ? formatDistance(cachedDistance) : '';
+
+  // Build the display text
+  let displayText = '';
+  if (durationText && distanceText) {
+    displayText = `${durationText} · ${distanceText}`;
+  } else if (durationText) {
+    displayText = durationText;
+  } else if (distanceText) {
+    displayText = distanceText;
+  }
+
+  // Update the line element
+  lineElement.classList.remove('transport-line--loading');
+  lineElement.dataset.mode = mode;
+  lineElement.innerHTML = `
+    <span class="transport-line-content">
+      <span class="transport-line-icon">${icon}</span>
+      <span class="transport-line-info">${displayText}</span>
+    </span>
+  `;
 }
 
 /**

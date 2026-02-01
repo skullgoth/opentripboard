@@ -239,24 +239,7 @@ const DEMO_ACTIVITIES = {
 const DEMO_RESERVATIONS = {
   // Reservations for User1 Trip (Paris)
   0: [
-    // ===== LODGING =====
-    {
-      type: 'hotel',
-      title: 'Hôtel Plaza Athénée',
-      description: 'Luxury hotel on Avenue Montaigne',
-      location: '25 Avenue Montaigne, 75008 Paris',
-      latitude: 48.8661,
-      longitude: 2.3042,
-      startTime: '2026-07-01T14:00:00.000Z',
-      endTime: '2026-07-10T11:00:00.000Z',
-      orderIndex: 100,
-      metadata: {
-        checkInDate: '2026-07-01',
-        checkOutDate: '2026-07-10',
-        confirmationCode: 'PLAZA78901',
-      },
-    },
-    // ===== TRANSPORT =====
+    // ===== TRANSPORT (arrival) =====
     {
       type: 'flight',
       title: 'Air France AF123 - JFK to CDG',
@@ -266,7 +249,7 @@ const DEMO_RESERVATIONS = {
       longitude: -73.7781,
       startTime: '2026-07-01T06:00:00.000Z',
       endTime: '2026-07-01T10:00:00.000Z',
-      orderIndex: 101,
+      orderIndex: 0,
       metadata: {
         provider: 'Air France',
         flightNumbers: ['AF123'],
@@ -277,6 +260,24 @@ const DEMO_RESERVATIONS = {
         confirmationCode: 'AF123XYZ',
       },
     },
+    // ===== LODGING =====
+    {
+      type: 'hotel',
+      title: 'Hôtel Plaza Athénée',
+      description: 'Luxury hotel on Avenue Montaigne',
+      location: '25 Avenue Montaigne, 75008 Paris',
+      latitude: 48.8661,
+      longitude: 2.3042,
+      startTime: '2026-07-01T14:00:00.000Z',
+      endTime: '2026-07-10T11:00:00.000Z',
+      orderIndex: 1,
+      metadata: {
+        checkInDate: '2026-07-01',
+        checkOutDate: '2026-07-10',
+        confirmationCode: 'PLAZA78901',
+      },
+    },
+    // ===== TRANSPORT (departure) =====
     {
       type: 'flight',
       title: 'Air France AF456 - CDG to JFK',
@@ -286,7 +287,7 @@ const DEMO_RESERVATIONS = {
       longitude: 2.5479,
       startTime: '2026-07-10T14:00:00.000Z',
       endTime: '2026-07-10T18:00:00.000Z',
-      orderIndex: 102,
+      orderIndex: 99,
       metadata: {
         provider: 'Air France',
         flightNumbers: ['AF456'],
@@ -398,42 +399,7 @@ const DEMO_RESERVATIONS = {
   ],
   // Reservations for User2 Trip (Tokyo)
   1: [
-    // ===== LODGING =====
-    {
-      type: 'hotel',
-      title: 'The Ritz-Carlton Tokyo',
-      description: 'Luxury hotel in Tokyo Midtown',
-      location: 'Tokyo Midtown, 9-7-1 Akasaka, Minato City',
-      latitude: 35.6657,
-      longitude: 139.7313,
-      startTime: '2026-08-01T15:00:00.000Z',
-      endTime: '2026-08-10T11:00:00.000Z',
-      orderIndex: 100,
-      metadata: {
-        checkInDate: '2026-08-01',
-        checkOutDate: '2026-08-10',
-        confirmationCode: 'RITZ456789',
-      },
-    },
-    {
-      type: 'rental',
-      title: 'Traditional Machiya in Kyoto',
-      description: 'Historic wooden townhouse stay',
-      location: 'Higashiyama, Kyoto',
-      latitude: 34.9981,
-      longitude: 135.7789,
-      startTime: '2026-08-04T15:00:00.000Z',
-      endTime: '2026-08-05T10:00:00.000Z',
-      orderIndex: 101,
-      metadata: {
-        propertyName: 'Machiya Residence Inn',
-        provider: 'Airbnb',
-        checkInDate: '2026-08-04',
-        checkOutDate: '2026-08-05',
-        confirmationCode: 'ABNB789012',
-      },
-    },
-    // ===== TRANSPORT =====
+    // ===== TRANSPORT (arrival) =====
     {
       type: 'flight',
       title: 'JAL JL002 - LAX to NRT',
@@ -443,7 +409,7 @@ const DEMO_RESERVATIONS = {
       longitude: -118.4081,
       startTime: '2026-08-01T00:00:00.000Z',
       endTime: '2026-08-01T08:00:00.000Z',
-      orderIndex: 102,
+      orderIndex: 0,
       metadata: {
         provider: 'Japan Airlines',
         flightNumbers: ['JL002'],
@@ -454,26 +420,24 @@ const DEMO_RESERVATIONS = {
         confirmationCode: 'JAL002XYZ',
       },
     },
+    // ===== LODGING =====
     {
-      type: 'flight',
-      title: 'JAL JL001 - NRT to LAX',
-      description: 'Return flight from Tokyo',
-      location: 'Narita International Airport',
-      latitude: 35.7720,
-      longitude: 140.3929,
-      startTime: '2026-08-10T08:00:00.000Z',
-      endTime: '2026-08-10T18:00:00.000Z',
-      orderIndex: 103,
+      type: 'hotel',
+      title: 'The Ritz-Carlton Tokyo',
+      description: 'Luxury hotel in Tokyo Midtown',
+      location: 'Tokyo Midtown, 9-7-1 Akasaka, Minato City',
+      latitude: 35.6657,
+      longitude: 139.7313,
+      startTime: '2026-08-01T15:00:00.000Z',
+      endTime: '2026-08-10T11:00:00.000Z',
+      orderIndex: 1,
       metadata: {
-        provider: 'Japan Airlines',
-        flightNumbers: ['JL001'],
-        origin: 'NRT',
-        destination: 'LAX',
-        departureDate: '2026-08-10',
-        departureTime: '17:00',
-        confirmationCode: 'JAL001ABC',
+        checkInDate: '2026-08-01',
+        checkOutDate: '2026-08-10',
+        confirmationCode: 'RITZ456789',
       },
     },
+    // ===== TRANSPORT (Kyoto day trip) =====
     {
       type: 'train',
       title: 'Shinkansen Tokyo to Kyoto',
@@ -483,7 +447,7 @@ const DEMO_RESERVATIONS = {
       longitude: 139.7671,
       startTime: '2026-08-04T07:00:00.000Z',
       endTime: '2026-08-04T09:15:00.000Z',
-      orderIndex: 104,
+      orderIndex: 0,
       metadata: {
         provider: 'JR Central',
         trainNumber: 'Nozomi 7',
@@ -496,6 +460,24 @@ const DEMO_RESERVATIONS = {
       },
     },
     {
+      type: 'rental',
+      title: 'Traditional Machiya in Kyoto',
+      description: 'Historic wooden townhouse stay',
+      location: 'Higashiyama, Kyoto',
+      latitude: 34.9981,
+      longitude: 135.7789,
+      startTime: '2026-08-04T15:00:00.000Z',
+      endTime: '2026-08-05T10:00:00.000Z',
+      orderIndex: 1,
+      metadata: {
+        propertyName: 'Machiya Residence Inn',
+        provider: 'Airbnb',
+        checkInDate: '2026-08-04',
+        checkOutDate: '2026-08-05',
+        confirmationCode: 'ABNB789012',
+      },
+    },
+    {
       type: 'train',
       title: 'Shinkansen Kyoto to Tokyo',
       description: 'Return bullet train',
@@ -504,7 +486,7 @@ const DEMO_RESERVATIONS = {
       longitude: 135.7588,
       startTime: '2026-08-05T16:00:00.000Z',
       endTime: '2026-08-05T18:15:00.000Z',
-      orderIndex: 105,
+      orderIndex: 0,
       metadata: {
         provider: 'JR Central',
         trainNumber: 'Nozomi 42',
@@ -514,6 +496,27 @@ const DEMO_RESERVATIONS = {
         departureTime: '16:00',
         seatClass: 'Green Car (First Class)',
         confirmationCode: 'NOZOMI042',
+      },
+    },
+    // ===== TRANSPORT (departure) =====
+    {
+      type: 'flight',
+      title: 'JAL JL001 - NRT to LAX',
+      description: 'Return flight from Tokyo',
+      location: 'Narita International Airport',
+      latitude: 35.7720,
+      longitude: 140.3929,
+      startTime: '2026-08-10T08:00:00.000Z',
+      endTime: '2026-08-10T18:00:00.000Z',
+      orderIndex: 99,
+      metadata: {
+        provider: 'Japan Airlines',
+        flightNumbers: ['JL001'],
+        origin: 'NRT',
+        destination: 'LAX',
+        departureDate: '2026-08-10',
+        departureTime: '17:00',
+        confirmationCode: 'JAL001ABC',
       },
     },
     // ===== DINING =====

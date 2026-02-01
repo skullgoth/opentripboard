@@ -230,6 +230,7 @@ export async function tripDetailPage(params) {
         onVoteSuggestion: handleVoteSuggestion,
         onAcceptSuggestion: handleAcceptSuggestion,
         onRejectSuggestion: handleRejectSuggestion,
+        onTransportChange: handleTransportChange,
       });
     }
 
@@ -554,6 +555,43 @@ async function handleSaveActivityField(activityId, fieldName, newValue, options 
         showToast(t('activity.saveFailed'), 'error');
       }
       throw error;
+    }
+  }
+}
+
+/**
+ * Handle transport change between activities
+ * @param {string} activityId - Activity ID that owns the transport
+ * @param {Object} transportData - Transport data (mode, cachedDistance, cachedDuration, routeGeometry)
+ * @param {Object} options - Options { skipRefresh: boolean }
+ */
+async function handleTransportChange(activityId, transportData, options = {}) {
+  const activity = currentActivities.find((a) => a.id === activityId);
+  if (!activity) {
+    console.error('Activity not found for transport change:', activityId);
+    return;
+  }
+
+  try {
+    // Update the activity's metadata with transport data
+    const updatedMetadata = {
+      ...(activity.metadata || {}),
+      transportToNext: transportData,
+    };
+
+    await tripState.updateActivity(activityId, { metadata: updatedMetadata });
+
+    // Update local state
+    activity.metadata = updatedMetadata;
+
+    // Only refresh if not skipped (for batch updates)
+    if (!options.skipRefresh) {
+      refreshTimeline();
+    }
+  } catch (error) {
+    console.error('Failed to save transport:', error);
+    if (!options.skipRefresh) {
+      showToast(t('activity.saveFailed'), 'error');
     }
   }
 }
@@ -1183,6 +1221,7 @@ function refreshTimeline() {
         onVoteSuggestion: handleVoteSuggestion,
         onAcceptSuggestion: handleAcceptSuggestion,
         onRejectSuggestion: handleRejectSuggestion,
+        onTransportChange: handleTransportChange,
       });
 
       // Reinitialize drag and drop

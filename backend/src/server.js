@@ -151,6 +151,10 @@ async function createServer() {
       await instance.register(import('./routes/cover-images.js'), {
         prefix: '/cover-images',
       });
+      // Transport routing routes for distance/duration calculation
+      await instance.register(import('./routes/routing.js'), {
+        prefix: '/routing',
+      });
     },
     { prefix: '/api/v1' }
   );

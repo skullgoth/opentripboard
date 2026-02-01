@@ -274,6 +274,24 @@
     "totalDistance": "Distance totale :",
     "estTravelTime": "Durée estimée :"
   },
+  "transport": {
+    "addTransport": "Ajouter un transport",
+    "editTransport": "Cliquer pour changer le mode de transport",
+    "selectMode": "Sélectionner le mode de transport",
+    "clear": "Effacer",
+    "noCoordinates": "Ajoutez des lieux aux deux activités pour calculer l'itinéraire",
+    "calculating": "Calcul de l'itinéraire...",
+    "estimated": "Estimé (sans coordonnées)",
+    "est": "est.",
+    "from": "depuis",
+    "modes": {
+      "walk": "À pied",
+      "bike": "Vélo",
+      "drive": "Voiture",
+      "fly": "Avion",
+      "boat": "Bateau"
+    }
+  },
   "export": {
     "export": "Exporter",
     "exportTrip": "Exporter le voyage",

@@ -274,6 +274,24 @@
     "totalDistance": "Total Distance:",
     "estTravelTime": "Est. Travel Time:"
   },
+  "transport": {
+    "addTransport": "Add transport",
+    "editTransport": "Click to change transport mode",
+    "selectMode": "Select transport mode",
+    "clear": "Clear",
+    "noCoordinates": "Add locations to both activities to calculate route",
+    "calculating": "Calculating route...",
+    "estimated": "Estimated (no coordinates)",
+    "est": "est.",
+    "from": "from",
+    "modes": {
+      "walk": "Walk",
+      "bike": "Bike",
+      "drive": "Drive",
+      "fly": "Fly",
+      "boat": "Boat"
+    }
+  },
   "export": {
     "export": "Export",
     "exportTrip": "Export Trip",
