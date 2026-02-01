@@ -6,7 +6,7 @@ import { t } from '../utils/i18n.js';
 /**
  * Valid transport modes
  */
-export const TRANSPORT_MODES = ['walk', 'bike', 'drive', 'fly', 'boat'];
+export const TRANSPORT_MODES = ['walk', 'bike', 'drive', 'train', 'fly', 'boat'];
 
 /**
  * Get route between two points

@@ -308,6 +308,7 @@ export async function initializeMap(containerId, activities = [], options = {}) 
     walk: { color: '#22c55e', weight: 3, dashArray: '5, 10', opacity: 0.8 },
     bike: { color: '#3b82f6', weight: 3, dashArray: '5, 10', opacity: 0.8 },
     drive: { color: '#3b82f6', weight: 4, dashArray: null, opacity: 0.8 },
+    train: { color: '#f59e0b', weight: 4, dashArray: '12, 6', opacity: 0.8 },
     fly: { color: '#a855f7', weight: 2, dashArray: '10, 15', opacity: 0.7 },
     boat: { color: '#06b6d4', weight: 3, dashArray: '8, 12', opacity: 0.8 },
     default: { color: '#6b7280', weight: 2, dashArray: '3, 6', opacity: 0.5 },

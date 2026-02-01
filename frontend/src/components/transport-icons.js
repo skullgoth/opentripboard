@@ -40,6 +40,16 @@ const TRANSPORT_ICONS = {
     <path d="M12 4.5L7.5 9"/>
     <path d="M12 4.5l4.5 4.5"/>
   </svg>`,
+
+  train: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="16" rx="2"/>
+    <path d="M4 11h16"/>
+    <path d="M12 3v8"/>
+    <circle cx="8" cy="15" r="1"/>
+    <circle cx="16" cy="15" r="1"/>
+    <path d="M8 19l-2 3"/>
+    <path d="M16 19l2 3"/>
+  </svg>`,
 };
 
 /**

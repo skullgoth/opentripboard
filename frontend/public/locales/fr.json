@@ -227,7 +227,10 @@
     "inviteFailed": "Échec de l'invitation du compagnon",
     "removeSuccess": "Compagnon de voyage retiré avec succès",
     "removeFailed": "Échec du retrait du compagnon",
-    "confirmRemove": "Êtes-vous sûr de vouloir retirer ce compagnon de voyage ?"
+    "confirmRemove": "Êtes-vous sûr de vouloir retirer ce compagnon de voyage ?",
+    "you": "(vous)",
+    "owner": "Propriétaire",
+    "online": "En ligne"
   },
   "inviteTripBuddy": {
     "modalTitle": "Inviter un Compagnon de Voyage",
@@ -286,6 +289,7 @@
       "walk": "À pied",
       "bike": "Vélo",
       "drive": "Voiture",
+      "train": "Train",
       "fly": "Avion",
       "boat": "Bateau"
     }

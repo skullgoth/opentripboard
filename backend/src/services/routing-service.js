@@ -8,6 +8,7 @@ const TRANSPORT_SPEEDS = {
   walk: 5,
   bike: 15,
   drive: 50,
+  train: 80,
   fly: 800,
   boat: 30,
 };
