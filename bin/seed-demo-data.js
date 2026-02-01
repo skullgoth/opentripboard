@@ -11,9 +11,13 @@
  *
  * Categorization:
  * - Activities: market, monument, museum, park, shopping, sightseeing
+ * - Transit stops: airport, train_station, bus_stop, ferry_terminal, port, subway_station
  * - Lodging Reservations: hotel, rental
- * - Transport Reservations: bus, car, cruise, ferry, flight, train
  * - Dining Reservations: bar, restaurant
+ *
+ * Note: Transit stops (airports, train stations, etc.) are now simple activities
+ * with location/coordinates. The auto-calculated transport between activities
+ * handles route visualization.
  */
 
 const http = require('http');
@@ -89,11 +93,26 @@ const DEMO_TRIPS = [
   },
 ];
 
-// Demo activities (non-reservation sightseeing activities)
-// Types: market, monument, museum, park, shopping, sightseeing
+// Demo activities (sightseeing activities and transit stops)
+// Types: market, monument, museum, park, shopping, sightseeing, transit
 const DEMO_ACTIVITIES = {
   // Activities for User1 Trip (Paris)
   0: [
+    // Transit: Arrival airport
+    {
+      type: 'airport',
+      title: 'Charles de Gaulle Airport (Arrival)',
+      description: 'Arriving from JFK on Air France AF123',
+      location: 'Charles de Gaulle Airport, Roissy-en-France',
+      latitude: 49.0097,
+      longitude: 2.5479,
+      startTime: '2026-07-01T10:00:00.000Z',
+      endTime: '2026-07-01T11:00:00.000Z',
+      orderIndex: 0,
+      metadata: {
+        confirmationCode: 'AF123XYZ',
+      },
+    },
     {
       type: 'monument',
       title: 'Eiffel Tower Visit',
@@ -103,7 +122,7 @@ const DEMO_ACTIVITIES = {
       longitude: 2.2945,
       startTime: '2026-07-02T10:00:00.000Z',
       endTime: '2026-07-02T13:00:00.000Z',
-      orderIndex: 0,
+      orderIndex: 1,
     },
     {
       type: 'museum',
@@ -114,7 +133,7 @@ const DEMO_ACTIVITIES = {
       longitude: 2.3376,
       startTime: '2026-07-03T09:00:00.000Z',
       endTime: '2026-07-03T14:00:00.000Z',
-      orderIndex: 1,
+      orderIndex: 2,
     },
     {
       type: 'monument',
@@ -125,7 +144,7 @@ const DEMO_ACTIVITIES = {
       longitude: 2.3499,
       startTime: '2026-07-04T10:00:00.000Z',
       endTime: '2026-07-04T12:00:00.000Z',
-      orderIndex: 2,
+      orderIndex: 3,
     },
     {
       type: 'sightseeing',
@@ -136,7 +155,7 @@ const DEMO_ACTIVITIES = {
       longitude: 2.3431,
       startTime: '2026-07-05T10:00:00.000Z',
       endTime: '2026-07-05T16:00:00.000Z',
-      orderIndex: 3,
+      orderIndex: 4,
     },
     {
       type: 'shopping',
@@ -147,7 +166,7 @@ const DEMO_ACTIVITIES = {
       longitude: 2.3075,
       startTime: '2026-07-06T14:00:00.000Z',
       endTime: '2026-07-06T18:00:00.000Z',
-      orderIndex: 4,
+      orderIndex: 5,
     },
     {
       type: 'park',
@@ -158,11 +177,56 @@ const DEMO_ACTIVITIES = {
       longitude: 2.3371,
       startTime: '2026-07-07T09:00:00.000Z',
       endTime: '2026-07-07T12:00:00.000Z',
-      orderIndex: 5,
+      orderIndex: 6,
+    },
+    // Transit: Day trip to London
+    {
+      type: 'train_station',
+      title: 'Gare du Nord (Eurostar to London)',
+      description: 'Day trip to London via Eurostar',
+      location: 'Paris Gare du Nord',
+      latitude: 48.8809,
+      longitude: 2.3553,
+      startTime: '2026-07-08T08:30:00.000Z',
+      endTime: '2026-07-08T09:00:00.000Z',
+      orderIndex: 7,
+      metadata: {
+        confirmationCode: 'EURO9876',
+      },
+    },
+    // Transit: Departure airport
+    {
+      type: 'airport',
+      title: 'Charles de Gaulle Airport (Departure)',
+      description: 'Departing to JFK on Air France AF456',
+      location: 'Charles de Gaulle Airport, Roissy-en-France',
+      latitude: 49.0097,
+      longitude: 2.5479,
+      startTime: '2026-07-10T12:00:00.000Z',
+      endTime: '2026-07-10T14:00:00.000Z',
+      orderIndex: 99,
+      metadata: {
+        confirmationCode: 'AF456ABC',
+      },
     },
   ],
   // Activities for User2 Trip (Tokyo)
   1: [
+    // Transit: Arrival airport
+    {
+      type: 'airport',
+      title: 'Narita International Airport (Arrival)',
+      description: 'Arriving from LAX on JAL JL002',
+      location: 'Narita International Airport',
+      latitude: 35.7720,
+      longitude: 140.3929,
+      startTime: '2026-08-01T08:00:00.000Z',
+      endTime: '2026-08-01T09:00:00.000Z',
+      orderIndex: 0,
+      metadata: {
+        confirmationCode: 'JAL002XYZ',
+      },
+    },
     {
       type: 'monument',
       title: 'Senso-ji Temple',
@@ -172,7 +236,7 @@ const DEMO_ACTIVITIES = {
       longitude: 139.7967,
       startTime: '2026-08-02T09:00:00.000Z',
       endTime: '2026-08-02T12:00:00.000Z',
-      orderIndex: 0,
+      orderIndex: 1,
     },
     {
       type: 'sightseeing',
@@ -183,7 +247,49 @@ const DEMO_ACTIVITIES = {
       longitude: 139.7004,
       startTime: '2026-08-03T18:00:00.000Z',
       endTime: '2026-08-03T20:00:00.000Z',
-      orderIndex: 1,
+      orderIndex: 2,
+    },
+    // Transit: Shinkansen to Kyoto
+    {
+      type: 'train_station',
+      title: 'Tokyo Station (Shinkansen to Kyoto)',
+      description: 'Bullet train to Kyoto for day trip',
+      location: 'Tokyo Station',
+      latitude: 35.6812,
+      longitude: 139.7671,
+      startTime: '2026-08-04T07:00:00.000Z',
+      endTime: '2026-08-04T07:30:00.000Z',
+      orderIndex: 3,
+      metadata: {
+        confirmationCode: 'NOZOMI789',
+      },
+    },
+    // Transit: Kyoto Station arrival
+    {
+      type: 'train_station',
+      title: 'Kyoto Station (Arrival)',
+      description: 'Arriving in Kyoto',
+      location: 'Kyoto Station',
+      latitude: 34.9858,
+      longitude: 135.7588,
+      startTime: '2026-08-04T09:15:00.000Z',
+      endTime: '2026-08-04T09:30:00.000Z',
+      orderIndex: 4,
+    },
+    // Transit: Return to Tokyo
+    {
+      type: 'train_station',
+      title: 'Kyoto Station (Return to Tokyo)',
+      description: 'Return bullet train to Tokyo',
+      location: 'Kyoto Station',
+      latitude: 34.9858,
+      longitude: 135.7588,
+      startTime: '2026-08-05T16:00:00.000Z',
+      endTime: '2026-08-05T16:30:00.000Z',
+      orderIndex: 5,
+      metadata: {
+        confirmationCode: 'NOZOMI042',
+      },
     },
     {
       type: 'monument',
@@ -192,9 +298,9 @@ const DEMO_ACTIVITIES = {
       location: '1-1 Yoyogikamizonocho, Shibuya City, Tokyo',
       latitude: 35.6764,
       longitude: 139.6993,
-      startTime: '2026-08-05T08:00:00.000Z',
-      endTime: '2026-08-05T10:00:00.000Z',
-      orderIndex: 2,
+      startTime: '2026-08-06T08:00:00.000Z',
+      endTime: '2026-08-06T10:00:00.000Z',
+      orderIndex: 6,
     },
     {
       type: 'sightseeing',
@@ -205,7 +311,7 @@ const DEMO_ACTIVITIES = {
       longitude: 139.8107,
       startTime: '2026-08-06T14:00:00.000Z',
       endTime: '2026-08-06T17:00:00.000Z',
-      orderIndex: 3,
+      orderIndex: 7,
     },
     {
       type: 'market',
@@ -216,7 +322,7 @@ const DEMO_ACTIVITIES = {
       longitude: 139.7707,
       startTime: '2026-08-07T06:00:00.000Z',
       endTime: '2026-08-07T09:00:00.000Z',
-      orderIndex: 4,
+      orderIndex: 8,
     },
     {
       type: 'park',
@@ -227,39 +333,33 @@ const DEMO_ACTIVITIES = {
       longitude: 139.7100,
       startTime: '2026-08-08T10:00:00.000Z',
       endTime: '2026-08-08T13:00:00.000Z',
-      orderIndex: 5,
+      orderIndex: 9,
+    },
+    // Transit: Departure airport
+    {
+      type: 'airport',
+      title: 'Narita International Airport (Departure)',
+      description: 'Departing to LAX on JAL JL001',
+      location: 'Narita International Airport',
+      latitude: 35.7720,
+      longitude: 140.3929,
+      startTime: '2026-08-10T15:00:00.000Z',
+      endTime: '2026-08-10T17:00:00.000Z',
+      orderIndex: 99,
+      metadata: {
+        confirmationCode: 'JAL001ABC',
+      },
     },
   ],
 };
 
 // Demo reservations organized by category
 // Lodging: hotel, rental
-// Transport: bus, car, cruise, ferry, flight, train
 // Dining: bar, restaurant
+// Note: Transport types (flight, train, car, etc.) are now simple transit activities
 const DEMO_RESERVATIONS = {
   // Reservations for User1 Trip (Paris)
   0: [
-    // ===== TRANSPORT (arrival) =====
-    {
-      type: 'flight',
-      title: 'Air France AF123 - JFK to CDG',
-      description: 'Outbound flight to Paris',
-      location: 'JFK Airport, New York',
-      latitude: 40.6413,
-      longitude: -73.7781,
-      startTime: '2026-07-01T06:00:00.000Z',
-      endTime: '2026-07-01T10:00:00.000Z',
-      orderIndex: 0,
-      metadata: {
-        provider: 'Air France',
-        flightNumbers: ['AF123'],
-        origin: 'JFK',
-        destination: 'CDG',
-        departureDate: '2026-07-01',
-        departureTime: '06:00',
-        confirmationCode: 'AF123XYZ',
-      },
-    },
     // ===== LODGING =====
     {
       type: 'hotel',
@@ -275,67 +375,6 @@ const DEMO_RESERVATIONS = {
         checkInDate: '2026-07-01',
         checkOutDate: '2026-07-10',
         confirmationCode: 'PLAZA78901',
-      },
-    },
-    // ===== TRANSPORT (departure) =====
-    {
-      type: 'flight',
-      title: 'Air France AF456 - CDG to JFK',
-      description: 'Return flight from Paris',
-      location: 'Charles de Gaulle Airport',
-      latitude: 49.0097,
-      longitude: 2.5479,
-      startTime: '2026-07-10T14:00:00.000Z',
-      endTime: '2026-07-10T18:00:00.000Z',
-      orderIndex: 99,
-      metadata: {
-        provider: 'Air France',
-        flightNumbers: ['AF456'],
-        origin: 'CDG',
-        destination: 'JFK',
-        departureDate: '2026-07-10',
-        departureTime: '14:00',
-        confirmationCode: 'AF456ABC',
-      },
-    },
-    {
-      type: 'train',
-      title: 'Eurostar Paris to London',
-      description: 'Day trip to London',
-      location: 'Paris Gare du Nord',
-      latitude: 48.8809,
-      longitude: 2.3553,
-      startTime: '2026-07-08T08:30:00.000Z',
-      endTime: '2026-07-08T11:00:00.000Z',
-      orderIndex: 103,
-      metadata: {
-        provider: 'Eurostar',
-        trainNumber: '9012',
-        origin: 'Paris Gare du Nord',
-        destination: 'London St Pancras',
-        departureDate: '2026-07-08',
-        departureTime: '08:30',
-        seatClass: 'Standard Premier',
-        confirmationCode: 'EURO9876',
-      },
-    },
-    {
-      type: 'car',
-      title: 'Hertz Car Rental',
-      description: 'Compact SUV for day trips',
-      location: 'Hertz Paris CDG Airport',
-      latitude: 49.0097,
-      longitude: 2.5479,
-      startTime: '2026-07-05T09:00:00.000Z',
-      endTime: '2026-07-07T18:00:00.000Z',
-      orderIndex: 104,
-      metadata: {
-        provider: 'Hertz',
-        vehicleType: 'Compact SUV',
-        pickupLocation: 'CDG Airport Terminal 2',
-        pickupDate: '2026-07-05',
-        dropoffDate: '2026-07-07',
-        confirmationCode: 'HERTZ12345',
       },
     },
     // ===== DINING =====
@@ -399,27 +438,6 @@ const DEMO_RESERVATIONS = {
   ],
   // Reservations for User2 Trip (Tokyo)
   1: [
-    // ===== TRANSPORT (arrival) =====
-    {
-      type: 'flight',
-      title: 'JAL JL002 - LAX to NRT',
-      description: 'Outbound flight to Tokyo',
-      location: 'LAX Airport, Los Angeles',
-      latitude: 33.9425,
-      longitude: -118.4081,
-      startTime: '2026-08-01T00:00:00.000Z',
-      endTime: '2026-08-01T08:00:00.000Z',
-      orderIndex: 0,
-      metadata: {
-        provider: 'Japan Airlines',
-        flightNumbers: ['JL002'],
-        origin: 'LAX',
-        destination: 'NRT',
-        departureDate: '2026-08-01',
-        departureTime: '00:00',
-        confirmationCode: 'JAL002XYZ',
-      },
-    },
     // ===== LODGING =====
     {
       type: 'hotel',
@@ -437,28 +455,6 @@ const DEMO_RESERVATIONS = {
         confirmationCode: 'RITZ456789',
       },
     },
-    // ===== TRANSPORT (Kyoto day trip) =====
-    {
-      type: 'train',
-      title: 'Shinkansen Tokyo to Kyoto',
-      description: 'Bullet train to Kyoto',
-      location: 'Tokyo Station',
-      latitude: 35.6812,
-      longitude: 139.7671,
-      startTime: '2026-08-04T07:00:00.000Z',
-      endTime: '2026-08-04T09:15:00.000Z',
-      orderIndex: 0,
-      metadata: {
-        provider: 'JR Central',
-        trainNumber: 'Nozomi 7',
-        origin: 'Tokyo Station',
-        destination: 'Kyoto Station',
-        departureDate: '2026-08-04',
-        departureTime: '07:00',
-        seatClass: 'Green Car (First Class)',
-        confirmationCode: 'NOZOMI789',
-      },
-    },
     {
       type: 'rental',
       title: 'Traditional Machiya in Kyoto',
@@ -468,55 +464,13 @@ const DEMO_RESERVATIONS = {
       longitude: 135.7789,
       startTime: '2026-08-04T15:00:00.000Z',
       endTime: '2026-08-05T10:00:00.000Z',
-      orderIndex: 1,
+      orderIndex: 2,
       metadata: {
         propertyName: 'Machiya Residence Inn',
         provider: 'Airbnb',
         checkInDate: '2026-08-04',
         checkOutDate: '2026-08-05',
         confirmationCode: 'ABNB789012',
-      },
-    },
-    {
-      type: 'train',
-      title: 'Shinkansen Kyoto to Tokyo',
-      description: 'Return bullet train',
-      location: 'Kyoto Station',
-      latitude: 34.9858,
-      longitude: 135.7588,
-      startTime: '2026-08-05T16:00:00.000Z',
-      endTime: '2026-08-05T18:15:00.000Z',
-      orderIndex: 0,
-      metadata: {
-        provider: 'JR Central',
-        trainNumber: 'Nozomi 42',
-        origin: 'Kyoto Station',
-        destination: 'Tokyo Station',
-        departureDate: '2026-08-05',
-        departureTime: '16:00',
-        seatClass: 'Green Car (First Class)',
-        confirmationCode: 'NOZOMI042',
-      },
-    },
-    // ===== TRANSPORT (departure) =====
-    {
-      type: 'flight',
-      title: 'JAL JL001 - NRT to LAX',
-      description: 'Return flight from Tokyo',
-      location: 'Narita International Airport',
-      latitude: 35.7720,
-      longitude: 140.3929,
-      startTime: '2026-08-10T08:00:00.000Z',
-      endTime: '2026-08-10T18:00:00.000Z',
-      orderIndex: 99,
-      metadata: {
-        provider: 'Japan Airlines',
-        flightNumbers: ['JL001'],
-        origin: 'NRT',
-        destination: 'LAX',
-        departureDate: '2026-08-10',
-        departureTime: '17:00',
-        confirmationCode: 'JAL001ABC',
       },
     },
     // ===== DINING =====
@@ -1339,11 +1293,11 @@ async function seedDemoData() {
     console.log(`   • ${DEMO_USERS[0].fullName}: ${DEMO_USERS[0].email} / ${DEMO_USERS[0].password} (ADMIN)`);
     console.log(`   • ${DEMO_USERS[1].fullName}: ${DEMO_USERS[1].email} / ${DEMO_USERS[1].password} (user)`);
     console.log('\n📊 Data Summary:');
-    console.log('   Activities (per trip): 6 items');
+    console.log('   Activities (per trip): 9-12 items');
     console.log('     • Types: monument, museum, sightseeing, shopping, park, market');
-    console.log('   Reservations (per trip): 8-9 items');
+    console.log('     • Transit stops: airport, train_station (simple activities with location)');
+    console.log('   Reservations (per trip): 4-5 items');
     console.log('     • Lodging: hotel, rental');
-    console.log('     • Transport: flight (x2), train (x1-2), car');
     console.log('     • Dining: restaurant (x2), bar');
     console.log('   Expenses (per trip): 7 items');
     console.log('     • Split types: none, one-way, equal, custom, settlement');

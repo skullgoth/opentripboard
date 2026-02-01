@@ -95,54 +95,15 @@ export function createLodgingSection(activities) {
 
 /**
  * Create the Transport section
- * Types: Bus, Car, Cruise, Ferry, Flight, Train (alphabetically sorted)
+ * Note: Transport reservations have been replaced by simple 'transit' activities.
+ * Transit stops are now regular activities in the timeline, not reservation cards.
+ * This function returns an empty string as the transport section is no longer used.
  * @param {Array} activities - All activities
- * @returns {string} HTML string
+ * @returns {string} Empty string (section removed)
  */
 export function createTransportationSection(activities) {
-  const transportTypes = ['bus', 'car', 'cruise', 'ferry', 'flight', 'train'];
-  const transportReservations = filterReservationsByType(activities, transportTypes);
-
-  if (transportReservations.length === 0) {
-    return `
-      <div class="reservation-section-container transportation-section">
-        <div class="reservation-section-header">
-          <span class="section-icon">🚀</span>
-          <h3>${t('reservations.transport')}</h3>
-        </div>
-        <div class="reservation-empty-state">
-          <p>${t('reservations.noTransport')}</p>
-          <button class="btn btn-sm btn-secondary" data-action="add-transport">
-            + ${t('reservations.addTransport')}
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  // Sort by start time
-  transportReservations.sort((a, b) => {
-    if (!a.startTime) return 1;
-    if (!b.startTime) return -1;
-    return new Date(a.startTime) - new Date(b.startTime);
-  });
-
-  const cards = transportReservations.map(r => createReservationCard(r)).join('');
-
-  return `
-    <div class="reservation-section-container transportation-section">
-      <div class="reservation-section-header">
-        <span class="section-icon">🚀</span>
-        <h3>${t('reservations.transport')}</h3>
-        <button class="btn btn-sm btn-secondary" data-action="add-transport">
-          + ${t('common.add')}
-        </button>
-      </div>
-      <div class="reservation-section-cards">
-        ${cards}
-      </div>
-    </div>
-  `;
+  // Transport section removed - transit stops are now regular activities
+  return '';
 }
 
 /**
@@ -235,18 +196,11 @@ function createReservationCard(reservation) {
 }
 
 // Type categories for filtering dropdown options (icons only, labels come from i18n)
+// Note: Transport types removed - transit stops are now regular activities
 const TYPE_CATEGORIES = {
   lodging: [
     { value: 'hotel', icon: '🏨' },
     { value: 'rental', icon: '🏠' },
-  ],
-  transport: [
-    { value: 'bus', icon: '🚌' },
-    { value: 'car', icon: '🚗' },
-    { value: 'cruise', icon: '🚢' },
-    { value: 'ferry', icon: '⛴️' },
-    { value: 'flight', icon: '✈️' },
-    { value: 'train', icon: '🚆' },
   ],
   dining: [
     { value: 'bar', icon: '🍸' },
@@ -266,12 +220,12 @@ function getTypeLabel(type) {
 
 /**
  * Get the category for a given type
+ * Note: Transport types removed - transit stops are now regular activities
  * @param {string} type - Reservation type
  * @returns {string} Category name
  */
 function getCategoryForType(type) {
   if (['hotel', 'rental'].includes(type)) return 'lodging';
-  if (['bus', 'car', 'cruise', 'ferry', 'flight', 'train'].includes(type)) return 'transport';
   if (['bar', 'restaurant'].includes(type)) return 'dining';
   return 'lodging'; // default fallback
 }
@@ -407,73 +361,6 @@ function getEditableFields(type, reservation) {
       fields.push(createEditableField('checkOutDate', t('reservations.fields.checkOutDate'), metadata.checkOutDate || extractDate(endTime), 'date', dateOpts));
       fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
       fields.push(createLocationField(t('reservations.fields.locationAddress'), location, latitude, longitude));
-      break;
-
-    // ===== TRANSPORT TYPES =====
-    case 'bus':
-      fields.push(createEditableField('provider', t('reservations.fields.busCompany'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('busNumber', t('reservations.fields.busNumber'), metadata.busNumber || '', 'text'));
-      fields.push(createEditableField('origin', t('reservations.fields.departureStation'), metadata.origin || '', 'text'));
-      fields.push(createEditableField('destination', t('reservations.fields.arrivalStation'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
-      fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
-      fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
-      fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
-      break;
-
-    case 'car':
-      fields.push(createEditableField('provider', t('reservations.fields.rentalCompany'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('vehicleType', t('reservations.fields.vehicleType'), metadata.vehicleType || '', 'text'));
-      fields.push(createEditableField('pickupLocation', t('reservations.fields.pickupLocation'), metadata.pickupLocation || '', 'text'));
-      fields.push(createEditableField('pickupDate', t('reservations.fields.pickupDate'), metadata.pickupDate || extractDate(startTime), 'date', dateOpts));
-      fields.push(createEditableField('dropoffDate', t('reservations.fields.returnDate'), metadata.dropoffDate || extractDate(endTime), 'date', dateOpts));
-      fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
-      fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
-      break;
-
-    case 'cruise':
-      fields.push(createEditableField('provider', t('reservations.fields.cruiseLine'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('shipName', t('reservations.fields.shipName'), metadata.shipName || '', 'text'));
-      fields.push(createEditableField('origin', t('reservations.fields.departurePort'), metadata.origin || '', 'text'));
-      fields.push(createEditableField('destination', t('reservations.fields.arrivalPort'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
-      fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
-      fields.push(createEditableField('cabinType', t('reservations.fields.cabinType'), metadata.cabinType || '', 'text'));
-      fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
-      fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
-      break;
-
-    case 'ferry':
-      fields.push(createEditableField('provider', t('reservations.fields.ferryCompany'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('origin', t('reservations.fields.departurePort'), metadata.origin || '', 'text'));
-      fields.push(createEditableField('destination', t('reservations.fields.arrivalPort'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
-      fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
-      fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
-      fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
-      break;
-
-    case 'flight':
-      fields.push(createEditableField('provider', t('reservations.fields.airline'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('flightNumber', t('reservations.fields.flightNumber'), metadata.flightNumbers?.[0] || '', 'text'));
-      fields.push(createEditableField('origin', t('reservations.fields.origin'), metadata.origin || '', 'text'));
-      fields.push(createEditableField('destination', t('reservations.fields.destination'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
-      fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
-      fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
-      fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
-      break;
-
-    case 'train':
-      fields.push(createEditableField('provider', t('reservations.fields.railCompany'), metadata.provider || '', 'text'));
-      fields.push(createEditableField('trainNumber', t('reservations.fields.trainNumber'), metadata.trainNumber || '', 'text'));
-      fields.push(createEditableField('origin', t('reservations.fields.departureStation'), metadata.origin || '', 'text'));
-      fields.push(createEditableField('destination', t('reservations.fields.arrivalStation'), metadata.destination || '', 'text'));
-      fields.push(createEditableField('departureDate', t('reservations.fields.departureDate'), extractDate(startTime), 'date', dateOpts));
-      fields.push(createEditableField('departureTime', t('reservations.fields.departureTime'), metadata.departureTime || extractTime(startTime), 'time'));
-      fields.push(createEditableField('seatClass', t('reservations.fields.class'), metadata.seatClass || '', 'text'));
-      fields.push(createEditableField('confirmationCode', t('reservations.fields.confirmationCode'), metadata.confirmationCode || '', 'text'));
-      fields.push(createLocationField(t('activity.location'), location, latitude, longitude));
       break;
 
     // ===== DINING TYPES =====
@@ -798,21 +685,13 @@ let currentDocClickHandler = null;
  * @param {Object} handlers - Event handlers
  */
 export function attachReservationSectionListeners(container, handlers) {
-  const { onAddLodging, onAddTransport, onAddDiningEvent, onSave, onDelete, onTypeChange, onSaveComplete } = handlers;
+  const { onAddLodging, onAddDiningEvent, onSave, onDelete, onTypeChange, onSaveComplete } = handlers;
 
   // Add lodging buttons (could be in header or empty state)
   container.querySelectorAll('[data-action="add-lodging"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       onAddLodging?.();
-    });
-  });
-
-  // Add transport buttons
-  container.querySelectorAll('[data-action="add-transport"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      onAddTransport?.();
     });
   });
 

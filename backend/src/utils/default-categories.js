@@ -26,7 +26,6 @@ export const ACTIVITY_GROUPS = [
  */
 export const TYPES_WITH_SPECIAL_FIELDS = [
   'hotel', 'rental', 'hostel', 'camping', 'resort',
-  'flight', 'train', 'bus', 'car', 'ferry', 'cruise', 'taxi', 'transfer',
   'restaurant', 'bar', 'cafe',
 ];
 
@@ -84,15 +83,13 @@ export const DEFAULT_ACTIVITY_TYPES = [
   { key: 'camping', icon: '⛺', i18nKey: 'categories.activity.camping', group: 'lodging', hasSpecialFields: true },
   { key: 'resort', icon: '🏝️', i18nKey: 'categories.activity.resort', group: 'lodging', hasSpecialFields: true },
 
-  // Transport (has special fields)
-  { key: 'flight', icon: '✈️', i18nKey: 'categories.activity.flight', group: 'transport', hasSpecialFields: true },
-  { key: 'train', icon: '🚆', i18nKey: 'categories.activity.train', group: 'transport', hasSpecialFields: true },
-  { key: 'bus', icon: '🚌', i18nKey: 'categories.activity.bus', group: 'transport', hasSpecialFields: true },
-  { key: 'car', icon: '🚗', i18nKey: 'categories.activity.car', group: 'transport', hasSpecialFields: true },
-  { key: 'ferry', icon: '⛴️', i18nKey: 'categories.activity.ferry', group: 'transport', hasSpecialFields: true },
-  { key: 'cruise', icon: '🚢', i18nKey: 'categories.activity.cruise', group: 'transport', hasSpecialFields: true },
-  { key: 'taxi', icon: '🚕', i18nKey: 'categories.activity.taxi', group: 'transport', hasSpecialFields: true },
-  { key: 'transfer', icon: '🚐', i18nKey: 'categories.activity.transfer', group: 'transport', hasSpecialFields: true },
+  // Transport (transit stops - airports, stations, etc.)
+  { key: 'airport', icon: '✈️', i18nKey: 'categories.activity.airport', group: 'transport' },
+  { key: 'train_station', icon: '🚉', i18nKey: 'categories.activity.train_station', group: 'transport' },
+  { key: 'bus_stop', icon: '🚏', i18nKey: 'categories.activity.bus_stop', group: 'transport' },
+  { key: 'ferry_terminal', icon: '⛴️', i18nKey: 'categories.activity.ferry_terminal', group: 'transport' },
+  { key: 'port', icon: '🚢', i18nKey: 'categories.activity.port', group: 'transport' },
+  { key: 'subway_station', icon: '🚇', i18nKey: 'categories.activity.subway_station', group: 'transport' },
 
   // Dining (has special fields for reservations)
   { key: 'restaurant', icon: '🍽️', i18nKey: 'categories.activity.restaurant', group: 'dining', hasSpecialFields: true },
