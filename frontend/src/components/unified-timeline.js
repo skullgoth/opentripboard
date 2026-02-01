@@ -192,11 +192,18 @@ function groupItemsByDay(items, trip) {
   });
 
   // Sort items within each day by: orderIndex, then startTime
+  // Lodging items always go at the end (before suggestions) since that's where you sleep
   Object.keys(scheduled).forEach((dateKey) => {
     scheduled[dateKey].sort((a, b) => {
-      // Suggestions go at the bottom
+      // Suggestions go at the very bottom
       if (a.itemType === 'suggestion' && b.itemType !== 'suggestion') return 1;
       if (a.itemType !== 'suggestion' && b.itemType === 'suggestion') return -1;
+
+      // Lodging types go at the end of regular activities (but before suggestions)
+      const aIsLodging = isLodgingTypeUtil(a.type);
+      const bIsLodging = isLodgingTypeUtil(b.type);
+      if (aIsLodging && !bIsLodging) return 1;
+      if (!aIsLodging && bIsLodging) return -1;
 
       // Sort by orderIndex first
       const orderA = a.orderIndex ?? 999;
