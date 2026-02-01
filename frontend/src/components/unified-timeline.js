@@ -192,18 +192,30 @@ function groupItemsByDay(items, trip) {
   });
 
   // Sort items within each day by: orderIndex, then startTime
-  // Lodging items always go at the end (before suggestions) since that's where you sleep
+  // Lodging positioning depends on check-in vs checkout:
+  // - Checkout day (last day of multi-day lodging): TOP of day (you checkout before activities)
+  // - Check-in/middle days: END of day (you check in or return after activities)
   Object.keys(scheduled).forEach((dateKey) => {
     scheduled[dateKey].sort((a, b) => {
       // Suggestions go at the very bottom
       if (a.itemType === 'suggestion' && b.itemType !== 'suggestion') return 1;
       if (a.itemType !== 'suggestion' && b.itemType === 'suggestion') return -1;
 
-      // Lodging types go at the end of regular activities (but before suggestions)
+      // Lodging sorting based on checkout vs check-in day
       const aIsLodging = isLodgingTypeUtil(a.type);
       const bIsLodging = isLodgingTypeUtil(b.type);
-      if (aIsLodging && !bIsLodging) return 1;
-      if (!aIsLodging && bIsLodging) return -1;
+      const aIsCheckout = aIsLodging && a._isMultiDay && a._isLastDay;
+      const bIsCheckout = bIsLodging && b._isMultiDay && b._isLastDay;
+      const aIsCheckinOrStay = aIsLodging && !aIsCheckout; // check-in, middle day, or single-day
+      const bIsCheckinOrStay = bIsLodging && !bIsCheckout;
+
+      // Checkout lodging goes to the TOP (before regular activities)
+      if (aIsCheckout && !bIsCheckout) return -1;
+      if (!aIsCheckout && bIsCheckout) return 1;
+
+      // Check-in/stay lodging goes to the END (after regular activities, before suggestions)
+      if (aIsCheckinOrStay && !bIsLodging) return 1;
+      if (!aIsLodging && bIsCheckinOrStay) return -1;
 
       // Sort by orderIndex first
       const orderA = a.orderIndex ?? 999;
