@@ -7503,35 +7503,29 @@ img.lazy {
 
 .transport-line {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: var(--spacing-1) 0 var(--spacing-1) var(--spacing-8);
-  margin-left: var(--spacing-4);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
   position: relative;
-  cursor: pointer;
   color: var(--color-gray-500);
   font-size: var(--font-size-sm);
-  transition: color 0.15s ease;
-}
-
-.transport-line:hover {
-  color: var(--color-primary);
-}
-
-.transport-line::before {
-  content: '';
-  position: absolute;
-  left: calc(var(--spacing-4) + 6px);
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--color-gray-200);
+  border-bottom: 1px solid var(--color-gray-100);
 }
 
 .transport-line-content {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-3);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.transport-line-content:hover {
+  background: var(--color-gray-100);
 }
 
 .transport-line-icon {
@@ -7580,6 +7574,75 @@ img.lazy {
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+/* Add activity button in transport line */
+.transport-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-full);
+  background: var(--color-white);
+  color: var(--color-gray-400);
+  font-size: 18px;
+  font-weight: var(--font-weight-normal);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Vertical connector lines above and below the add button */
+.transport-add-btn::before,
+.transport-add-btn::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  background: var(--color-gray-200);
+}
+
+.transport-add-btn::before {
+  bottom: 100%;
+  height: var(--spacing-3);
+}
+
+.transport-add-btn::after {
+  top: 100%;
+  height: var(--spacing-3);
+}
+
+.transport-add-btn:hover {
+  border-color: var(--color-gray-300);
+  background: var(--color-gray-50);
+  color: var(--color-gray-600);
+}
+
+/* Minimal transport line (no route data, just add button) */
+.transport-line--minimal {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+/* Empty day state with add button */
+.timeline-day-empty-add {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) 0 var(--spacing-3) var(--spacing-4);
+  margin-left: var(--spacing-4);
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  position: relative;
+}
+
+.timeline-day-empty-add .transport-add-btn {
+  position: relative;
+  left: auto;
 }
 
 /* Day totals in header */
@@ -7687,13 +7750,14 @@ img.lazy {
 /* Dark mode for transport */
 [data-theme='dark'] .transport-line {
   color: var(--color-gray-400);
+  border-bottom-color: var(--color-gray-200);
 }
 
-[data-theme='dark'] .transport-line:hover {
-  color: var(--color-primary);
+[data-theme='dark'] .transport-line-content {
+  background: var(--color-gray-200);
 }
 
-[data-theme='dark'] .transport-line::before {
+[data-theme='dark'] .transport-line-content:hover {
   background: var(--color-gray-300);
 }
 
@@ -7734,6 +7798,31 @@ img.lazy {
 [data-theme='dark'] .transport-editor-warning {
   background: var(--color-warning-100);
   color: var(--color-warning-600);
+}
+
+[data-theme='dark'] .transport-add-btn {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-gray-400);
+}
+
+[data-theme='dark'] .transport-add-btn::before,
+[data-theme='dark'] .transport-add-btn::after {
+  background: var(--color-gray-300);
+}
+
+[data-theme='dark'] .transport-add-btn:hover {
+  background: var(--color-gray-200);
+  border-color: var(--color-gray-400);
+  color: var(--color-gray-300);
+}
+
+[data-theme='dark'] .transport-line--minimal {
+  border-bottom-color: var(--color-gray-200);
+}
+
+[data-theme='dark'] .timeline-day-empty-add {
+  color: var(--color-gray-400);
 }
 
 img.lazy-loaded {

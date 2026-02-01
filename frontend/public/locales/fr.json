@@ -278,6 +278,10 @@
     "estimated": "Estimé (sans coordonnées)",
     "est": "est.",
     "from": "depuis",
+    "hours": "h",
+    "minutes": "mn",
+    "lessThanOneMinute": "< 1mn",
+    "lessThanDistance": "< 0,1 km",
     "modes": {
       "walk": "À pied",
       "bike": "Vélo",

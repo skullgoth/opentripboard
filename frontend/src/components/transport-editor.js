@@ -171,6 +171,7 @@ export function attachTransportEditorListeners(editorElement, options) {
  * @param {number} options.fromLng - Origin longitude (for cross-day, embedded directly)
  * @param {number} options.toLat - Destination latitude (for cross-day, embedded directly)
  * @param {number} options.toLng - Destination longitude (for cross-day, embedded directly)
+ * @param {string} options.targetDate - Target date for adding activity (YYYY-MM-DD format)
  * @returns {string} HTML string
  */
 export function createTransportBox(options) {
@@ -186,6 +187,7 @@ export function createTransportBox(options) {
     fromLng = null,
     toLat = null,
     toLng = null,
+    targetDate = null,
   } = options;
 
   // Build coordinate data attributes for cross-day transport (multi-day items have same ID across days)
@@ -193,10 +195,17 @@ export function createTransportBox(options) {
     ? `data-from-lat="${fromLat}" data-from-lng="${fromLng}" data-to-lat="${toLat}" data-to-lng="${toLng}"`
     : '';
 
+  // Add activity button - always shown on the left
+  // Pass both the date and the activityId (activity before) so the new activity can be inserted at the right position
+  const addActivityBtn = targetDate
+    ? `<button class="btn-icon-sm transport-add-btn" data-action="add-activity" data-date="${targetDate}" data-after-activity-id="${activityId}" title="${t('trip.addActivity')}">+</button>`
+    : '';
+
   // If loading, show loading indicator
   if (isLoading) {
     return `
-      <div class="transport-line transport-line--loading" data-activity-id="${activityId}" data-ephemeral="${isEphemeral}" ${coordAttrs}>
+      <div class="transport-line transport-line--loading" data-activity-id="${activityId}" data-ephemeral="${isEphemeral}" ${coordAttrs} data-date="${targetDate || ''}">
+        ${addActivityBtn}
         <span class="transport-line-loading">
           <span class="spinner-tiny"></span>
         </span>
@@ -204,9 +213,18 @@ export function createTransportBox(options) {
     `;
   }
 
-  // If no coordinates, don't show anything
+  // If no coordinates and no transport data, show minimal line with just the add button
   if (!hasCoordinates && !transportData?.mode) {
-    return '';
+    if (!targetDate) {
+      return '';
+    }
+    return `
+      <div class="transport-line transport-line--minimal"
+           data-activity-id="${activityId}"
+           data-date="${targetDate}">
+        ${addActivityBtn}
+      </div>
+    `;
   }
 
   const mode = transportData?.mode || DEFAULT_TRANSPORT_MODE;
@@ -220,7 +238,7 @@ export function createTransportBox(options) {
   // Build the display text
   let displayText = '';
   if (durationText && distanceText) {
-    displayText = `${durationText} · ${distanceText}`;
+    displayText = `${distanceText} · ${durationText}`;
   } else if (durationText) {
     displayText = durationText;
   } else if (distanceText) {
@@ -238,10 +256,10 @@ export function createTransportBox(options) {
          data-mode="${mode}"
          data-duration="${cachedDuration || 0}"
          data-distance="${cachedDistance || 0}"
-         data-action="edit-transport"
-         title="${t('transport.editTransport', 'Click to change transport mode')}">
+         data-date="${targetDate || ''}">
+      ${addActivityBtn}
       ${crossDayLabel}
-      <span class="transport-line-content">
+      <span class="transport-line-content" data-action="edit-transport" title="${t('transport.editTransport', 'Click to change transport mode')}">
         <span class="transport-line-icon">${icon}</span>
         <span class="transport-line-info">${displayText}</span>
       </span>

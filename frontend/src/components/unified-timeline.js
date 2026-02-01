@@ -94,16 +94,13 @@ export function createUnifiedTimeline(activities, suggestions, trip, options = {
             <h3 class="timeline-day-title">${formatDate(date, 'full')}</h3>
             ${totalsDisplay}
             <div class="timeline-day-actions">
-              <button class="btn btn-sm btn-secondary" data-action="add-activity" data-date="${date}">
-                + ${t('trip.addActivity')}
-              </button>
               <button class="btn btn-sm btn-ghost" data-action="add-suggestion" data-date="${date}" title="${t('suggestion.suggestActivity')}">
                 💡
               </button>
             </div>
           </div>
           <div class="timeline-day-items" data-drop-zone="${date}">
-            ${itemsHtml || `<p class="timeline-day-empty">${t('itinerary.noDayActivities', 'No activities for this day')}</p>`}
+            ${itemsHtml || `<div class="timeline-day-empty-add"><button class="btn-icon-sm transport-add-btn" data-action="add-activity" data-date="${date}" title="${t('trip.addActivity')}">+</button><span>${t('itinerary.noDayActivities', 'No activities for this day')}</span></div>`}
           </div>
         </div>
       `;
@@ -282,37 +279,49 @@ function buildDayItemsWithTransport(dayItems, currentUserId, userRole, previousD
   const htmlParts = [];
   const activities = dayItems.filter((item) => item.itemType === 'activity');
 
-  // Add cross-day transport line at the beginning if applicable
+  // Get the target date for this day (for adding activities)
+  const targetDate = activities.length > 0 ? activities[0]._displayDate : null;
+
+  // Add transport line at the beginning of each day
   if (previousDayLastActivity && activities.length > 0) {
+    // Cross-day transport from previous day's last activity
     const firstActivity = activities[0];
     const hasCoordinates = previousDayLastActivity.latitude && previousDayLastActivity.longitude &&
                           firstActivity.latitude && firstActivity.longitude;
 
-    if (hasCoordinates) {
-      // For multi-day items NOT on their last day, ignore stored transportToNext
-      // (that data is for checkout day, not for intermediate days)
-      const isMultiDayNonLast = previousDayLastActivity._isMultiDay && !previousDayLastActivity._isLastDay;
-      const transportData = isMultiDayNonLast ? null : (previousDayLastActivity.metadata?.transportToNext || null);
-      const fromLocationName = previousDayLastActivity.title || previousDayLastActivity.location || '';
-      const needsCalculation = !transportData && hasCoordinates;
+    // For multi-day items NOT on their last day, ignore stored transportToNext
+    // (that data is for checkout day, not for intermediate days)
+    const isMultiDayNonLast = previousDayLastActivity._isMultiDay && !previousDayLastActivity._isLastDay;
+    const transportData = isMultiDayNonLast ? null : (previousDayLastActivity.metadata?.transportToNext || null);
+    const fromLocationName = previousDayLastActivity.title || previousDayLastActivity.location || '';
+    const needsCalculation = !transportData && hasCoordinates;
 
-      // For cross-day transport, embed coordinates directly since multi-day items
-      // have same ID across days and querySelector would find wrong one
-      htmlParts.push(createTransportBox({
-        activityId: previousDayLastActivity.id,
-        transportData,
-        hasCoordinates: true,
-        fromLocationName,
-        isCrossDay: true,
-        isLoading: needsCalculation,
-        isEphemeral: isMultiDayNonLast,
-        // Embed coordinates for cross-day calculation
-        fromLat: previousDayLastActivity.latitude,
-        fromLng: previousDayLastActivity.longitude,
-        toLat: firstActivity.latitude,
-        toLng: firstActivity.longitude,
-      }));
-    }
+    // For cross-day transport, embed coordinates directly since multi-day items
+    // have same ID across days and querySelector would find wrong one
+    htmlParts.push(createTransportBox({
+      activityId: previousDayLastActivity.id,
+      transportData,
+      hasCoordinates,
+      fromLocationName,
+      isCrossDay: true,
+      isLoading: needsCalculation,
+      isEphemeral: isMultiDayNonLast,
+      targetDate,
+      // Embed coordinates for cross-day calculation
+      fromLat: previousDayLastActivity.latitude,
+      fromLng: previousDayLastActivity.longitude,
+      toLat: firstActivity.latitude,
+      toLng: firstActivity.longitude,
+    }));
+  } else if (activities.length > 0 && targetDate) {
+    // No previous day activity - add a minimal "+" line at the start of the day
+    // Use empty activityId so handler knows to insert at the beginning
+    htmlParts.push(createTransportBox({
+      activityId: '',
+      transportData: null,
+      hasCoordinates: false,
+      targetDate,
+    }));
   }
 
   for (let i = 0; i < dayItems.length; i++) {
@@ -331,33 +340,41 @@ function buildDayItemsWithTransport(dayItems, currentUserId, userRole, previousD
         // Check if both activities have coordinates
         const hasCoordinates = item.latitude && item.longitude && nextActivity.latitude && nextActivity.longitude;
 
-        if (hasCoordinates) {
-          // For multi-day items NOT on their last day, ignore stored transportToNext
-          // (that data is for checkout day, not for intermediate days)
-          const isMultiDayNonLast = item._isMultiDay && !item._isLastDay;
-          const transportData = isMultiDayNonLast ? null : (item.metadata?.transportToNext || null);
-          // Mark as needing calculation if no valid transport data
-          const needsCalculation = !transportData && hasCoordinates;
+        // For multi-day items NOT on their last day, ignore stored transportToNext
+        // (that data is for checkout day, not for intermediate days)
+        const isMultiDayNonLast = item._isMultiDay && !item._isLastDay;
+        const transportData = isMultiDayNonLast ? null : (item.metadata?.transportToNext || null);
+        // Mark as needing calculation if no valid transport data
+        const needsCalculation = !transportData && hasCoordinates;
 
-          // For ephemeral routes (multi-day non-last), embed coordinates directly
-          // because the same activity ID appears on multiple days and querySelector would find wrong one
-          const boxOptions = {
-            activityId: item.id,
-            transportData,
-            hasCoordinates,
-            isLoading: needsCalculation,
-            isEphemeral: isMultiDayNonLast,
-          };
+        // For ephemeral routes (multi-day non-last), embed coordinates directly
+        // because the same activity ID appears on multiple days and querySelector would find wrong one
+        const boxOptions = {
+          activityId: item.id,
+          transportData,
+          hasCoordinates,
+          isLoading: needsCalculation,
+          isEphemeral: isMultiDayNonLast,
+          targetDate: item._displayDate,
+        };
 
-          if (isMultiDayNonLast) {
-            boxOptions.fromLat = item.latitude;
-            boxOptions.fromLng = item.longitude;
-            boxOptions.toLat = nextActivity.latitude;
-            boxOptions.toLng = nextActivity.longitude;
-          }
-
-          htmlParts.push(createTransportBox(boxOptions));
+        if (isMultiDayNonLast) {
+          boxOptions.fromLat = item.latitude;
+          boxOptions.fromLng = item.longitude;
+          boxOptions.toLat = nextActivity.latitude;
+          boxOptions.toLng = nextActivity.longitude;
         }
+
+        htmlParts.push(createTransportBox(boxOptions));
+      } else {
+        // This is the last activity of the day - add a minimal "+" line at the end
+        // Use the last activity's ID so new activity is inserted after it
+        htmlParts.push(createTransportBox({
+          activityId: item.id,
+          transportData: null,
+          hasCoordinates: false,
+          targetDate: item._displayDate,
+        }));
       }
     }
   }
@@ -1046,7 +1063,11 @@ export function attachUnifiedTimelineListeners(container, callbacks) {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const date = btn.getAttribute('data-date');
-      if (onAddActivity) onAddActivity(date);
+      // Preserve empty string as marker for "insert at beginning"
+      // null or undefined means "insert at end"
+      const afterActivityIdAttr = btn.getAttribute('data-after-activity-id');
+      const afterActivityId = afterActivityIdAttr === '' ? '' : (afterActivityIdAttr || null);
+      if (onAddActivity) onAddActivity(date, afterActivityId);
     });
   });
 
@@ -1211,9 +1232,12 @@ function setupSuggestionCard(card, onVoteSuggestion, onAcceptSuggestion, onRejec
  */
 function setupTransportLine(line, container, onTransportChange) {
   const activityId = line.dataset.activityId;
+  const transportContent = line.querySelector('.transport-line-content');
 
-  // The line itself is clickable
-  line.addEventListener('click', (e) => {
+  // Only the transport content triggers the editor (not the add button)
+  if (!transportContent) return;
+
+  transportContent.addEventListener('click', (e) => {
     e.stopPropagation();
 
     // Close any existing transport editor
@@ -1460,15 +1484,22 @@ function updateTransportLineUI(lineElement, transportData) {
   const durationText = cachedDuration ? formatDuration(cachedDuration) : '';
   const distanceText = cachedDistance ? formatDistance(cachedDistance) : '';
 
-  // Build the display text
+  // Build the display text (distance first, then duration)
   let displayText = '';
   if (durationText && distanceText) {
-    displayText = `${durationText} · ${distanceText}`;
+    displayText = `${distanceText} · ${durationText}`;
   } else if (durationText) {
     displayText = durationText;
   } else if (distanceText) {
     displayText = distanceText;
   }
+
+  // Preserve the add button if it exists
+  const targetDate = lineElement.dataset.date || '';
+  const afterActivityId = lineElement.dataset.activityId || '';
+  const addButtonHtml = targetDate
+    ? `<button class="btn-icon-sm transport-add-btn" data-action="add-activity" data-date="${targetDate}" data-after-activity-id="${afterActivityId}" title="${t('trip.addActivity')}">+</button>`
+    : '';
 
   // Update the line element
   lineElement.classList.remove('transport-line--loading');
@@ -1476,7 +1507,8 @@ function updateTransportLineUI(lineElement, transportData) {
   lineElement.dataset.duration = cachedDuration || 0;
   lineElement.dataset.distance = cachedDistance || 0;
   lineElement.innerHTML = `
-    <span class="transport-line-content">
+    ${addButtonHtml}
+    <span class="transport-line-content" data-action="edit-transport" title="${t('transport.editTransport', 'Click to change transport mode')}">
       <span class="transport-line-icon">${icon}</span>
       <span class="transport-line-info">${displayText}</span>
     </span>

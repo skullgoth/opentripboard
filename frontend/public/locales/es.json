@@ -341,6 +341,10 @@
     "estimated": "Estimado (sin coordenadas)",
     "est": "est.",
     "from": "desde",
+    "hours": "h",
+    "minutes": "min",
+    "lessThanOneMinute": "< 1min",
+    "lessThanDistance": "< 0,1 km",
     "modes": {
       "walk": "A pie",
       "bike": "Bicicleta",

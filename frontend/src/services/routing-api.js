@@ -1,6 +1,7 @@
 // Transport routing API client service
 
 import { get, APIError } from './api-client.js';
+import { t } from '../utils/i18n.js';
 
 /**
  * Valid transport modes
@@ -84,23 +85,25 @@ export async function checkHealth() {
 /**
  * Format duration in minutes to human-readable string
  * @param {number} minutes - Duration in minutes
- * @returns {string} Formatted duration (e.g., "2h 30m" or "45m")
+ * @returns {string} Formatted duration (e.g., "2h 30m" or "45mn" in French)
  */
 export function formatDuration(minutes) {
-  if (!minutes || minutes < 1) return '< 1m';
+  if (!minutes || minutes < 1) return t('transport.lessThanOneMinute', '< 1m');
 
   const hours = Math.floor(minutes / 60);
   const mins = Math.round(minutes % 60);
+  const hoursAbbrev = t('transport.hours', 'h');
+  const minsAbbrev = t('transport.minutes', 'm');
 
   if (hours === 0) {
-    return `${mins}m`;
+    return `${mins}${minsAbbrev}`;
   }
 
   if (mins === 0) {
-    return `${hours}h`;
+    return `${hours}${hoursAbbrev}`;
   }
 
-  return `${hours}h ${mins}m`;
+  return `${hours}${hoursAbbrev} ${mins}${minsAbbrev}`;
 }
 
 /**
@@ -109,7 +112,7 @@ export function formatDuration(minutes) {
  * @returns {string} Formatted distance (e.g., "714 km" or "2.5 km")
  */
 export function formatDistance(km) {
-  if (!km || km < 0.1) return '< 0.1 km';
+  if (!km || km < 0.1) return t('transport.lessThanDistance', '< 0.1 km');
 
   if (km < 10) {
     return `${km.toFixed(1)} km`;

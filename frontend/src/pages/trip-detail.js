@@ -25,6 +25,7 @@ import { getItem } from '../utils/storage.js';
 import apiClient from '../services/api-client.js';
 import { formatDate } from '../utils/date-helpers.js';
 import { t } from '../utils/i18n.js';
+import { isLodgingType } from '../utils/default-categories.js';
 
 let sortableInstances = [];
 let currentTrip = null;
@@ -399,34 +400,124 @@ export function cleanupTripDetailPage() {
 }
 
 /**
+ * Calculate the maximum orderIndex for activities on a given date
+ * @param {string} date - Date in YYYY-MM-DD format
+ * @returns {number} Maximum orderIndex found
+ */
+function calculateMaxOrderIndex(date) {
+  let maxOrderIndex = 0;
+  currentActivities.forEach(activity => {
+    const activityDate = activity.startTime ? activity.startTime.split('T')[0] : null;
+    if (activityDate === date || (!activityDate && !date)) {
+      if ((activity.orderIndex || 0) > maxOrderIndex) {
+        maxOrderIndex = activity.orderIndex || 0;
+      }
+    }
+  });
+  return maxOrderIndex;
+}
+
+/**
  * Handle add activity - creates inline activity directly
  * @param {string} defaultDate - Default date for activity
+ * @param {string} afterActivityId - Optional ID of activity to insert after (for position-based insertion)
  */
-async function handleAddActivity(defaultDate) {
+async function handleAddActivity(defaultDate, afterActivityId = null) {
   if (!currentTrip) return;
 
   try {
     // Build startTime from the date if provided
     const startTime = defaultDate ? `${defaultDate}T12:00:00.000Z` : null;
 
-    // Calculate orderIndex to place at the end of the day's activities
-    let maxOrderIndex = 0;
-    currentActivities.forEach(activity => {
-      // Check if activity is on the same day (or both are undated)
-      const activityDate = activity.startTime ? activity.startTime.split('T')[0] : null;
-      if (activityDate === defaultDate || (!activityDate && !defaultDate)) {
-        if (activity.orderIndex > maxOrderIndex) {
-          maxOrderIndex = activity.orderIndex;
-        }
+    let orderIndex;
+
+    if (afterActivityId === '') {
+      // Empty string means insert at the beginning of the day
+      // Get activities on this day and shift them all up by 1
+      const dayActivities = currentActivities
+        .filter(a => {
+          const activityStartDate = a.startTime ? a.startTime.split('T')[0] : null;
+          const activityEndDate = a.endTime ? a.endTime.split('T')[0] : null;
+          if (activityStartDate === defaultDate) return true;
+          if (isLodgingType(a.type) && activityStartDate && activityEndDate) {
+            return activityStartDate <= defaultDate && defaultDate <= activityEndDate;
+          }
+          return false;
+        })
+        .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+      // Shift all existing activities up by 1
+      for (const activity of dayActivities) {
+        activity.orderIndex = (activity.orderIndex || 0) + 1;
+        tripState.updateActivity(currentTrip.id, activity.id, { orderIndex: activity.orderIndex }).catch(() => {});
       }
-    });
+      orderIndex = 0;
+    } else if (afterActivityId) {
+      // Find the activity we're inserting after
+      const afterActivity = currentActivities.find(a => a.id === afterActivityId);
+      if (afterActivity) {
+        // Get activities on the same day, sorted by orderIndex
+        // Include multi-day items (lodging) that span this date
+        const dayActivities = currentActivities
+          .filter(a => {
+            const activityStartDate = a.startTime ? a.startTime.split('T')[0] : null;
+            const activityEndDate = a.endTime ? a.endTime.split('T')[0] : null;
+
+            // Activity starts on this day
+            if (activityStartDate === defaultDate) return true;
+
+            // Multi-day lodging that spans this day
+            if (isLodgingType(a.type) && activityStartDate && activityEndDate) {
+              return activityStartDate <= defaultDate && defaultDate <= activityEndDate;
+            }
+
+            return false;
+          })
+          .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+        // Find the position of the after activity
+        const afterIndex = dayActivities.findIndex(a => a.id === afterActivityId);
+        const afterOrder = afterActivity.orderIndex || 0;
+
+        if (afterIndex !== -1 && afterIndex < dayActivities.length - 1) {
+          // Insert between afterActivity and the next one
+          const nextActivity = dayActivities[afterIndex + 1];
+          const nextOrder = nextActivity.orderIndex || 0;
+
+          // Check if there's room between the two indices
+          if (nextOrder - afterOrder > 1) {
+            // Use midpoint (rounded down to ensure integer)
+            orderIndex = Math.floor(afterOrder + (nextOrder - afterOrder) / 2);
+          } else {
+            // No room - need to shift subsequent activities
+            // First, increment all subsequent activities' orderIndex
+            const activitiesToShift = dayActivities.slice(afterIndex + 1);
+            for (const activity of activitiesToShift) {
+              activity.orderIndex = (activity.orderIndex || 0) + 1;
+              // Update in backend (fire and forget, will sync via WebSocket)
+              tripState.updateActivity(currentTrip.id, activity.id, { orderIndex: activity.orderIndex }).catch(() => {});
+            }
+            orderIndex = afterOrder + 1;
+          }
+        } else {
+          // afterActivity is the last one, just add 1
+          orderIndex = afterOrder + 1;
+        }
+      } else {
+        // Fallback: place at the end
+        orderIndex = calculateMaxOrderIndex(defaultDate) + 1;
+      }
+    } else {
+      // No afterActivityId, place at the end of the day's activities
+      orderIndex = calculateMaxOrderIndex(defaultDate) + 1;
+    }
 
     // Create a new activity with default values
     const newActivity = await tripState.createActivity(currentTrip.id, {
       type: 'sightseeing',
       title: t('activity.newActivity'),
       startTime,
-      orderIndex: maxOrderIndex + 1,
+      orderIndex,
     });
 
     // Mark this ID as pending so WebSocket handler knows we're handling it
