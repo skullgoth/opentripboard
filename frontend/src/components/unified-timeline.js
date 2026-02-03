@@ -1071,6 +1071,7 @@ export function attachUnifiedTimelineListeners(container, callbacks) {
     onAcceptSuggestion,
     onRejectSuggestion,
     onTransportChange,
+    onActivityClick,
     // Legacy callback aliases for backwards compatibility
     onDeleteReservation,
     onSaveReservation,
@@ -1106,7 +1107,7 @@ export function attachUnifiedTimelineListeners(container, callbacks) {
   const typeChangeCallback = onActivityTypeChange || onReservationTypeChange;
 
   container.querySelectorAll('.activity-card[data-item-type="activity"]').forEach((card) => {
-    setupActivityCard(card, container, saveCallback, deleteCallback, typeChangeCallback);
+    setupActivityCard(card, container, saveCallback, deleteCallback, typeChangeCallback, onActivityClick);
   });
 
   // Handle suggestion cards
@@ -1149,7 +1150,7 @@ export function attachUnifiedTimelineListeners(container, callbacks) {
 /**
  * Setup a single activity card with all its event handlers
  */
-function setupActivityCard(card, container, onSaveActivity, onDeleteActivity, onActivityTypeChange) {
+function setupActivityCard(card, container, onSaveActivity, onDeleteActivity, onActivityTypeChange, onActivityClick) {
   const activityId = card.dataset.activityId;
   const activityType = card.dataset.activityType;
   card._pendingChanges = new Map();
@@ -1169,6 +1170,11 @@ function setupActivityCard(card, container, onSaveActivity, onDeleteActivity, on
       const originalTitle = titleSpan.dataset.value || titleSpan.textContent;
       startTitleEditing(card, titleSpan, card._pendingChanges, originalTitle);
       return;
+    }
+
+    // Trigger activity click callback (for map zoom)
+    if (onActivityClick) {
+      onActivityClick(activityId);
     }
 
     const isExpanded = card.classList.contains('expanded');

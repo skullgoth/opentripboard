@@ -232,6 +232,7 @@ export async function tripDetailPage(params) {
         onAcceptSuggestion: handleAcceptSuggestion,
         onRejectSuggestion: handleRejectSuggestion,
         onTransportChange: handleTransportChange,
+        onActivityClick: handleActivityClick,
       });
     }
 
@@ -1313,6 +1314,7 @@ function refreshTimeline() {
         onAcceptSuggestion: handleAcceptSuggestion,
         onRejectSuggestion: handleRejectSuggestion,
         onTransportChange: handleTransportChange,
+        onActivityClick: handleActivityClick,
       });
 
       // Reinitialize drag and drop
@@ -2082,6 +2084,16 @@ function scrollToAndExpandCard(activityId) {
     card.classList.add('highlight');
     setTimeout(() => card.classList.remove('highlight'), 1000);
   }, 300);
+}
+
+/**
+ * Zoom map to activity when timeline card is clicked
+ * @param {string} activityId - The activity ID
+ */
+function handleActivityClick(activityId) {
+  if (mapInstance) {
+    mapInstance.zoomToActivity(activityId);
+  }
 }
 
 /**

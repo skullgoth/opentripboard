@@ -426,6 +426,34 @@ export async function initializeMap(containerId, activities = [], options = {}) 
   }
 
   /**
+   * Zoom to a specific activity and open its popup
+   * @param {string} activityId - The activity ID to zoom to
+   */
+  function zoomToActivity(activityId) {
+    const marker = markers.find(m => m.activityData && m.activityData.id === activityId);
+    if (!marker) {
+      console.warn(`Marker not found for activity ID: ${activityId}`);
+      return;
+    }
+
+    const activity = marker.activityData;
+    if (!activity.latitude || !activity.longitude) {
+      console.warn(`Activity ${activityId} has no coordinates`);
+      return;
+    }
+
+    // Fly to the marker location with a close zoom level
+    map.flyTo([activity.latitude, activity.longitude], 16, {
+      duration: 0.8
+    });
+
+    // Open the popup after the animation completes
+    setTimeout(() => {
+      marker.openPopup();
+    }, 800);
+  }
+
+  /**
    * Update map with new activities
    */
   function updateActivities(newActivities) {
@@ -625,6 +653,7 @@ export async function initializeMap(containerId, activities = [], options = {}) 
     toggleRoute,
     toggleDistanceMode,
     fitBounds,
+    zoomToActivity,
     showDistanceInfo,
     destroy,
     get routeVisible() {
