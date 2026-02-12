@@ -4,7 +4,7 @@
 // T300: Added global error boundary
 import { getItem, setItem } from './utils/storage.js';
 import { homePage } from './pages/home.js';
-import { tripDetailPage, cleanupTripDetailPage } from './pages/trip-detail.js';
+import { tripDetailPage, cleanupTripDetailPage } from './pages/trip-detail/index.js';
 import { budgetPage, cleanupBudgetPage } from './pages/budget.js';
 import { listsPage, cleanupListsPage } from './pages/lists.js';
 import { documentsPage, cleanupDocumentsPage } from './pages/documents.js';
