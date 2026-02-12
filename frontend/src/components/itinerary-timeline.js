@@ -307,6 +307,7 @@ function createLocationField(label, location, latitude, longitude) {
           ${isEmpty ? addPlaceholder : escapeHtml(location)}
         </span>
         ${hasCoordinates ? `<span class="inline-location-coords">📍 ${coordsText}</span>` : ''}
+        ${hasCoordinates ? `<a class="btn-street-view" href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${latitude},${longitude}" target="_blank" rel="noopener noreferrer" title="${t('activity.streetView')}">${t('activity.streetView')}</a>` : ''}
       </div>
       <div class="inline-location-editor" style="display: none;">
         <div class="inline-location-search-wrapper">

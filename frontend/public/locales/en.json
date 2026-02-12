@@ -138,6 +138,7 @@
     "endTime": "End Time",
     "description": "Description",
     "coordinates": "Coordinates",
+    "streetView": "Street View",
     "newActivity": "New Activity",
     "createFailed": "Failed to create activity",
     "deleted": "Activity deleted",

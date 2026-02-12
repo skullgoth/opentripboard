@@ -3509,6 +3509,23 @@ body:has(.trip-detail-page) {
   color: var(--color-gray-500);
 }
 
+.btn-street-view {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 2px 6px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-street-view:hover {
+  background-color: var(--color-primary);
+  color: #fff;
+  text-decoration: none;
+}
+
 .inline-location-editor {
   position: relative;
   padding: var(--spacing-3);

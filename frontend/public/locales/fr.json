@@ -138,6 +138,7 @@
     "endTime": "Heure de Fin",
     "description": "Description",
     "coordinates": "Coordonnées",
+    "streetView": "Street View",
     "newActivity": "Nouvelle Activité",
     "createFailed": "Échec de la création de l'activité",
     "deleted": "Activité supprimée",

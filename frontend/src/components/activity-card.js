@@ -223,6 +223,7 @@ function formatCoordinates(activity) {
 
   const lat = parseFloat(activity.latitude).toFixed(4);
   const lng = parseFloat(activity.longitude).toFixed(4);
+  const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${activity.latitude},${activity.longitude}`;
 
-  return `<div class="activity-coordinates">📍 ${lat}, ${lng}</div>`;
+  return `<div class="activity-coordinates">📍 ${lat}, ${lng} <a class="btn-street-view" href="${streetViewUrl}" target="_blank" rel="noopener noreferrer" title="${t('activity.streetView')}">${t('activity.streetView')}</a></div>`;
 }
