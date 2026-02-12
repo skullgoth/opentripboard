@@ -54,7 +54,7 @@ export function createTripList(trips, onTripClick, onCreateClick) {
         <div class="empty-state-content">
           <h2>${t('home.noTrips')}</h2>
           <p>${t('home.noTripsDescription')}</p>
-          <button class="btn btn-sm btn-primary btn-lg" data-action="create-trip">
+          <button class="btn btn-primary btn-lg" data-action="create-trip">
             ${t('home.createFirstTrip')}
           </button>
         </div>

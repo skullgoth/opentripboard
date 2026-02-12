@@ -27,8 +27,8 @@ export async function homePage() {
           <p>${t('home.welcomeSubtitle')}</p>
           <p>${t('home.welcomeDescription')}</p>
           <div class="welcome-actions">
-            <a href="#/login" class="btn btn-sm btn-primary btn-lg">${t('auth.login')}</a>
-            <a href="#/register" class="btn btn-sm btn-secondary btn-lg">${t('auth.register')}</a>
+            <a href="#/login" class="btn btn-primary btn-lg">${t('auth.login')}</a>
+            <a href="#/register" class="btn btn-secondary btn-lg">${t('auth.register')}</a>
           </div>
         </div>
       </div>

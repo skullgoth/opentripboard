@@ -45,7 +45,7 @@ export async function loginPage() {
 
           <div class="form-error" data-error="general"></div>
 
-          <button type="button" class="btn btn-sm btn-primary btn-lg" id="login-btn">
+          <button type="button" class="btn btn-primary btn-lg" id="login-btn">
             ${t('auth.login')}
           </button>
         </form>

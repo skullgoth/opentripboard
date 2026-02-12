@@ -104,7 +104,7 @@ export async function registerPage() {
 
           <div class="form-error" data-error="general"></div>
 
-          <button type="submit" class="btn btn-sm btn-primary btn-lg" id="register-btn">
+          <button type="submit" class="btn btn-primary btn-lg" id="register-btn">
             ${t('auth.registerButton')}
           </button>
         </form>
