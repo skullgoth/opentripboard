@@ -1,6 +1,7 @@
 /**
  * T108: PresenceIndicator component - show active users with avatars/initials
  */
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create presence indicator component
@@ -205,17 +206,6 @@ function getInitials(nameOrEmail) {
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 }
 
-/**
- * Escape HTML to prevent XSS
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 /**
  * Generate random color for avatar based on name

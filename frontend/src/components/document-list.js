@@ -3,6 +3,7 @@
 
 import { formatFileSize, getFileIcon, getCategoryLabel, getCategoryColor } from '../utils/documents.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create the document list component
@@ -203,12 +204,3 @@ function getIconSvg(iconType) {
   return icons[iconType] || icons.file;
 }
 
-/**
- * Escape HTML
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}

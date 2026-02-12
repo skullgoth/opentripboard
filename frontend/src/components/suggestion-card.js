@@ -3,6 +3,7 @@
  */
 import { t } from '../utils/i18n.js';
 import { formatDateTime as formatDateTimePrefs, formatDate } from '../utils/date-helpers.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create suggestion card component
@@ -215,14 +216,3 @@ function formatRelativeTime(dateTimeStr) {
   return formatDate(date, 'medium');
 }
 
-/**
- * Escape HTML to prevent XSS
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}

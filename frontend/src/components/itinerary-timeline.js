@@ -9,6 +9,7 @@ import { getCategoryIcon, getCategoryName, buildCategoryOptions } from '../utils
 import { getCategories as getCategoriesState } from '../state/categories-state.js';
 import { searchDestinations } from '../services/geocoding-api.js';
 import { getPreferences } from '../state/preferences-state.js';
+import { escapeHtml } from '../utils/html.js';
 
 // Module-level trip date constraints for activity editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -1083,18 +1084,6 @@ function startEditing(field, valueSpan, input) {
   input.style.display = 'block';
   input.focus();
   if (input.select) input.select();
-}
-
-/**
- * Escape HTML to prevent XSS
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

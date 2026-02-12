@@ -3,6 +3,7 @@
 import { ctx } from './state.js';
 import { t } from '../../utils/i18n.js';
 import { isLodgingType } from '../../utils/default-categories.js';
+import { escapeHtml } from '../../utils/html.js';
 
 /**
  * Calculate the maximum orderIndex for activities on a given date
@@ -90,15 +91,4 @@ export function renderCoverImageAttribution(trip) {
   }
 
   return '';
-}
-
-/**
- * Escape HTML to prevent XSS
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
-export function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }

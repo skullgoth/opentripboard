@@ -3,6 +3,7 @@
  */
 import { formatCurrency } from '../utils/currency.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create balance sheet component
@@ -284,16 +285,5 @@ function getInitials(nameOrEmail) {
   return nameOrEmail.substring(0, 2).toUpperCase();
 }
 
-/**
- * Escape HTML
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 export { createDebtsList, createParticipantSummary, getInitials };

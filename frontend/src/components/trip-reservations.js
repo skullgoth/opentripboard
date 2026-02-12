@@ -11,6 +11,7 @@ import { getCategories as getCategoriesState } from '../state/categories-state.j
 import { formatDate as formatDateLocale, formatTime as formatTimeLocale } from '../utils/date-helpers.js';
 import { searchDestinations } from '../services/geocoding-api.js';
 import { getPreferences } from '../state/preferences-state.js';
+import { escapeHtml } from '../utils/html.js';
 
 // Module-level trip date constraints for reservation editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -590,16 +591,6 @@ function extractTime(isoString) {
     // Ignore
   }
   return '';
-}
-
-/**
- * Escape HTML
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 /**

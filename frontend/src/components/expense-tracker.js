@@ -5,6 +5,7 @@
 import { formatCurrency, getCurrencySymbol } from '../utils/currency.js';
 import { t } from '../utils/i18n.js';
 import { resolveCategory, getCategoryIcon as resolveCategoryIcon, getCategoryName } from '../utils/category-resolver.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create expense tracker component
@@ -176,18 +177,6 @@ function formatDate(dateStr) {
     month: 'short',
     day: 'numeric',
   });
-}
-
-/**
- * Escape HTML
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 export { getCategoryIcon, formatCategory };

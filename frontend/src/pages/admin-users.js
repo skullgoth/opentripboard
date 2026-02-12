@@ -7,6 +7,7 @@ import { t } from '../utils/i18n.js';
 import { generatePassword } from '../utils/validators.js';
 import { fetchAdminSiteConfig, updateSiteConfig } from '../services/site-config.js';
 import { setSiteConfig } from '../state/site-config-state.js';
+import { escapeHtml } from '../utils/html.js';
 
 let currentPage = 0;
 const PAGE_SIZE = 20;
@@ -656,16 +657,6 @@ function clearFormErrors() {
     el.textContent = '';
     el.style.display = 'none';
   });
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

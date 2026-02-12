@@ -6,7 +6,8 @@
 // Orchestrator: loads data, renders the page, wires sub-modules together.
 
 import { ctx, resetState } from './state.js';
-import { getCoverImageUrl, renderCoverImageAttribution, escapeHtml } from './helpers.js';
+import { getCoverImageUrl, renderCoverImageAttribution } from './helpers.js';
+import { escapeHtml } from '../../utils/html.js';
 import { initializeMapView, attachMapListeners, handleActivityClick } from './map-handlers.js';
 import { refreshTimeline } from './timeline.js';
 import {

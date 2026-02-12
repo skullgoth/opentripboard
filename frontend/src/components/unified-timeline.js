@@ -18,6 +18,7 @@ import { hasSpecialFields, isLodgingType as isLodgingTypeUtil } from '../utils/d
 import { createTransportBox, createTransportEditor, attachTransportEditorListeners, calculateRoute, DEFAULT_TRANSPORT_MODE } from './transport-editor.js';
 import { getTransportIcon } from './transport-icons.js';
 import { formatDuration, formatDistance } from '../services/routing-api.js';
+import { escapeHtml } from '../utils/html.js';
 
 // Module-level trip date constraints for activity editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -1019,16 +1020,6 @@ function extractTime(isoString) {
     // Ignore
   }
   return '';
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

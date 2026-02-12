@@ -3,6 +3,7 @@ import { authState } from '../state/auth-state.js';
 import apiClient from '../services/api-client.js';
 import { app } from '../main.js';
 import { showToast } from '../utils/toast.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Render profile page
@@ -253,16 +254,6 @@ function clearFormErrors() {
     el.textContent = '';
     el.style.display = 'none';
   });
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

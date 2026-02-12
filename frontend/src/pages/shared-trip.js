@@ -1,5 +1,7 @@
 // US9: Public shared trip view page (no authentication required)
 
+import { escapeHtml } from '../utils/html.js';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
 /**
@@ -268,12 +270,3 @@ function getActivityTypeIcon(type) {
   return icons[type] || '📌';
 }
 
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}

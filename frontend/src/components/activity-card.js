@@ -5,6 +5,7 @@
 
 import { formatTime } from '../utils/date-helpers.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create activity card element
@@ -148,20 +149,6 @@ export function removeActivityCard(card, animate = true) {
   } else {
     card.remove();
   }
-}
-
-/**
- * Escape HTML to prevent XSS
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
-function escapeHtml(text) {
-  if (!text) {
-    return '';
-  }
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

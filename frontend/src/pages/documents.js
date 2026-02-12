@@ -9,6 +9,7 @@ import { tripState } from '../state/trip-state.js';
 import { authState } from '../state/auth-state.js';
 import * as api from '../services/api-client.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 
 let currentTrip = null;
 let currentDocuments = [];
@@ -395,16 +396,6 @@ function refreshDocumentList() {
   if (listContainer) {
     listContainer.innerHTML = documentListHtml;
   }
-}
-
-/**
- * Escape HTML
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 /**

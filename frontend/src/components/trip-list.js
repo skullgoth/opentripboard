@@ -1,6 +1,7 @@
 // T070: TripList component - display user's trips
 import { formatDate } from '../utils/date-helpers.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create trip list component
@@ -142,13 +143,3 @@ function getCoverImageHtml(trip) {
   `;
 }
 
-/**
- * Escape HTML to prevent XSS
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}

@@ -5,6 +5,7 @@ import * as apiClient from '../services/api-client.js';
 import { showToast } from '../utils/toast.js';
 import { updateInvitationCount } from '../main.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 
 export async function invitationsPage() {
   const container = document.getElementById('page-container');
@@ -239,12 +240,3 @@ async function handleDeclineInvitation(invitationId, card) {
   }
 }
 
-function escapeHtml(unsafe) {
-  if (!unsafe) return '';
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}

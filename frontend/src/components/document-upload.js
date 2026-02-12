@@ -3,6 +3,7 @@
 
 import { getAllowedFileTypes, getDocumentCategories, validateFile, formatFileSize } from '../utils/documents.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create the document upload form
@@ -309,12 +310,3 @@ export function getEditFormData(form) {
   };
 }
 
-/**
- * Escape HTML
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}

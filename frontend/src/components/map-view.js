@@ -2,6 +2,7 @@
 // T181: Marker clustering for large numbers of activities
 // Displays activity locations on an interactive map with markers and routes
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Type-to-icon mapping for all activity and reservation types
@@ -702,16 +703,6 @@ export function generateGoogleMapsUrl(activities) {
   }
 
   return url;
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

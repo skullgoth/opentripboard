@@ -6,18 +6,7 @@ import { t } from '../utils/i18n.js';
 import { createAutocomplete } from './autocomplete.js';
 import { searchDestinations } from '../services/geocoding-api.js';
 import { getPreferences } from '../state/preferences-state.js';
-
-/**
- * Escape HTML to prevent XSS
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Create trip form modal
