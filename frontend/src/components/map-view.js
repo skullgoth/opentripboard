@@ -1,6 +1,9 @@
 // T179-T184, T187: Map view component using Leaflet
 // T181: Marker clustering for large numbers of activities
 // Displays activity locations on an interactive map with markers and routes
+import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
 
@@ -64,35 +67,11 @@ async function loadLeaflet() {
   L = leafletModule.default;
   leafletLoaded = true;
 
-  // Load Leaflet CSS
-  if (!document.getElementById('leaflet-css')) {
-    const link = document.createElement('link');
-    link.id = 'leaflet-css';
-    link.rel = 'stylesheet';
-    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    document.head.appendChild(link);
-  }
-
   // Load marker cluster plugin
   if (!markerClusterLoaded) {
     try {
-      const markerClusterModule = await import('leaflet.markercluster');
+      await import('leaflet.markercluster');
       markerClusterLoaded = true;
-
-      // Load marker cluster CSS
-      if (!document.getElementById('leaflet-markercluster-css')) {
-        const clusterLink = document.createElement('link');
-        clusterLink.id = 'leaflet-markercluster-css';
-        clusterLink.rel = 'stylesheet';
-        clusterLink.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css';
-        document.head.appendChild(clusterLink);
-
-        const clusterDefaultLink = document.createElement('link');
-        clusterDefaultLink.id = 'leaflet-markercluster-default-css';
-        clusterDefaultLink.rel = 'stylesheet';
-        clusterDefaultLink.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css';
-        document.head.appendChild(clusterDefaultLink);
-      }
     } catch (error) {
       console.warn('Failed to load marker clustering plugin:', error);
     }

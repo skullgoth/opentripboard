@@ -7,19 +7,12 @@ import { getItem } from '../../utils/storage.js';
 import { t } from '../../utils/i18n.js';
 
 /**
- * Initialize map view with activities.
- * Always shows map — world view when no activities with coordinates.
- * @param {Array} activities - Activities with coordinates
+ * Perform the actual map initialization.
+ * Reads latest activities from ctx to avoid stale data.
  */
-export async function initializeMapView(activities) {
-  if (ctx.mapInstance) {
-    ctx.mapInstance.destroy();
-    ctx.mapInstance = null;
-  }
-
-  const sortedActivities = sortActivitiesForRoute(activities);
-
+async function doMapInit() {
   try {
+    const sortedActivities = sortActivitiesForRoute(ctx.currentActivities);
     ctx.mapInstance = await initializeMap('trip-map', sortedActivities, {
       onMarkerClick: (activity) => {
         scrollToAndExpandCard(activity.id);
@@ -30,6 +23,43 @@ export async function initializeMapView(activities) {
     console.error('Failed to initialize map:', error);
     showToast(t('map.loadFailed'), 'error');
   }
+}
+
+/**
+ * Initialize map view with activities.
+ * Defers initialization until the map container is visible using IntersectionObserver.
+ * Always shows map — world view when no activities with coordinates.
+ */
+export function initializeMapView() {
+  if (ctx.mapInstance) {
+    ctx.mapInstance.destroy();
+    ctx.mapInstance = null;
+  }
+
+  if (ctx.mapObserver) {
+    ctx.mapObserver.disconnect();
+    ctx.mapObserver = null;
+  }
+
+  const mapSection = document.querySelector('.trip-map-section');
+  if (!mapSection) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          observer.disconnect();
+          ctx.mapObserver = null;
+          doMapInit();
+          break;
+        }
+      }
+    },
+    { threshold: 0.1 }
+  );
+
+  observer.observe(mapSection);
+  ctx.mapObserver = observer;
 }
 
 /**

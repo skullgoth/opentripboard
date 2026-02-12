@@ -14,6 +14,7 @@ export const ctx = {
   activeUsers: [],
   sortableInstances: [],
   mapInstance: null,
+  mapObserver: null,
   presenceUnsubscribe: null,
   suggestionUnsubscribe: null,
   tripBuddyUnsubscribe: null,
@@ -40,6 +41,7 @@ export function resetState() {
   ctx.activeUsers = [];
   ctx.sortableInstances = [];
   ctx.mapInstance = null;
+  ctx.mapObserver = null;
   ctx.presenceUnsubscribe = null;
   ctx.suggestionUnsubscribe = null;
   ctx.tripBuddyUnsubscribe = null;

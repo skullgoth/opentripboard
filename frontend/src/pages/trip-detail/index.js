@@ -311,8 +311,8 @@ export async function tripDetailPage(params) {
     // Attach trip buddy listeners
     attachTripBuddyListeners();
 
-    // Initialize map and attach map listeners
-    await initializeMapView(activities);
+    // Initialize map (deferred until visible) and attach map listeners
+    initializeMapView();
     attachMapListeners();
 
     // Attach edit trip button
@@ -425,6 +425,11 @@ export function cleanupTripDetailPage() {
   if (ctx.sortableInstances.length > 0) {
     destroyDragDrop(ctx.sortableInstances);
     ctx.sortableInstances = [];
+  }
+
+  if (ctx.mapObserver) {
+    ctx.mapObserver.disconnect();
+    ctx.mapObserver = null;
   }
 
   if (ctx.mapInstance) {
