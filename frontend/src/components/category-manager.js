@@ -19,6 +19,7 @@ import {
   setCategoriesLoading,
 } from '../state/categories-state.js';
 import { showToast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
 
 import { ACTIVITY_GROUPS, getGroupName } from '../utils/default-categories.js';
 
@@ -574,7 +575,7 @@ export function createCategoryManager(container) {
           .replace('{{name}}', category.name);
       }
 
-      if (!confirm(message)) {
+      if (!await confirmDialog({ message, variant: 'danger' })) {
         return;
       }
 

@@ -5,6 +5,7 @@ import { formatDate, formatTime, formatDateTimeForInput } from '../utils/date-he
 import { formatDate as formatDateShort, formatTime as formatTimePreference, formatDateTime as formatDateTimePreference } from '../utils/formatters.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../utils/i18n.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
 import { getCategoryIcon, getCategoryName, buildCategoryOptions } from '../utils/category-resolver.js';
 import { getCategories as getCategoriesState } from '../state/categories-state.js';
 import { searchDestinations } from '../services/geocoding-api.js';
@@ -546,7 +547,7 @@ function setupActivityCard(card, container, onSaveActivity, onDeleteActivity) {
   // Delete button
   card.querySelector('[data-action="delete-activity"]')?.addEventListener('click', async (e) => {
     e.stopPropagation();
-    if (confirm(t('itinerary.confirmDeleteActivity'))) {
+    if (await confirmDialog({ message: t('itinerary.confirmDeleteActivity'), variant: 'danger' })) {
       if (onDeleteActivity) await onDeleteActivity(activityId);
     }
   });

@@ -9,6 +9,8 @@ import { app } from '../main.js';
 import { tripState } from '../state/trip-state.js';
 import { authState } from '../state/auth-state.js';
 import { t } from '../utils/i18n.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
+import { showToast } from '../utils/toast.js';
 
 /**
  * Render home page
@@ -93,7 +95,7 @@ async function handleDeleteClick(tripId) {
   const tripName = trip ? trip.name : 'this trip';
 
   // Show confirmation dialog
-  const confirmed = confirm(t('home.confirmDelete', { name: tripName }));
+  const confirmed = await confirmDialog({ message: t('home.confirmDelete', { name: tripName }), variant: 'danger' });
   if (!confirmed) return;
 
   try {
@@ -104,7 +106,7 @@ async function handleDeleteClick(tripId) {
     homePage();
   } catch (error) {
     console.error('Failed to delete trip:', error);
-    alert(t('home.deleteFailed'));
+    showToast(t('home.deleteFailed'), 'error');
   }
 }
 

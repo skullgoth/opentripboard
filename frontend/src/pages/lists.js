@@ -4,6 +4,7 @@ import { createListManager, createListCard } from '../components/list-manager.js
 import { createPackingList, createListItem } from '../components/packing-list.js';
 import { createTemplateSelector, createListForm } from '../components/list-template-selector.js';
 import { showToast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
 import { app } from '../main.js';
 import { tripState } from '../state/trip-state.js';
 import { authState } from '../state/auth-state.js';
@@ -471,7 +472,7 @@ async function handleCreateFromTemplate(templateId) {
  */
 async function handleDeleteList(tripId, listId, container) {
   const list = currentLists.find(l => l.id === listId);
-  if (!confirm(t('lists.confirmDeleteList', { name: list?.title || 'this list' }))) {
+  if (!await confirmDialog({ message: t('lists.confirmDeleteList', { name: list?.title || 'this list' }), variant: 'danger' })) {
     return;
   }
 

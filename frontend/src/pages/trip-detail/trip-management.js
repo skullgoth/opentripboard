@@ -15,6 +15,7 @@ import {
   displayFormErrors,
 } from '../../components/invite-trip-buddy-form.js';
 import { showToast } from '../../utils/toast.js';
+import { confirmDialog, alertDialog } from '../../utils/confirm-dialog.js';
 import { tripState } from '../../state/trip-state.js';
 import { tripBuddyState } from '../../state/trip-buddy-state.js';
 import { authState } from '../../state/auth-state.js';
@@ -122,7 +123,7 @@ export async function handleCoverImageUpload(file) {
     const validation = validateCoverImage(file);
 
     if (!validation.valid) {
-      alert(validation.errors.join('\n'));
+      await alertDialog({ title: t('common.error'), message: validation.errors.join('\n') });
       return;
     }
 
@@ -138,7 +139,7 @@ export async function handleCoverImageUpload(file) {
     }
   } catch (error) {
     console.error('Failed to upload cover image:', error);
-    alert(t('cover.uploadFailed'));
+    showToast(t('cover.uploadFailed'), 'error');
 
     const coverImage = document.querySelector('.trip-cover-image');
     if (coverImage) {
@@ -153,7 +154,7 @@ export async function handleCoverImageUpload(file) {
 export async function handleDeleteCoverImage() {
   if (!ctx.currentTrip) return;
 
-  const confirmed = confirm(t('cover.confirmRemove'));
+  const confirmed = await confirmDialog({ message: t('cover.confirmRemove'), variant: 'danger' });
   if (!confirmed) return;
 
   try {
@@ -169,7 +170,7 @@ export async function handleDeleteCoverImage() {
     }
   } catch (error) {
     console.error('Failed to delete cover image:', error);
-    alert(t('cover.deleteFailed'));
+    showToast(t('cover.deleteFailed'), 'error');
 
     const coverImage = document.querySelector('.trip-cover-image');
     if (coverImage) {
@@ -187,7 +188,7 @@ export async function handleDeleteCoverImage() {
 export async function handleDeleteTrip(trip) {
   if (!trip) return;
 
-  const confirmed = confirm(t('trip.confirmDelete', { name: trip.name }));
+  const confirmed = await confirmDialog({ message: t('trip.confirmDelete', { name: trip.name }), variant: 'danger' });
   if (!confirmed) return;
 
   try {
@@ -195,7 +196,7 @@ export async function handleDeleteTrip(trip) {
     app.router.navigate('/');
   } catch (error) {
     console.error('Failed to delete trip:', error);
-    alert(t('trip.deleteFailed'));
+    showToast(t('trip.deleteFailed'), 'error');
   }
 }
 
@@ -335,7 +336,7 @@ export async function handleInviteTripBuddy(formData) {
  */
 export async function handleRemoveTripBuddy(tripBuddyId) {
   try {
-    const confirmed = confirm(t('tripBuddy.confirmRemove'));
+    const confirmed = await confirmDialog({ message: t('tripBuddy.confirmRemove'), variant: 'danger' });
     if (!confirmed) return;
 
     await tripBuddyState.removeTripBuddy(tripBuddyId);

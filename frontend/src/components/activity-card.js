@@ -6,6 +6,7 @@
 import { formatTime } from '../utils/date-helpers.js';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
 
 /**
  * Create activity card element
@@ -43,7 +44,7 @@ export function createActivityCard(activity, options = {}) {
     if (deleteBtn) {
       deleteBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (confirm(t('itinerary.confirmDeleteActivity'))) {
+        if (await confirmDialog({ message: t('itinerary.confirmDeleteActivity'), variant: 'danger' })) {
           await onDelete(activity.id);
         }
       });

@@ -5,6 +5,7 @@ import { createBudgetSummary, createBudgetEditForm } from '../components/budget-
 import { createBalanceSheet } from '../components/balance-sheet.js';
 import { getCurrencySymbol } from '../utils/currency.js';
 import { showToast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
 import { app } from '../main.js';
 import { tripState } from '../state/trip-state.js';
 import { tripBuddyState } from '../state/trip-buddy-state.js';
@@ -371,7 +372,7 @@ async function handleExpenseSubmit(form, existingExpenseId) {
  * Handle expense deletion
  */
 async function handleDeleteExpense(tripId, expenseId) {
-  if (!confirm(t('budget.confirmDeleteExpense'))) {
+  if (!await confirmDialog({ message: t('budget.confirmDeleteExpense'), variant: 'danger' })) {
     return;
   }
 
@@ -416,7 +417,7 @@ async function handleBudgetUpdate(budgetAmount, currency) {
 async function handleSettleDebt(tripId, fromId, fromName, toId, toName, amount) {
   const currency = currentTrip.currency || 'USD';
 
-  if (!confirm(t('balanceSheet.confirmSettle', { amount: amount.toFixed(2), currency, from: fromName, to: toName }))) {
+  if (!await confirmDialog({ message: t('balanceSheet.confirmSettle', { amount: amount.toFixed(2), currency, from: fromName, to: toName }), variant: 'danger' })) {
     return;
   }
 

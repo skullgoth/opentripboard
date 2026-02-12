@@ -3,6 +3,7 @@
  */
 import * as apiClient from '../services/api-client.js';
 import { showToast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
 import { updateInvitationCount } from '../main.js';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
@@ -198,7 +199,7 @@ async function handleDeclineInvitation(invitationId, card) {
   const declineBtn = card.querySelector('[data-action="decline-invitation"]');
 
   // Confirm decline
-  if (!confirm(t('invitations.confirmDecline'))) {
+  if (!await confirmDialog({ message: t('invitations.confirmDecline'), variant: 'danger' })) {
     return;
   }
 

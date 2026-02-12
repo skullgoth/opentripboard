@@ -2,6 +2,7 @@
 import apiClient from '../services/api-client.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../utils/i18n.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
 
 let currentTripId = null;
 let shareTokens = [];
@@ -201,7 +202,7 @@ async function handleCopyLink(url) {
  * Handle delete share link
  */
 async function handleDeleteShareLink(tokenId) {
-  if (!confirm(t('share.confirmDelete'))) {
+  if (!await confirmDialog({ message: t('share.confirmDelete'), variant: 'danger' })) {
     return;
   }
 

@@ -6,6 +6,7 @@ import { refreshTimeline } from './timeline.js';
 import { tripState } from '../../state/trip-state.js';
 import { showToast } from '../../utils/toast.js';
 import { t } from '../../utils/i18n.js';
+import { confirmDialog } from '../../utils/confirm-dialog.js';
 
 /**
  * Handle add reservation — creates inline reservation directly
@@ -221,7 +222,7 @@ export async function handleReservationTypeChange(reservationId, newType) {
  * @param {string} reservationId - Reservation (activity) ID
  */
 export async function handleDeleteReservation(reservationId) {
-  const confirmed = confirm(t('reservation.confirmDelete'));
+  const confirmed = await confirmDialog({ message: t('reservation.confirmDelete'), variant: 'danger' });
   if (!confirmed) return;
 
   try {

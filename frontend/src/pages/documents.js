@@ -4,6 +4,7 @@
 import { createDocumentList, createCategoryTabs, createDocumentStats } from '../components/document-list.js';
 import { createDocumentUploadForm, createDocumentEditForm, initUploadFormHandlers, getUploadFormData, getEditFormData } from '../components/document-upload.js';
 import { showToast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm-dialog.js';
 import { app } from '../main.js';
 import { tripState } from '../state/trip-state.js';
 import { authState } from '../state/auth-state.js';
@@ -338,7 +339,7 @@ async function handleDownload(tripId, documentId) {
  * Handle document delete
  */
 async function handleDelete(tripId, documentId) {
-  if (!confirm(t('documents.confirmDelete'))) {
+  if (!await confirmDialog({ message: t('documents.confirmDelete'), variant: 'danger' })) {
     return;
   }
 
