@@ -9,11 +9,8 @@ import { t } from '../utils/i18n.js';
 import { getCategoryIcon, getCategoryName, buildCategoryOptions } from '../utils/category-resolver.js';
 import { getCategories as getCategoriesState } from '../state/categories-state.js';
 import { formatDate as formatDateLocale, formatTime as formatTimeLocale } from '../utils/date-helpers.js';
-
-// Nominatim API configuration
-const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
-const NOMINATIM_RATE_LIMIT_MS = 1100; // 1 request per second + buffer
-let lastNominatimRequest = 0;
+import { searchDestinations } from '../services/geocoding-api.js';
+import { getPreferences } from '../state/preferences-state.js';
 
 // Module-level trip date constraints for reservation editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -627,7 +624,7 @@ function truncateText(text, maxLength) {
 }
 
 /**
- * Search Nominatim for locations
+ * Search for locations via backend geocoding service
  * @param {string} query - Search query
  * @returns {Promise<Array>} Array of location results
  */
@@ -636,34 +633,10 @@ async function searchNominatim(query) {
     return [];
   }
 
-  // Rate limiting
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastNominatimRequest;
-  if (timeSinceLastRequest < NOMINATIM_RATE_LIMIT_MS) {
-    await new Promise(resolve => setTimeout(resolve, NOMINATIM_RATE_LIMIT_MS - timeSinceLastRequest));
-  }
-  lastNominatimRequest = Date.now();
-
   try {
-    const params = new URLSearchParams({
-      q: query,
-      format: 'json',
-      addressdetails: '1',
-      limit: '5',
-    });
-
-    const response = await fetch(`${NOMINATIM_BASE_URL}/search?${params}`, {
-      headers: {
-        'User-Agent': 'OpenTripBoard/1.0 (travel planning app)',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Nominatim request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.map(item => ({
+    const { language } = getPreferences();
+    const result = await searchDestinations(query, { limit: 5, language });
+    return result.results.map(item => ({
       displayName: item.display_name,
       latitude: parseFloat(item.lat),
       longitude: parseFloat(item.lon),
@@ -671,7 +644,7 @@ async function searchNominatim(query) {
       address: item.address,
     }));
   } catch (error) {
-    console.error('Nominatim search error:', error);
+    console.error('Location search error:', error);
     return [];
   }
 }
