@@ -11,6 +11,8 @@ import { tripState } from '../state/trip-state.js';
 import { tripBuddyState } from '../state/trip-buddy-state.js';
 import { authState } from '../state/auth-state.js';
 import * as api from '../services/api-client.js';
+import { wsClient } from '../services/websocket-client.js';
+import { realtimeManager } from '../services/realtime-updates.js';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
 
@@ -19,6 +21,7 @@ let currentExpenses = [];
 let currentSummary = {};
 let currentBalances = {};
 let currentParticipants = [];
+let expenseUnsubscribe = null;
 
 /**
  * Render budget page
@@ -63,6 +66,10 @@ export async function budgetPage(params) {
 
     renderPage(container, currentUser);
     attachEventListeners(container, tripId, currentUser);
+
+    // Join WebSocket room and subscribe to expense updates
+    joinBudgetRoom(tripId);
+    subscribeToExpenseUpdates();
 
   } catch (error) {
     console.error('Failed to load budget:', error);
@@ -503,9 +510,54 @@ async function refreshData() {
 }
 
 /**
+ * Join WebSocket room for real-time expense updates
+ * @param {string} tripId - Trip ID
+ */
+function joinBudgetRoom(tripId) {
+  if (wsClient.isConnected && wsClient.isAuthenticated) {
+    wsClient.joinTrip(tripId);
+  } else {
+    wsClient
+      .connect()
+      .then(() => wsClient.joinTrip(tripId))
+      .catch((error) => {
+        console.error('Failed to join budget room:', error);
+      });
+  }
+}
+
+/**
+ * Subscribe to real-time expense updates from other users
+ */
+function subscribeToExpenseUpdates() {
+  realtimeManager.init();
+
+  expenseUnsubscribe = realtimeManager.onExpenseUpdate((event) => {
+    const currentUser = authState.getCurrentUser();
+
+    // Skip events from the current user (they already refreshed from their own action)
+    if (event.userId === currentUser?.id) {
+      return;
+    }
+
+    showToast(t('budget.dataUpdated'), 'info');
+    refreshData();
+  });
+}
+
+/**
  * Cleanup function when leaving page
  */
 export function cleanupBudgetPage() {
+  if (expenseUnsubscribe) {
+    expenseUnsubscribe();
+    expenseUnsubscribe = null;
+  }
+
+  if (currentTrip) {
+    wsClient.leaveTrip(currentTrip.id);
+  }
+
   currentTrip = null;
   currentExpenses = [];
   currentSummary = {};

@@ -15,6 +15,7 @@ export class RealTimeUpdateManager {
   constructor() {
     this.activityHandlers = [];
     this.suggestionHandlers = [];
+    this.expenseHandlers = [];
     this.presenceHandlers = [];
     this.pendingOperations = new Map(); // Track optimistic updates
     this.activeUsers = new Set(); // Track currently active users
@@ -37,6 +38,13 @@ export class RealTimeUpdateManager {
     wsClient.on('activity:updated', (message) => this.handleActivityUpdated(message));
     wsClient.on('activity:deleted', (message) => this.handleActivityDeleted(message));
     wsClient.on('activity:reordered', (message) => this.handleActivityReordered(message));
+
+    // Expense updates
+    wsClient.on('expense:created', (message) => this.handleExpenseEvent(message));
+    wsClient.on('expense:updated', (message) => this.handleExpenseEvent(message));
+    wsClient.on('expense:deleted', (message) => this.handleExpenseEvent(message));
+    wsClient.on('expense:settled', (message) => this.handleExpenseEvent(message));
+    wsClient.on('expense:unsettled', (message) => this.handleExpenseEvent(message));
 
     // Suggestion updates
     wsClient.on('suggestion:created', (message) => this.handleSuggestionCreated(message));
@@ -206,6 +214,21 @@ export class RealTimeUpdateManager {
     this.notifySuggestionHandlers({
       type: 'deleted',
       suggestionId: message.suggestionId,
+      userId: message.userId,
+      timestamp: message.timestamp,
+    });
+  }
+
+  // ============================================
+  // Expense Handlers
+  // ============================================
+
+  /**
+   * Handle any expense event (created, updated, deleted, settled, unsettled)
+   */
+  handleExpenseEvent(message) {
+    this.notifyExpenseHandlers({
+      type: message.type,
       userId: message.userId,
       timestamp: message.timestamp,
     });
@@ -441,6 +464,16 @@ export class RealTimeUpdateManager {
   }
 
   /**
+   * Register expense event handler
+   * @param {Function} handler - Handler function
+   * @returns {Function} Unsubscribe function
+   */
+  onExpenseUpdate(handler) {
+    this.expenseHandlers.push(handler);
+    return () => this.offExpenseUpdate(handler);
+  }
+
+  /**
    * Register presence event handler
    * @param {Function} handler - Handler function
    */
@@ -467,6 +500,17 @@ export class RealTimeUpdateManager {
     const index = this.suggestionHandlers.indexOf(handler);
     if (index !== -1) {
       this.suggestionHandlers.splice(index, 1);
+    }
+  }
+
+  /**
+   * Unregister expense event handler
+   * @param {Function} handler - Handler function
+   */
+  offExpenseUpdate(handler) {
+    const index = this.expenseHandlers.indexOf(handler);
+    if (index !== -1) {
+      this.expenseHandlers.splice(index, 1);
     }
   }
 
@@ -510,6 +554,20 @@ export class RealTimeUpdateManager {
   }
 
   /**
+   * Notify expense handlers
+   * @param {Object} event - Event data
+   */
+  notifyExpenseHandlers(event) {
+    this.expenseHandlers.forEach(handler => {
+      try {
+        handler(event);
+      } catch (error) {
+        console.error('Error in expense handler:', error);
+      }
+    });
+  }
+
+  /**
    * Notify presence handlers
    * @param {Object} event - Event data
    */
@@ -529,6 +587,7 @@ export class RealTimeUpdateManager {
   cleanup() {
     this.activityHandlers = [];
     this.suggestionHandlers = [];
+    this.expenseHandlers = [];
     this.presenceHandlers = [];
     this.pendingOperations.clear();
   }

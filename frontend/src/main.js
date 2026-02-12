@@ -233,7 +233,9 @@ async function initApp() {
   // Cleanup when page is unloaded (browser tab closed, navigation away, etc.)
   window.addEventListener('beforeunload', () => {
     const currentRoute = app.router.getCurrentRoute();
-    if (currentRoute && currentRoute.startsWith('/trips/')) {
+    if (currentRoute && currentRoute.includes('/budget')) {
+      cleanupBudgetPage();
+    } else if (currentRoute && currentRoute.startsWith('/trips/')) {
       cleanupTripDetailPage();
     }
   });

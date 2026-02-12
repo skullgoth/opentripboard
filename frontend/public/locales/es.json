@@ -412,6 +412,7 @@
     "expenseUpdated": "Gasto actualizado",
     "deleteFailed": "Error al eliminar el gasto",
     "saveFailed": "Error al guardar el gasto",
+    "dataUpdated": "Datos del presupuesto actualizados por otro usuario",
     "noCategoryExpenses": "Sin gastos en esta categoría.",
     "budgetForm": {
       "title": "Establecer Presupuesto del Viaje",

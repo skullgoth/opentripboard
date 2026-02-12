@@ -412,6 +412,7 @@
     "expenseUpdated": "Expense updated",
     "deleteFailed": "Failed to delete expense",
     "saveFailed": "Failed to save expense",
+    "dataUpdated": "Budget data updated by another user",
     "noCategoryExpenses": "No expenses in this category.",
     "budgetForm": {
       "title": "Set Trip Budget",

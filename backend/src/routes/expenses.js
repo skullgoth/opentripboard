@@ -3,6 +3,7 @@ import * as expenseService from '../services/expense-service.js';
 import { authenticate } from '../middleware/auth.js';
 import { validateBody, validateParams } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/error-handler.js';
+import { broadcastToRoom } from '../websocket/rooms.js';
 
 const tripIdSchema = {
   type: 'object',
@@ -180,6 +181,16 @@ export default async function expenseRoutes(fastify) {
       }
 
       const expense = await expenseService.create(tripId, request.user.userId, expenseData);
+
+      // Broadcast expense creation to all users in the trip room
+      broadcastToRoom(tripId, {
+        type: 'expense:created',
+        tripId,
+        expenseId: expense.id,
+        userId: request.user.userId,
+        timestamp: new Date().toISOString(),
+      });
+
       reply.code(201).send(expense);
     })
   );
@@ -264,8 +275,18 @@ export default async function expenseRoutes(fastify) {
       preHandler: [authenticate, validateParams(expenseIdSchema), validateBody(updateExpenseSchema)],
     },
     asyncHandler(async (request, reply) => {
-      const { expenseId } = request.params;
+      const { tripId, expenseId } = request.params;
       const expense = await expenseService.update(expenseId, request.user.userId, request.body);
+
+      // Broadcast expense update to all users in the trip room
+      broadcastToRoom(tripId, {
+        type: 'expense:updated',
+        tripId,
+        expenseId,
+        userId: request.user.userId,
+        timestamp: new Date().toISOString(),
+      });
+
       reply.send(expense);
     })
   );
@@ -280,8 +301,18 @@ export default async function expenseRoutes(fastify) {
       preHandler: [authenticate, validateParams(expenseIdSchema)],
     },
     asyncHandler(async (request, reply) => {
-      const { expenseId } = request.params;
+      const { tripId, expenseId } = request.params;
       await expenseService.deleteExpense(expenseId, request.user.userId);
+
+      // Broadcast expense deletion to all users in the trip room
+      broadcastToRoom(tripId, {
+        type: 'expense:deleted',
+        tripId,
+        expenseId,
+        userId: request.user.userId,
+        timestamp: new Date().toISOString(),
+      });
+
       reply.code(204).send();
     })
   );
@@ -296,8 +327,18 @@ export default async function expenseRoutes(fastify) {
       preHandler: [authenticate, validateParams(splitIdSchema)],
     },
     asyncHandler(async (request, reply) => {
-      const { splitId } = request.params;
+      const { tripId, splitId } = request.params;
       const split = await expenseService.settleSplit(splitId, request.user.userId);
+
+      // Broadcast split settlement to all users in the trip room
+      broadcastToRoom(tripId, {
+        type: 'expense:settled',
+        tripId,
+        splitId,
+        userId: request.user.userId,
+        timestamp: new Date().toISOString(),
+      });
+
       reply.send(split);
     })
   );
@@ -312,8 +353,18 @@ export default async function expenseRoutes(fastify) {
       preHandler: [authenticate, validateParams(splitIdSchema)],
     },
     asyncHandler(async (request, reply) => {
-      const { splitId } = request.params;
+      const { tripId, splitId } = request.params;
       const split = await expenseService.unsettleSplit(splitId, request.user.userId);
+
+      // Broadcast split unsettlement to all users in the trip room
+      broadcastToRoom(tripId, {
+        type: 'expense:unsettled',
+        tripId,
+        splitId,
+        userId: request.user.userId,
+        timestamp: new Date().toISOString(),
+      });
+
       reply.send(split);
     })
   );
