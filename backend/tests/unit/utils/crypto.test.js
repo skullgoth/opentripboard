@@ -6,6 +6,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
   hashPassword,
+  hashToken,
   verifyPassword,
   validatePasswordStrength,
 } from '../../../src/utils/crypto.js';
@@ -104,6 +105,53 @@ describe('Crypto Utility', () => {
       const hash = await hashPassword(password);
 
       expect(hash).toBeDefined();
+    });
+  });
+
+  describe('hashToken', () => {
+    it('should hash a valid token string', () => {
+      const token = 'my-refresh-token-abc123';
+
+      const hash = hashToken(token);
+
+      expect(hash).toBeDefined();
+      expect(typeof hash).toBe('string');
+      expect(hash).not.toBe(token);
+    });
+
+    it('should produce deterministic SHA-256 hex output', () => {
+      const token = 'deterministic-token';
+
+      const hash1 = hashToken(token);
+      const hash2 = hashToken(token);
+
+      expect(hash1).toBe(hash2);
+      // SHA-256 hex is 64 characters
+      expect(hash1).toHaveLength(64);
+      expect(hash1).toMatch(/^[0-9a-f]{64}$/);
+    });
+
+    it('should produce different hashes for different tokens', () => {
+      const hash1 = hashToken('token-aaa');
+      const hash2 = hashToken('token-bbb');
+
+      expect(hash1).not.toBe(hash2);
+    });
+
+    it('should throw error for null token', () => {
+      expect(() => hashToken(null)).toThrow('Token must be a non-empty string');
+    });
+
+    it('should throw error for undefined token', () => {
+      expect(() => hashToken(undefined)).toThrow('Token must be a non-empty string');
+    });
+
+    it('should throw error for empty string', () => {
+      expect(() => hashToken('')).toThrow('Token must be a non-empty string');
+    });
+
+    it('should throw error for non-string token', () => {
+      expect(() => hashToken(12345)).toThrow('Token must be a non-empty string');
     });
   });
 

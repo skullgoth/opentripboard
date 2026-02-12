@@ -1,5 +1,29 @@
 // T021: Unit tests for geocoding service
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
+// Mock lru-cache before importing the service
+vi.mock('lru-cache', () => {
+  class MockLRUCache {
+    constructor(options) {
+      this.max = options.max || 100;
+      this._store = new Map();
+    }
+    get(key) {
+      return this._store.get(key);
+    }
+    set(key, value) {
+      this._store.set(key, value);
+    }
+    get size() {
+      return this._store.size;
+    }
+    clear() {
+      this._store.clear();
+    }
+  }
+  return { LRUCache: MockLRUCache };
+});
+
 import { GeocodingService } from '../../../src/services/geocoding-service.js';
 
 describe('GeocodingService', () => {

@@ -87,19 +87,19 @@ describe('CoverImageService', () => {
   });
 
   describe('_buildSearchQuery', () => {
-    it('should extract main location and add travel keywords', () => {
+    it('should extract country from comma-separated destination', () => {
       const query = service._buildSearchQuery('Paris, Île-de-France, France');
-      expect(query).toBe('Paris landmark architecture travel');
+      expect(query).toBe('France');
     });
 
-    it('should handle simple location names', () => {
+    it('should use location name directly when no comma', () => {
       const query = service._buildSearchQuery('Tokyo');
-      expect(query).toBe('Tokyo landmark architecture travel');
+      expect(query).toBe('Tokyo');
     });
 
-    it('should handle locations with multiple commas', () => {
+    it('should extract last part with multiple commas', () => {
       const query = service._buildSearchQuery('New York City, New York, USA');
-      expect(query).toBe('New York City landmark architecture travel');
+      expect(query).toBe('USA');
     });
   });
 

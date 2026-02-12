@@ -7,8 +7,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as suggestionService from '../../../src/services/suggestion-service.js';
 import * as suggestionQueries from '../../../src/db/queries/suggestions.js';
 import * as activityQueries from '../../../src/db/queries/activities.js';
+import * as tripQueries from '../../../src/db/queries/trips.js';
 import * as tripBuddyService from '../../../src/services/trip-buddy-service.js';
-import { createMockSuggestion, createMockActivity } from '../../helpers.js';
+import { createMockSuggestion, createMockActivity, createMockTrip } from '../../helpers.js';
 
 // Mock the database connection, queries and services
 vi.mock('../../../src/db/connection.js', () => ({
@@ -21,6 +22,7 @@ vi.mock('../../../src/db/connection.js', () => ({
 
 vi.mock('../../../src/db/queries/suggestions.js');
 vi.mock('../../../src/db/queries/activities.js');
+vi.mock('../../../src/db/queries/trips.js');
 vi.mock('../../../src/services/trip-buddy-service.js');
 
 describe('Suggestion Service', () => {
@@ -46,6 +48,7 @@ describe('Suggestion Service', () => {
       const mockSuggestion = createMockSuggestion(validSuggestionData);
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
       vi.mocked(suggestionQueries.findSimilar).mockResolvedValue(null);
       vi.mocked(suggestionQueries.create).mockResolvedValue(mockSuggestion);
 
@@ -104,6 +107,7 @@ describe('Suggestion Service', () => {
       };
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
 
       await expect(suggestionService.createSuggestion(tripId, userId, invalidData))
         .rejects
@@ -114,6 +118,7 @@ describe('Suggestion Service', () => {
       const invalidData = { ...validSuggestionData, latitude: 48.8584, longitude: undefined };
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
 
       await expect(suggestionService.createSuggestion(tripId, userId, invalidData))
         .rejects
@@ -124,6 +129,7 @@ describe('Suggestion Service', () => {
       const invalidData = { ...validSuggestionData, latitude: undefined, longitude: 2.2945 };
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
 
       await expect(suggestionService.createSuggestion(tripId, userId, invalidData))
         .rejects
@@ -134,6 +140,7 @@ describe('Suggestion Service', () => {
       const invalidData = { ...validSuggestionData, latitude: 95 };
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
 
       await expect(suggestionService.createSuggestion(tripId, userId, invalidData))
         .rejects
@@ -144,6 +151,7 @@ describe('Suggestion Service', () => {
       const invalidData = { ...validSuggestionData, longitude: 185 };
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
 
       await expect(suggestionService.createSuggestion(tripId, userId, invalidData))
         .rejects
@@ -154,6 +162,7 @@ describe('Suggestion Service', () => {
       const existingSuggestion = createMockSuggestion({ title: 'Le Cinq Restaurant' });
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
       vi.mocked(suggestionQueries.findSimilar).mockResolvedValue(existingSuggestion);
 
       await expect(suggestionService.createSuggestion(tripId, userId, validSuggestionData))
@@ -165,6 +174,7 @@ describe('Suggestion Service', () => {
       const validTypes = ['flight', 'accommodation', 'restaurant', 'attraction', 'transportation', 'meeting', 'event', 'other'];
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
       vi.mocked(suggestionQueries.findSimilar).mockResolvedValue(null);
 
       for (const activityType of validTypes) {
@@ -181,6 +191,7 @@ describe('Suggestion Service', () => {
       const mockSuggestion = createMockSuggestion(minimalData);
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
       vi.mocked(suggestionQueries.findSimilar).mockResolvedValue(null);
       vi.mocked(suggestionQueries.create).mockResolvedValue(mockSuggestion);
 
@@ -211,6 +222,7 @@ describe('Suggestion Service', () => {
       const mockSuggestion = createMockSuggestion(dataWithSpaces);
 
       vi.mocked(tripBuddyService.checkAccess).mockResolvedValue(true);
+      vi.mocked(tripQueries.findById).mockResolvedValue(createMockTrip());
       vi.mocked(suggestionQueries.findSimilar).mockResolvedValue(null);
       vi.mocked(suggestionQueries.create).mockResolvedValue(mockSuggestion);
 
