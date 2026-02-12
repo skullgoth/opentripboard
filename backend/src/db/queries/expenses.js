@@ -239,50 +239,66 @@ export async function deleteExpense(expenseId) {
  * @returns {Promise<Object>} Summary with totals by category
  */
 export async function getSummary(tripId) {
-  // Get trip budget
-  const tripResult = await query(
-    'SELECT budget, currency FROM trips WHERE id = $1',
+  const result = await query(
+    `WITH expense_stats AS (
+       SELECT
+         COALESCE(SUM(amount) FILTER (WHERE category != 'settlement'), 0) AS total_spent,
+         COUNT(*) AS expense_count
+       FROM expenses
+       WHERE trip_id = $1
+     ),
+     category_breakdown AS (
+       SELECT COALESCE(
+         json_agg(
+           json_build_object('category', category, 'total', total)
+           ORDER BY total DESC
+         ),
+         '[]'::json
+       ) AS by_category
+       FROM (
+         SELECT category, SUM(amount) AS total
+         FROM expenses
+         WHERE trip_id = $1 AND category != 'settlement'
+         GROUP BY category
+       ) cats
+     )
+     SELECT t.budget, t.currency,
+            es.total_spent, es.expense_count,
+            cb.by_category
+     FROM trips t
+     CROSS JOIN expense_stats es
+     CROSS JOIN category_breakdown cb
+     WHERE t.id = $1`,
     [tripId]
   );
-  const trip = tripResult.rows[0] || {};
 
-  // Get total spent (exclude settlements as they are internal transfers)
-  const totalResult = await query(
-    `SELECT COALESCE(SUM(amount), 0) as total_spent
-     FROM expenses
-     WHERE trip_id = $1 AND category != 'settlement'`,
-    [tripId]
-  );
+  const row = result.rows[0];
 
-  // Get spending by category (exclude settlements)
-  const categoryResult = await query(
-    `SELECT category, COALESCE(SUM(amount), 0) as total
-     FROM expenses
-     WHERE trip_id = $1 AND category != 'settlement'
-     GROUP BY category
-     ORDER BY total DESC`,
-    [tripId]
-  );
+  if (!row) {
+    return {
+      budget: null,
+      currency: 'USD',
+      totalSpent: 0,
+      remaining: null,
+      percentUsed: null,
+      expenseCount: 0,
+      byCategory: [],
+    };
+  }
 
-  // Get expense count
-  const countResult = await query(
-    'SELECT COUNT(*) as count FROM expenses WHERE trip_id = $1',
-    [tripId]
-  );
-
-  const totalSpent = parseFloat(totalResult.rows[0].total_spent);
-  const budget = trip.budget ? parseFloat(trip.budget) : null;
+  const totalSpent = parseFloat(row.total_spent);
+  const budget = row.budget ? parseFloat(row.budget) : null;
 
   return {
     budget,
-    currency: trip.currency || 'USD',
+    currency: row.currency || 'USD',
     totalSpent,
     remaining: budget !== null ? budget - totalSpent : null,
     percentUsed: budget !== null && budget > 0 ? (totalSpent / budget) * 100 : null,
-    expenseCount: parseInt(countResult.rows[0].count, 10),
-    byCategory: categoryResult.rows.map((row) => ({
-      category: row.category,
-      total: parseFloat(row.total),
+    expenseCount: parseInt(row.expense_count, 10),
+    byCategory: row.by_category.map((item) => ({
+      category: item.category,
+      total: parseFloat(item.total),
     })),
   };
 }
