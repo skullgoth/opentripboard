@@ -1,5 +1,9 @@
 // T076: Home page - display trips list and handle trip creation
-import { createTripList, attachTripListListeners } from '../components/trip-list.js';
+import {
+  createTripList,
+  createTripListSkeleton,
+  attachTripListListeners,
+} from '../components/trip-list.js';
 import { createTripForm, attachTripFormListeners } from '../components/trip-form.js';
 import { app } from '../main.js';
 import { tripState } from '../state/trip-state.js';
@@ -30,13 +34,8 @@ export async function homePage() {
     return;
   }
 
-  // Show loading state (T084)
-  container.innerHTML = `
-    <div class="loading-page">
-      <div class="spinner"></div>
-      <p>${t('home.loadingTrips')}</p>
-    </div>
-  `;
+  // Show skeleton loading state (T084)
+  container.innerHTML = createTripListSkeleton();
 
   try {
     // T081: Wire trip creation flow - Load trips from API

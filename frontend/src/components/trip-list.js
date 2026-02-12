@@ -4,6 +4,43 @@ import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
 
 /**
+ * Create skeleton loading placeholder for trip list
+ * @param {number} count - Number of skeleton cards to show
+ * @returns {string} HTML string
+ */
+export function createTripListSkeleton(count = 6) {
+  const skeletonCards = Array.from(
+    { length: count },
+    () => `
+    <div class="card trip-card trip-card-skeleton" aria-hidden="true">
+      <div class="trip-cover-image-wrapper skeleton-pulse"></div>
+      <div class="card-body">
+        <div class="skeleton-line skeleton-title"></div>
+        <div class="skeleton-line skeleton-text skeleton-text--short"></div>
+        <div class="skeleton-line skeleton-text skeleton-text--long"></div>
+        <div class="skeleton-line skeleton-badge"></div>
+      </div>
+      <div class="card-footer">
+        <div class="skeleton-line skeleton-badge"></div>
+      </div>
+    </div>
+  `
+  ).join('');
+
+  return `
+    <div class="trip-list">
+      <div class="trip-list-header">
+        <div class="skeleton-line skeleton-heading"></div>
+        <div class="skeleton-line skeleton-button"></div>
+      </div>
+      <div class="trip-grid">
+        ${skeletonCards}
+      </div>
+    </div>
+  `;
+}
+
+/**
  * Create trip list component
  * @param {Array} trips - Array of trip objects
  * @param {Function} onTripClick - Callback when trip is clicked

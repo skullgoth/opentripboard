@@ -962,6 +962,9 @@ form .modal-actions {
 
 /* Trip List */
 .trip-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: var(--spacing-6);
 }
 
@@ -978,6 +981,90 @@ form .modal-actions {
 
 .trip-card:hover {
   transform: translateY(-2px);
+}
+
+/* Skeleton Loading for Trip Cards */
+.trip-card-skeleton {
+  pointer-events: none;
+}
+
+.trip-card-skeleton .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.trip-card-skeleton .card-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-200) 25%,
+    var(--color-gray-100) 50%,
+    var(--color-gray-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-line {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-200) 25%,
+    var(--color-gray-100) 50%,
+    var(--color-gray-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-heading {
+  width: 180px;
+  height: 28px;
+}
+
+.skeleton-button {
+  width: 100px;
+  height: 36px;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-title {
+  width: 70%;
+  height: 22px;
+}
+
+.skeleton-text {
+  height: 14px;
+}
+
+.skeleton-text--short {
+  width: 40%;
+}
+
+.skeleton-text--long {
+  width: 85%;
+}
+
+.skeleton-badge {
+  width: 80px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+[data-theme='dark'] .skeleton-pulse,
+[data-theme='dark'] .skeleton-line {
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-200) 25%,
+    var(--color-gray-300) 50%,
+    var(--color-gray-200) 75%
+  );
+  background-size: 200% 100%;
 }
 
 /* Cover Image Styles (T102) */
