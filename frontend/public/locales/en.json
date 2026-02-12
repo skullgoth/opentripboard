@@ -32,7 +32,8 @@
     "manageUsers": "Manage Users",
     "logout": "Log out",
     "toggleTheme": "Toggle Theme",
-    "userMenu": "User Menu"
+    "userMenu": "User Menu",
+    "toggleMenu": "Toggle navigation menu"
   },
   "auth": {
     "login": "Login",

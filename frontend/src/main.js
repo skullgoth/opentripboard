@@ -271,8 +271,21 @@ async function initApp() {
 function updateUIForAuthState(isAuthenticated) {
   const nav = document.getElementById('main-nav');
   const userMenu = document.getElementById('user-menu');
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+
+  // Close mobile menu on auth state change
+  nav.classList.remove('mobile-open');
+  const overlay = document.querySelector('.mobile-menu-overlay');
+  if (overlay) overlay.classList.remove('active');
+  if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
 
   if (isAuthenticated) {
+    // Show hamburger button when authenticated (has nav links)
+    if (mobileMenuToggle) {
+      mobileMenuToggle.classList.remove('hidden');
+      mobileMenuToggle.setAttribute('aria-label', t('nav.toggleMenu'));
+    }
+
     nav.innerHTML = `
       <a href="#/">${t('nav.myTrips')}</a>
       <a href="#/invitations" class="nav-link-with-badge">
@@ -342,10 +355,16 @@ function updateUIForAuthState(isAuthenticated) {
     // Setup theme toggle button
     setupThemeToggle();
 
+    // Setup mobile hamburger menu
+    setupMobileMenu();
+
     // Start polling for invitation count
     updateInvitationCount();
     startInvitationCountPolling();
   } else {
+    // Hide hamburger button when not authenticated (no nav links)
+    if (mobileMenuToggle) mobileMenuToggle.classList.add('hidden');
+
     nav.innerHTML = '';
 
     // Only show Register button if registration is enabled
@@ -365,6 +384,59 @@ function updateUIForAuthState(isAuthenticated) {
     // Stop polling when logged out
     stopInvitationCountPolling();
   }
+}
+
+/**
+ * Setup mobile hamburger menu toggle (only binds listeners once)
+ */
+let mobileMenuInitialized = false;
+
+function setupMobileMenu() {
+  if (mobileMenuInitialized) return;
+  mobileMenuInitialized = true;
+
+  const toggle = document.getElementById('mobile-menu-toggle');
+  const nav = document.getElementById('main-nav');
+  if (!toggle || !nav) return;
+
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'mobile-menu-overlay';
+  document.body.appendChild(overlay);
+
+  function closeMobileMenu() {
+    nav.classList.remove('mobile-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    overlay.classList.remove('active');
+  }
+
+  toggle.addEventListener('click', () => {
+    const isOpen = nav.classList.contains('mobile-open');
+    if (isOpen) {
+      closeMobileMenu();
+    } else {
+      nav.classList.add('mobile-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      overlay.classList.add('active');
+    }
+  });
+
+  overlay.addEventListener('click', closeMobileMenu);
+
+  // Close mobile menu when a nav link is clicked
+  nav.addEventListener('click', (e) => {
+    if (e.target.closest('a')) {
+      closeMobileMenu();
+    }
+  });
+
+  // Close mobile menu on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && nav.classList.contains('mobile-open')) {
+      closeMobileMenu();
+      toggle.focus();
+    }
+  });
 }
 
 /**

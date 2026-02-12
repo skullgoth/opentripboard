@@ -32,7 +32,8 @@
     "manageUsers": "Gestionar Usuarios",
     "logout": "Cerrar Sesión",
     "toggleTheme": "Cambiar Tema",
-    "userMenu": "Menú de Usuario"
+    "userMenu": "Menú de Usuario",
+    "toggleMenu": "Alternar menú de navegación"
   },
   "auth": {
     "login": "Iniciar Sesión",
