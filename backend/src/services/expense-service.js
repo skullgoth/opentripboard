@@ -117,7 +117,7 @@ async function validateSplits(tripId, totalAmount, splits) {
     let splitAmount = split.amount;
     let splitPercentage = split.percentage;
 
-    // Calculate amount from percentage if not provided
+    // Derive amount from percentage when only percentage is provided (e.g., "50%" of a $100 expense = $50)
     if (splitAmount === undefined && splitPercentage !== undefined) {
       splitAmount = (totalAmount * splitPercentage) / 100;
     }
@@ -130,12 +130,14 @@ async function validateSplits(tripId, totalAmount, splits) {
 
     validatedSplits.push({
       userId: split.userId,
+      // Round to cents to avoid floating-point artifacts (e.g., 33.33333... -> 33.33)
       amount: Math.round(splitAmount * 100) / 100,
       percentage: splitPercentage || null,
     });
   }
 
-  // Validate total splits equal expense amount (with small tolerance for rounding)
+  // Allow 1 cent tolerance for floating-point rounding when splits are calculated
+  // from percentages (e.g., a 3-way split of $100 produces 33.33 + 33.33 + 33.33 = 99.99)
   if (Math.abs(totalSplitAmount - totalAmount) > 0.01) {
     throw new ValidationError(
       `Split amounts (${totalSplitAmount.toFixed(2)}) must equal expense amount (${totalAmount.toFixed(2)})`
@@ -312,7 +314,8 @@ export async function getBalances(tripId, userId) {
 
   const balances = await expenseQueries.calculateBalances(tripId);
 
-  // Format participants
+  // Round all monetary values to cents to avoid displaying floating-point artifacts.
+  // netBalance: positive = others owe this person, negative = this person owes others.
   balances.participants = balances.participants.map((p) => ({
     id: p.id,
     email: p.email,
@@ -429,6 +432,9 @@ export async function createEqualSplits(tripId, amount) {
   const splitAmount = amount / participants.length;
   const splitPercentage = 100 / participants.length;
 
+  // Note: rounding each split independently can cause the sum to differ from the total
+  // by up to 1 cent (e.g., $100 / 3 = 33.33 * 3 = 99.99). This is accepted by
+  // validateSplits() which has a 1-cent tolerance.
   return participants.map((p) => ({
     userId: p.id,
     amount: Math.round(splitAmount * 100) / 100,

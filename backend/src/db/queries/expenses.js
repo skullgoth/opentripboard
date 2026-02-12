@@ -239,6 +239,13 @@ export async function deleteExpense(expenseId) {
  * @returns {Promise<Object>} Summary with totals by category
  */
 export async function getSummary(tripId) {
+  // Single-query expense summary using CTEs to avoid multiple round-trips.
+  // - expense_stats: aggregates total spent (excluding settlements, which are
+  //   money transfers between participants, not actual spending)
+  // - category_breakdown: builds a JSON array of {category, total} sorted by
+  //   highest spend, using COALESCE to return '[]' when no expenses exist
+  // - CROSS JOIN merges the two CTEs with the trip row (guaranteed single row
+  //   since we filter by trip ID primary key)
   const result = await query(
     `WITH expense_stats AS (
        SELECT
@@ -338,25 +345,28 @@ export async function calculateBalances(tripId) {
     };
   }
 
-  // Calculate what each person paid and owes
+  // Build per-participant tallies by iterating all expenses.
+  // Settlements (category='settlement') are tracked separately because they represent
+  // money transfers between participants to settle debts, not actual trip spending.
+  // Example: Alice pays $90 dinner split 3 ways -> Alice.totalPaid += 90,
+  // Alice/Bob/Carol each .totalOwed += 30.
   for (const expense of expenses) {
     const isSettlement = expense.category === 'settlement';
     const amount = parseFloat(expense.amount);
 
     if (isSettlement) {
-      // Settlement: track separately for balance calculation
-      // Payer made a settlement payment (reduces their debt)
+      // Settlement: payer transferred money to settle a debt
       if (participantMap[expense.payer_id]) {
         participantMap[expense.payer_id].settlementsPaid += amount;
       }
-      // Split recipient received a settlement (reduces what they're owed)
+      // Split recipients are who received the settlement payment
       for (const split of expense.splits) {
         if (participantMap[split.user_id]) {
           participantMap[split.user_id].settlementsReceived += parseFloat(split.amount);
         }
       }
     } else {
-      // Regular expense: add to totals
+      // Regular expense: payer fronted the money, split users owe their share
       if (participantMap[expense.payer_id]) {
         participantMap[expense.payer_id].totalPaid += amount;
       }
@@ -369,12 +379,12 @@ export async function calculateBalances(tripId) {
     }
   }
 
-  // Calculate net balance for each participant
-  // Net = (what they paid + settlements they made) - (what they owe + settlements they received)
-  // Or simplified: (totalPaid - totalOwed) + (settlementsPaid - settlementsReceived)
+  // Net balance formula: (totalPaid - totalOwed) + (settlementsPaid - settlementsReceived)
+  // Positive net = this person is owed money (they paid more than their share)
+  // Negative net = this person owes money (their share exceeds what they paid)
+  // Settlements adjust the balance: paying a settlement increases your net, receiving one decreases it
   const balances = Object.values(participantMap).map((p) => ({
     ...p,
-    // Net balance from actual expenses (positive = owed money, negative = owes money)
     netBalance: (p.totalPaid - p.totalOwed) + (p.settlementsPaid - p.settlementsReceived),
   }));
 
@@ -392,19 +402,31 @@ export async function calculateBalances(tripId) {
  * @param {Array} balances - Array of participant balances
  * @returns {Array} Simplified debt list
  */
+/**
+ * Greedy debt simplification algorithm to minimize the number of transactions
+ * needed to settle all balances.
+ *
+ * Strategy: sort creditors (owed money) descending and debtors (owe money)
+ * ascending, then use a two-pointer approach to match the largest creditor
+ * with the largest debtor. Each match produces one transaction for the
+ * smaller of the two amounts, then the remainder carries forward.
+ *
+ * This produces at most (n-1) transactions for n participants, which is
+ * optimal for the general case. The 0.01 threshold prevents sub-cent
+ * rounding artifacts from generating spurious transactions.
+ */
 function simplifyDebts(balances) {
   const debts = [];
 
-  // Separate creditors and debtors
   const creditors = balances
-    .filter((b) => b.netBalance > 0.01) // owed money
-    .sort((a, b) => b.netBalance - a.netBalance);
+    .filter((b) => b.netBalance > 0.01)
+    .sort((a, b) => b.netBalance - a.netBalance); // largest creditor first
 
   const debtors = balances
-    .filter((b) => b.netBalance < -0.01) // owes money
-    .sort((a, b) => a.netBalance - b.netBalance);
+    .filter((b) => b.netBalance < -0.01)
+    .sort((a, b) => a.netBalance - b.netBalance); // largest debtor first (most negative)
 
-  // Match debtors to creditors
+  // Two-pointer: advance whichever side is fully settled after each match
   let i = 0;
   let j = 0;
 
@@ -412,6 +434,7 @@ function simplifyDebts(balances) {
     const creditor = creditors[i];
     const debtor = debtors[j];
 
+    // Settle the smaller of the two outstanding amounts
     const amountToSettle = Math.min(
       creditor.netBalance,
       Math.abs(debtor.netBalance)
@@ -433,6 +456,7 @@ function simplifyDebts(balances) {
       });
     }
 
+    // Reduce both sides by the settled amount; advance pointer when fully settled
     creditor.netBalance -= amountToSettle;
     debtor.netBalance += amountToSettle;
 

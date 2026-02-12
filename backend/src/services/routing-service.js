@@ -31,10 +31,14 @@ const OSRM_PROFILES = {
  * @returns {number} Distance in kilometers
  */
 export function haversineDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371; // Earth's mean radius in km
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
 
+  // Haversine formula: computes great-circle (shortest path on sphere) distance.
+  // 'a' = sin^2(dLat/2) + cos(lat1)*cos(lat2)*sin^2(dLon/2)
+  // This formulation is numerically stable for small distances, unlike the
+  // spherical law of cosines which suffers from floating-point cancellation.
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -59,7 +63,11 @@ export class RoutingService {
     this.timeout = 10000; // 10 second timeout
     this.userAgent = process.env.NOMINATIM_USER_AGENT || 'OpenTripBoard/1.0';
 
-    // LRU cache: 500 entries, 24 hour TTL
+    // LRU cache avoids redundant OSRM API calls for repeated route lookups
+    // (e.g., user viewing the same trip multiple times). 500 entries covers
+    // typical usage; 24h TTL ensures route data stays reasonably fresh.
+    // updateAgeOnGet: false means reads don't reset TTL - entries expire based
+    // on when they were first cached, not last accessed.
     this.cache = new LRUCache({
       max: 500,
       ttl: 1000 * 60 * 60 * 24, // 24 hours
@@ -67,7 +75,8 @@ export class RoutingService {
       updateAgeOnHas: false,
     });
 
-    // Rate limiting: Token bucket for requests
+    // Simple token-bucket rate limiter: enforces minimum interval between
+    // outgoing OSRM requests to comply with the public API usage policy
     this.lastRequestTime = 0;
     this.minRequestInterval = 100; // 100ms between requests (10 req/sec max)
   }
@@ -104,7 +113,9 @@ export class RoutingService {
 
     let result;
 
-    // Use OSRM for road-following modes, Haversine for direct-line modes
+    // OSRM provides road-following routes for walk/bike/drive with accurate
+    // distances and turn-by-turn geometry. Fly/boat use Haversine (straight-line)
+    // since there are no road networks to follow for these modes.
     if (OSRM_PROFILES[mode]) {
       result = await this._getOsrmRoute(fromLat, fromLng, toLat, toLng, mode);
     } else {
@@ -127,9 +138,9 @@ export class RoutingService {
   async _getOsrmRoute(fromLat, fromLng, toLat, toLng, mode) {
     const profile = OSRM_PROFILES[mode];
 
-    // Rate limiting
     await this._rateLimit();
 
+    // OSRM expects coordinates as lng,lat (GeoJSON order), not lat,lng
     const url = `${this.osrmBaseUrl}/route/v1/${profile}/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
 
     try {
@@ -232,7 +243,8 @@ export class RoutingService {
    * @private
    */
   _getCacheKey(fromLat, fromLng, toLat, toLng, mode) {
-    // Round to 5 decimal places (about 1.1m precision)
+    // Round to 5 decimal places (~1.1m precision) to improve cache hit rates:
+    // coordinates that differ by less than a meter map to the same cache entry
     const precision = 5;
     return `${fromLat.toFixed(precision)},${fromLng.toFixed(precision)}-${toLat.toFixed(precision)},${toLng.toFixed(precision)}-${mode}`;
   }
@@ -242,6 +254,9 @@ export class RoutingService {
    * @private
    */
   async _rateLimit() {
+    // Enforce minimum time gap between consecutive requests by sleeping
+    // for the remaining interval if the last request was too recent.
+    // This is a single-token bucket: one request allowed per minRequestInterval.
     const now = Date.now();
     const timeSinceLastRequest = now - this.lastRequestTime;
 

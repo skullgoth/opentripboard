@@ -10,15 +10,21 @@ import logger from '../utils/logger.js';
  * @returns {number} Distance in kilometers
  */
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371; // Earth's mean radius in km
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
 
+  // Haversine formula: calculates great-circle distance between two points on a sphere.
+  // 'a' is the square of half the chord length between the points.
+  // Using sin^2(dLat/2) + cos(lat1)*cos(lat2)*sin^2(dLon/2) avoids floating-point
+  // issues that arise with the simpler spherical law of cosines at short distances.
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
+  // 'c' is the angular distance in radians. atan2 is used instead of asin
+  // for better numerical stability when points are nearly antipodal.
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c;
 
@@ -80,7 +86,10 @@ export function optimizeRoute(activities, options = {}) {
     };
   }
 
-  // Nearest neighbor algorithm
+  // Nearest neighbor heuristic for the Traveling Salesman Problem (TSP).
+  // TSP is NP-hard, so we use this greedy O(n^2) approximation: at each step,
+  // visit the closest unvisited location. This typically produces routes within
+  // 20-25% of optimal, which is acceptable for trip itinerary suggestions.
   const unvisited = [...validActivities];
   const route = [];
   let totalDistance = 0;
@@ -90,7 +99,7 @@ export function optimizeRoute(activities, options = {}) {
   if (startPoint === 'first') {
     current = unvisited.shift();
   } else {
-    // Start from activity with lowest latitude (southernmost)
+    // Start from southernmost activity as a consistent deterministic anchor point
     const startIndex = unvisited.reduce((minIdx, curr, idx, arr) =>
       curr.latitude < arr[minIdx].latitude ? idx : minIdx, 0);
     current = unvisited.splice(startIndex, 1)[0];
@@ -98,7 +107,8 @@ export function optimizeRoute(activities, options = {}) {
 
   route.push(current);
 
-  // Greedily select nearest unvisited activity
+  // Greedily select the nearest unvisited activity from the current position,
+  // building the route incrementally until all activities are visited
   while (unvisited.length > 0) {
     let nearestIdx = 0;
     let nearestDistance = Infinity;
