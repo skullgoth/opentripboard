@@ -65,7 +65,7 @@ export function createTripList(trips, onTripClick, onCreateClick) {
   const tripCards = trips
     .map(
       (trip) => `
-    <div class="card trip-card" data-trip-id="${trip.id}">
+    <div class="card trip-card" data-trip-id="${trip.id}" tabindex="0" role="button" aria-label="${escapeHtml(trip.name)}">
       ${getCoverImageHtml(trip)}
       <div class="card-body" data-action="view-trip">
         <h3 class="card-title">${escapeHtml(trip.name)}</h3>
@@ -138,6 +138,17 @@ export function attachTripListListeners(container, onTripClick, onCreateClick, o
       const tripCard = cardBody.closest('.trip-card');
       const tripId = tripCard.getAttribute('data-trip-id');
       if (onTripClick) onTripClick(tripId);
+    });
+  });
+
+  // Handle trip card keyboard navigation (Enter/Space)
+  container.querySelectorAll('.trip-card[tabindex]').forEach((card) => {
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const tripId = card.getAttribute('data-trip-id');
+        if (onTripClick) onTripClick(tripId);
+      }
     });
   });
 
