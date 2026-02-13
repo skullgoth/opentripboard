@@ -1,6 +1,7 @@
 // Transport routing route handler (GET /api/v1/routing)
 import { getRoutingService, getValidTransportModes } from '../services/routing-service.js';
 import { routeRateLimits } from '../middleware/rate-limit.js';
+import { generateETag, checkNotModified } from '../middleware/cache.js';
 
 const VALID_MODES = getValidTransportModes();
 
@@ -135,6 +136,12 @@ export default async function routingRoutes(fastify, opts) {
             'Route calculated'
           );
         }
+
+        const etag = generateETag(result);
+        if (checkNotModified(request, etag)) {
+          return reply.code(304).send();
+        }
+        reply.setSharedCache(etag);
 
         return reply.code(200).send(result);
       } catch (error) {

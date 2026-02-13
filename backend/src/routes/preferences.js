@@ -117,6 +117,8 @@ export default async function preferencesRoutes(fastify) {
     async (request, reply) => {
       const languages = preferenceService.getSupportedLanguages();
 
+      reply.setCacheHeaders({ maxAge: 3600 });
+
       return {
         success: true,
         data: languages,
@@ -149,6 +151,8 @@ export default async function preferencesRoutes(fastify) {
     async (request, reply) => {
       const { locale } = request.query;
       const defaults = preferenceService.getDefaults(locale);
+
+      reply.setCacheHeaders({ maxAge: 3600 });
 
       return {
         success: true,

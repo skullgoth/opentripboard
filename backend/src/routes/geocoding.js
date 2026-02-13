@@ -1,6 +1,7 @@
 // T011: Geocoding route handler (GET /api/v1/geocoding/search)
 import { getGeocodingService } from '../services/geocoding-service.js';
 import { routeRateLimits } from '../middleware/rate-limit.js';
+import { generateETag, checkNotModified } from '../middleware/cache.js';
 
 /**
  * Register geocoding routes
@@ -118,6 +119,12 @@ export default async function geocodingRoutes(fastify, opts) {
             'Nominatim API call'
           );
         }
+
+        const etag = generateETag(result);
+        if (checkNotModified(request, etag)) {
+          return reply.code(304).send();
+        }
+        reply.setSharedCache(etag);
 
         return reply.code(200).send(result);
       } catch (error) {

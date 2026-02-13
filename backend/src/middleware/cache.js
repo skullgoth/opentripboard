@@ -139,6 +139,11 @@ export async function cachePlugin(fastify) {
     return this;
   });
 
+  fastify.decorateReply('setSharedCache', function (etag) {
+    setCacheHeaders(this, cacheConfig.shared, etag);
+    return this;
+  });
+
   // Add hook to set default cache headers for API routes
   fastify.addHook('onSend', async (request, reply, payload) => {
     // Skip if cache headers already set
