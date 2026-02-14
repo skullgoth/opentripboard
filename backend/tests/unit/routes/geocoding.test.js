@@ -42,10 +42,38 @@ describe('Geocoding Routes', () => {
       },
     }));
 
+    // Mock cache middleware
+    vi.doMock('../../../src/middleware/cache.js', () => ({
+      generateETag: vi.fn(() => '"mock-etag"'),
+      checkNotModified: vi.fn(() => false),
+      cachePlugin: async (fastify) => {
+        fastify.decorateReply('setCacheHeaders', function () { return this; });
+        fastify.decorateReply('setNoCache', function () { return this; });
+        fastify.decorateReply('setPrivateCache', function () { return this; });
+        fastify.decorateReply('setApiCache', function () { return this; });
+        fastify.decorateReply('setSharedCache', function () { return this; });
+      },
+      default: async (fastify) => {
+        fastify.decorateReply('setCacheHeaders', function () { return this; });
+        fastify.decorateReply('setNoCache', function () { return this; });
+        fastify.decorateReply('setPrivateCache', function () { return this; });
+        fastify.decorateReply('setApiCache', function () { return this; });
+        fastify.decorateReply('setSharedCache', function () { return this; });
+      },
+    }));
+
     // Import the router after mocks
-    const geocodingRouter = (await import('../../../src/routes/geocoding.js?t=' + Date.now())).default;
+    const geocodingRouter = (await import('../../../src/routes/geocoding.js')).default;
 
     app = Fastify();
+
+    // Register reply decorators for cache
+    app.decorateReply('setCacheHeaders', function () { return this; });
+    app.decorateReply('setNoCache', function () { return this; });
+    app.decorateReply('setPrivateCache', function () { return this; });
+    app.decorateReply('setApiCache', function () { return this; });
+    app.decorateReply('setSharedCache', function () { return this; });
+
     await app.register(geocodingRouter);
     await app.ready();
 
