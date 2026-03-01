@@ -315,7 +315,7 @@ function buildDayItemsWithTransport(dayItems, currentUserId, userRole, previousD
     const isMultiDayNonLast = previousDayLastActivity._isMultiDay && !previousDayLastActivity._isLastDay;
     const transportData = isMultiDayNonLast ? null : (previousDayLastActivity.metadata?.transportToNext || null);
     const fromLocationName = previousDayLastActivity.title || previousDayLastActivity.location || '';
-    const needsCalculation = !transportData && hasCoordinates;
+    const needsCalculation = hasCoordinates && (!transportData || (transportData && !transportData.cachedDistance && !transportData.cachedDuration));
 
     // For cross-day transport, embed coordinates directly since multi-day items
     // have same ID across days and querySelector would find wrong one
@@ -365,8 +365,8 @@ function buildDayItemsWithTransport(dayItems, currentUserId, userRole, previousD
         // (that data is for checkout day, not for intermediate days)
         const isMultiDayNonLast = item._isMultiDay && !item._isLastDay;
         const transportData = isMultiDayNonLast ? null : (item.metadata?.transportToNext || null);
-        // Mark as needing calculation if no valid transport data
-        const needsCalculation = !transportData && hasCoordinates;
+        // Mark as needing calculation if no transport data, or if mode is set but distance is missing
+        const needsCalculation = hasCoordinates && (!transportData || (transportData && !transportData.cachedDistance && !transportData.cachedDuration));
 
         // For ephemeral routes (multi-day non-last), embed coordinates directly
         // because the same activity ID appears on multiple days and querySelector would find wrong one
@@ -1331,6 +1331,14 @@ function setupTransportLine(line, container, onTransportChange) {
 let autoCalculationInProgress = false;
 
 /**
+ * Check if auto route calculation is currently in progress.
+ * Used by realtime handlers to defer timeline refreshes during batch calculation.
+ */
+export function isAutoCalculatingRoutes() {
+  return autoCalculationInProgress;
+}
+
+/**
  * Auto-calculate routes for transport lines that are in loading state
  * Batches all calculations and only refreshes once at the end
  * For ephemeral routes (multi-day non-last items), updates UI directly without saving
@@ -1406,82 +1414,104 @@ async function autoCalculateRoutes(container, onTransportChange) {
     }
 
     if (fromCoords && toCoords) {
-      routesToCalculate.push({ activityId, fromCoords, toCoords, isEphemeral, lineElement: line });
+      const mode = line.dataset.presetMode || DEFAULT_TRANSPORT_MODE;
+      routesToCalculate.push({ activityId, fromCoords, toCoords, isEphemeral, mode, lineElement: line });
     }
   }
 
-  // Calculate all routes (with a small delay between to avoid hammering the API)
-  const persistentResults = [];
-  const ephemeralResults = [];
+  // Sort routes by date so earliest days calculate first
+  routesToCalculate.sort((a, b) => {
+    const dateA = a.lineElement.closest('.timeline-day')?.dataset.date || '';
+    const dateB = b.lineElement.closest('.timeline-day')?.dataset.date || '';
+    return dateA.localeCompare(dateB);
+  });
 
-  for (const route of routesToCalculate) {
-    try {
-      const transportData = await calculateRoute(route.fromCoords, route.toCoords, DEFAULT_TRANSPORT_MODE);
-      if (transportData) {
-        if (route.isEphemeral) {
-          // For ephemeral routes, store coordinates to re-find element later
-          ephemeralResults.push({
-            transportData,
-            fromLat: route.fromCoords.lat,
-            fromLng: route.fromCoords.lng,
-            toLat: route.toCoords.lat,
-            toLng: route.toCoords.lng,
-          });
+  // Process routes in batches of 3 concurrent requests with delays to avoid rate limiting
+  const BATCH_SIZE = 3;
+  const BATCH_DELAY_MS = 1500;
+  let hitRateLimit = false;
+
+  for (let i = 0; i < routesToCalculate.length; i += BATCH_SIZE) {
+    // If we hit a rate limit, wait longer before continuing
+    if (hitRateLimit) {
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+      hitRateLimit = false;
+    }
+
+    const batch = routesToCalculate.slice(i, i + BATCH_SIZE);
+
+    const results = await Promise.allSettled(
+      batch.map(async (route) => {
+        const transportData = await calculateRoute(
+          route.fromCoords,
+          route.toCoords,
+          route.mode
+        );
+        return { route, transportData };
+      })
+    );
+
+    // Process batch results immediately for progressive UI updates
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        const errMsg = result.reason?.message || '';
+        if (errMsg.includes('Too many requests') || errMsg.includes('SERVICE_UNAVAILABLE')) {
+          hitRateLimit = true;
         } else {
-          // For persistent routes, collect to save
-          persistentResults.push({ activityId: route.activityId, transportData });
+          console.error('Failed to calculate route:', result.reason);
+        }
+        // Remove loading state so failed routes don't trigger infinite retries
+        const failedRoute = batch[results.indexOf(result)];
+        if (failedRoute?.lineElement) {
+          failedRoute.lineElement.classList.remove('transport-line--loading');
+          failedRoute.lineElement.classList.add('transport-line--failed');
+        }
+        continue;
+      }
+
+      const { route, transportData } = result.value;
+      if (!transportData) {
+        // Remove loading state for routes that returned no data
+        route.lineElement.classList.remove('transport-line--loading');
+        continue;
+      }
+
+      if (route.isEphemeral) {
+        // Find ephemeral transport line by embedded coordinates
+        const selector = `.transport-line--loading[data-from-lat="${route.fromCoords.lat}"][data-from-lng="${route.fromCoords.lng}"][data-to-lat="${route.toCoords.lat}"][data-to-lng="${route.toCoords.lng}"]`;
+        const lineElement = document.querySelector(selector);
+        if (lineElement) {
+          updateTransportLineUI(lineElement, transportData);
+        }
+      } else {
+        // Update persistent route UI
+        const lineElement = document.querySelector(
+          `.transport-line--loading[data-activity-id="${route.activityId}"]`
+        );
+        if (lineElement) {
+          updateTransportLineUI(lineElement, transportData);
+        }
+        // Save to backend (skip refresh to avoid wiping ephemeral UI updates)
+        if (onTransportChange) {
+          await onTransportChange(route.activityId, transportData, { skipRefresh: true });
         }
       }
-      // Small delay to avoid rate limiting
-      if (routesToCalculate.indexOf(route) < routesToCalculate.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-    } catch (error) {
-      console.error('Failed to calculate route for activity:', route.activityId, error);
     }
-  }
 
-  // Update ephemeral routes UI - query from document (container may have been replaced)
-  for (const { transportData, fromLat, fromLng, toLat, toLng } of ephemeralResults) {
-    // Find the transport line by its embedded coordinates (globally, not in potentially stale container)
-    const selector = `.transport-line--loading[data-from-lat="${fromLat}"][data-from-lng="${fromLng}"][data-to-lat="${toLat}"][data-to-lng="${toLng}"]`;
-    const lineElement = document.querySelector(selector);
-    if (lineElement) {
-      updateTransportLineUI(lineElement, transportData);
-    }
-  }
-
-  // Save persistent results and update their UI
-  if (onTransportChange && persistentResults.length > 0) {
-    for (const { activityId, transportData } of persistentResults) {
-      // Update the UI for persistent routes too (they were in loading state)
-      const lineElement = document.querySelector(`.transport-line--loading[data-activity-id="${activityId}"]`);
-      if (lineElement) {
-        updateTransportLineUI(lineElement, transportData);
-      }
-      // Save to backend (skip refresh to avoid wiping ephemeral UI updates)
-      await onTransportChange(activityId, transportData, { skipRefresh: true });
-    }
-  }
-
-  // Update day totals after transport calculations
-  if (ephemeralResults.length > 0 || persistentResults.length > 0) {
+    // Update day totals after each batch
     updateAllDayTotalsUI();
+
+    // Delay between batches to stay within rate limits
+    if (i + BATCH_SIZE < routesToCalculate.length) {
+      await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
+    }
   }
 
   autoCalculationInProgress = false;
 
-  // Check if there are still loading spinners anywhere in the document
-  // (container may have been replaced, so query globally)
-  const remainingLines = document.querySelectorAll('.transport-line--loading');
-  if (remainingLines.length > 0) {
-    // Find the current timeline container
-    const currentContainer = document.querySelector('.unified-timeline');
-    if (currentContainer) {
-      // Use setTimeout to avoid blocking and allow DOM to settle
-      setTimeout(() => autoCalculateRoutes(currentContainer, onTransportChange), 50);
-    }
-  }
+  // Dispatch event to trigger a final timeline refresh, syncing any
+  // WebSocket updates that were deferred during batch calculation.
+  document.dispatchEvent(new CustomEvent('auto-routes-complete'));
 }
 
 /**

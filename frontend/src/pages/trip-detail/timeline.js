@@ -15,6 +15,12 @@ import { authState } from '../../state/auth-state.js';
 import { tripState } from '../../state/trip-state.js';
 import { suggestionState } from '../../state/suggestion-state.js';
 
+// Listen for auto route calculation completion to update the map with newly
+// calculated route data and sync any deferred WebSocket activity updates.
+document.addEventListener('auto-routes-complete', () => {
+  updateMap();
+});
+
 /**
  * Refresh the timeline UI with current activities and suggestions
  */

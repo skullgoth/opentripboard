@@ -203,8 +203,9 @@ export function createTransportBox(options) {
 
   // If loading, show loading indicator
   if (isLoading) {
+    const presetMode = transportData?.mode || '';
     return `
-      <div class="transport-line transport-line--loading" data-activity-id="${activityId}" data-ephemeral="${isEphemeral}" ${coordAttrs} data-date="${targetDate || ''}">
+      <div class="transport-line transport-line--loading" data-activity-id="${activityId}" data-ephemeral="${isEphemeral}" ${coordAttrs} data-date="${targetDate || ''}"${presetMode ? ` data-preset-mode="${presetMode}"` : ''}>
         ${addActivityBtn}
         <span class="transport-line-loading">
           <span class="spinner-tiny"></span>

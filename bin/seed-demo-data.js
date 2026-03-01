@@ -209,6 +209,7 @@ const TRIP1_ACTIVITIES = [
     startTime: '2026-07-05T08:00:00.000Z',
     endTime: '2026-07-05T08:30:00.000Z',
     orderIndex: 11,
+    metadata: { transportToNext: { mode: 'train' } },
   },
   {
     type: 'monument',
@@ -234,7 +235,7 @@ const TRIP1_ACTIVITIES = [
     startTime: '2026-07-06T09:00:00.000Z',
     endTime: '2026-07-06T09:30:00.000Z',
     orderIndex: 13,
-    metadata: { confirmationCode: 'TGV8834' },
+    metadata: { confirmationCode: 'TGV8834', transportToNext: { mode: 'train' } },
   },
   {
     type: 'train_station',
@@ -295,7 +296,7 @@ const TRIP1_ACTIVITIES = [
     startTime: '2026-07-08T08:30:00.000Z',
     endTime: '2026-07-08T09:00:00.000Z',
     orderIndex: 18,
-    metadata: { confirmationCode: 'TGV6621' },
+    metadata: { confirmationCode: 'TGV6621', transportToNext: { mode: 'train' } },
   },
   {
     type: 'train_station',
@@ -366,7 +367,7 @@ const TRIP1_ACTIVITIES = [
     startTime: '2026-07-10T08:00:00.000Z',
     endTime: '2026-07-10T08:30:00.000Z',
     orderIndex: 24,
-    metadata: { confirmationCode: 'TGV9912' },
+    metadata: { confirmationCode: 'TGV9912', transportToNext: { mode: 'train' } },
   },
   {
     type: 'train_station',
@@ -711,7 +712,7 @@ const TRIP2_ACTIVITIES = [
     startTime: '2026-09-01T16:00:00.000Z',
     endTime: '2026-09-01T16:30:00.000Z',
     orderIndex: 2,
-    metadata: { confirmationCode: 'NEX1234' },
+    metadata: { confirmationCode: 'NEX1234', transportToNext: { mode: 'train' } },
   },
 
   // === DAY 2: Tokyo Exploration ===
@@ -796,7 +797,7 @@ const TRIP2_ACTIVITIES = [
     startTime: '2026-09-04T08:00:00.000Z',
     endTime: '2026-09-04T08:30:00.000Z',
     orderIndex: 9,
-    metadata: { confirmationCode: 'ROMANCE456' },
+    metadata: { confirmationCode: 'ROMANCE456', transportToNext: { mode: 'train' } },
   },
   {
     type: 'sightseeing',
@@ -843,7 +844,7 @@ const TRIP2_ACTIVITIES = [
     startTime: '2026-09-05T08:00:00.000Z',
     endTime: '2026-09-05T08:30:00.000Z',
     orderIndex: 13,
-    metadata: { confirmationCode: 'NOZOMI789' },
+    metadata: { confirmationCode: 'NOZOMI789', transportToNext: { mode: 'train' } },
   },
   {
     type: 'train_station',
@@ -936,6 +937,7 @@ const TRIP2_ACTIVITIES = [
     startTime: '2026-09-07T08:30:00.000Z',
     endTime: '2026-09-07T09:00:00.000Z',
     orderIndex: 21,
+    metadata: { transportToNext: { mode: 'train' } },
   },
   {
     type: 'monument',
@@ -982,6 +984,7 @@ const TRIP2_ACTIVITIES = [
     startTime: '2026-09-08T10:00:00.000Z',
     endTime: '2026-09-08T10:30:00.000Z',
     orderIndex: 25,
+    metadata: { transportToNext: { mode: 'train' } },
   },
   {
     type: 'monument',
@@ -1028,7 +1031,7 @@ const TRIP2_ACTIVITIES = [
     startTime: '2026-09-09T07:30:00.000Z',
     endTime: '2026-09-09T08:00:00.000Z',
     orderIndex: 29,
-    metadata: { confirmationCode: 'HIKARI234' },
+    metadata: { confirmationCode: 'HIKARI234', transportToNext: { mode: 'train' } },
   },
   {
     type: 'monument',
@@ -1111,7 +1114,7 @@ const TRIP2_ACTIVITIES = [
     startTime: '2026-09-11T09:00:00.000Z',
     endTime: '2026-09-11T09:30:00.000Z',
     orderIndex: 36,
-    metadata: { confirmationCode: 'NOZOMI321' },
+    metadata: { confirmationCode: 'NOZOMI321', transportToNext: { mode: 'train' } },
   },
   {
     type: 'museum',
@@ -1197,6 +1200,7 @@ const TRIP2_ACTIVITIES = [
     startTime: '2026-09-14T08:00:00.000Z',
     endTime: '2026-09-14T08:30:00.000Z',
     orderIndex: 43,
+    metadata: { transportToNext: { mode: 'train' } },
   },
   {
     type: 'airport',

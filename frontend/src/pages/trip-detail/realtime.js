@@ -8,6 +8,7 @@ import {
 } from './timeline.js';
 import { wsClient } from '../../services/websocket-client.js';
 import { realtimeManager } from '../../services/realtime-updates.js';
+import { isAutoCalculatingRoutes } from '../../components/unified-timeline.js';
 
 /**
  * Join trip room for real-time updates
@@ -146,7 +147,12 @@ function handleActivityUpdatedEvent(event) {
   );
   if (index !== -1 && event.activity) {
     ctx.currentActivities[index] = event.activity;
-    refreshTimeline();
+    // Defer timeline refresh while auto route calculation is in progress
+    // to prevent DOM invalidation mid-batch. The final refresh happens
+    // after auto-calculation completes.
+    if (!isAutoCalculatingRoutes()) {
+      refreshTimeline();
+    }
   }
 }
 
