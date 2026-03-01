@@ -100,7 +100,8 @@ export function getAllowedMimeTypes() {
  * @returns {Object} { valid: boolean, error?: string }
  */
 export function validateFile(file) {
-  const maxSize = 10 * 1024 * 1024; // 10MB
+  const maxSizeMB = parseInt(import.meta.env.VITE_MAX_UPLOAD_SIZE_MB, 10) || 10;
+  const maxSize = maxSizeMB * 1024 * 1024;
 
   if (!file) {
     return { valid: false, error: t('documents.uploadErrors.noFileSelected') };

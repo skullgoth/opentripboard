@@ -11,6 +11,7 @@ import { authenticate } from './middleware/auth.js';
 import { registerRateLimit } from './middleware/rate-limit.js';
 import { cachePlugin } from './middleware/cache.js';
 import { csrfPlugin } from './middleware/csrf.js';
+import { MAX_UPLOAD_SIZE_BYTES } from './config/upload.js';
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -105,7 +106,7 @@ async function createServer() {
   // Register multipart/form-data support for file uploads
   await fastify.register(import('@fastify/multipart'), {
     limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB
+      fileSize: MAX_UPLOAD_SIZE_BYTES,
       files: 1,
     },
   });

@@ -8,9 +8,10 @@ import { pipeline } from 'stream/promises';
 import fs from 'fs/promises';
 import { createWriteStream } from 'fs';
 import crypto from 'crypto';
+import { MAX_UPLOAD_SIZE_BYTES } from '../config/upload.js';
 
 // Configuration
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB (matches database constraint)
+const MAX_FILE_SIZE = MAX_UPLOAD_SIZE_BYTES;
 const ALLOWED_MIME_TYPES = [
   // Documents
   'application/pdf',

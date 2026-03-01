@@ -248,10 +248,11 @@ export function validateCoverImage(file) {
     errors.push('Image must be JPEG, PNG, or WebP format');
   }
 
-  // Check file size (5MB max)
-  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  // Check file size
+  const maxSizeMB = parseInt(import.meta.env.VITE_MAX_UPLOAD_SIZE_MB, 10) || 10;
+  const maxSize = maxSizeMB * 1024 * 1024;
   if (file.size > maxSize) {
-    errors.push('Image size must be less than 5MB');
+    errors.push(`Image size must be less than ${maxSizeMB}MB`);
   }
 
   return {
