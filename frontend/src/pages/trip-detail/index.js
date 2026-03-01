@@ -52,6 +52,10 @@ import {
   attachUnifiedTimelineListeners,
 } from '../../components/unified-timeline.js';
 import {
+  createDateSidebar,
+  attachDateSidebarListeners,
+} from '../../components/date-sidebar.js';
+import {
   initializeDragDrop,
   destroyDragDrop,
   addDragDropStyles,
@@ -218,6 +222,9 @@ export async function tripDetailPage(params) {
       }
     );
 
+    // Render date sidebar
+    const dateSidebarHtml = createDateSidebar(trip);
+
     // Render map view HTML
     const mapViewHtml = await createMapView(ctx.currentActivities, {
       containerId: 'trip-map',
@@ -244,7 +251,12 @@ export async function tripDetailPage(params) {
               </a>
             </div>
             <div class="trip-main-content">
-              ${timelineHtml}
+              <div class="trip-itinerary-layout">
+                ${dateSidebarHtml}
+                <div class="trip-timeline-scroll">
+                  ${timelineHtml}
+                </div>
+              </div>
             </div>
           </div>
           <div class="trip-map-section">
@@ -272,6 +284,12 @@ export async function tripDetailPage(params) {
       handleReorder,
       handleActivityDateChange,
     };
+
+    // Attach date sidebar listeners
+    const itineraryLayout = container.querySelector('.trip-itinerary-layout');
+    if (itineraryLayout) {
+      ctx.dateSidebarCleanup = attachDateSidebarListeners(itineraryLayout);
+    }
 
     // Attach unified timeline listeners
     const timelineContainer = container.querySelector('.unified-timeline');
@@ -425,6 +443,11 @@ export function cleanupTripDetailPage() {
   if (ctx.sortableInstances.length > 0) {
     destroyDragDrop(ctx.sortableInstances);
     ctx.sortableInstances = [];
+  }
+
+  if (ctx.dateSidebarCleanup) {
+    ctx.dateSidebarCleanup();
+    ctx.dateSidebarCleanup = null;
   }
 
   if (ctx.mapObserver) {

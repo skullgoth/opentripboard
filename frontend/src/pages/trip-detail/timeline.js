@@ -19,7 +19,7 @@ import { suggestionState } from '../../state/suggestion-state.js';
  * Refresh the timeline UI with current activities and suggestions
  */
 export function refreshTimeline() {
-  const mainContent = document.querySelector('.trip-main-content');
+  const mainContent = document.querySelector('.trip-timeline-scroll');
 
   if (mainContent && ctx.currentTrip) {
     // Deduplicate currentActivities by ID (protection against race conditions)
@@ -77,6 +77,11 @@ export function refreshTimeline() {
         ctx.handlers.handleReorder,
         ctx.handlers.handleActivityDateChange
       );
+    }
+
+    // Re-initialize date sidebar observer (day elements were recreated)
+    if (ctx.dateSidebarCleanup && ctx.dateSidebarCleanup.reinit) {
+      ctx.dateSidebarCleanup.reinit();
     }
 
     updateMap();

@@ -26,6 +26,8 @@ export const ctx = {
    * timeline.js reads these when re-attaching listeners.
    */
   handlers: {},
+  /** Cleanup function for the date sidebar IntersectionObserver */
+  dateSidebarCleanup: null,
   /** Set by index.js so handler modules can reload the page without importing tripDetailPage */
   reloadPage: null,
 };
@@ -47,6 +49,7 @@ export function resetState() {
   ctx.tripBuddyUnsubscribe = null;
   ctx.activityUnsubscribe = null;
   ctx.pendingActivityIds.clear();
+  ctx.dateSidebarCleanup = null;
   ctx.handlers = {};
   ctx.reloadPage = null;
 }
