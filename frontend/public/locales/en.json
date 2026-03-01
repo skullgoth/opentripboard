@@ -982,6 +982,20 @@
     "inDays": "in {{count}} day",
     "inDays_plural": "in {{count}} days"
   },
+  "filter": {
+    "filterActivities": "Search & Filter",
+    "showFilters": "Show search and filter options",
+    "searchText": "Search",
+    "searchPlaceholder": "Search by title or description...",
+    "location": "Location",
+    "locationPlaceholder": "Filter by location...",
+    "dateRange": "Date range",
+    "category": "Category",
+    "all": "All",
+    "clearFilters": "Clear filters",
+    "noResults": "No activities match your filters.",
+    "resultCount": "{{count}} of {{total}} activities"
+  },
   "dragDrop": {
     "reorderFailed": "Failed to save new order. Please try again.",
     "keyboardHint": "Press Space to pick up, arrow keys to move, Space to drop",

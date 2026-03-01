@@ -11,6 +11,7 @@ import {
   initializeDragDrop,
   destroyDragDrop,
 } from '../../components/drag-drop.js';
+import { attachTimelineFilterListeners } from '../../components/timeline-filter.js';
 import { authState } from '../../state/auth-state.js';
 import { tripState } from '../../state/trip-state.js';
 import { suggestionState } from '../../state/suggestion-state.js';
@@ -83,6 +84,20 @@ export function refreshTimeline() {
         ctx.handlers.handleReorder,
         ctx.handlers.handleActivityDateChange
       );
+
+      // Re-attach timeline filter and restore state
+      const savedFilterState = ctx.timelineFilter?.getFilterState();
+      if (ctx.timelineFilter) {
+        ctx.timelineFilter.cleanup();
+      }
+      const filterBar = timelineContainer.querySelector('.timeline-filter-bar');
+      if (filterBar) {
+        const filterApi = attachTimelineFilterListeners(filterBar, timelineContainer);
+        ctx.timelineFilter = filterApi;
+        if (savedFilterState) {
+          filterApi.setFilterState(savedFilterState);
+        }
+      }
     }
 
     // Re-initialize date sidebar observer (day elements were recreated)

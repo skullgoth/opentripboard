@@ -30,6 +30,8 @@ export const ctx = {
   dateSidebarCleanup: null,
   /** Set by index.js so handler modules can reload the page without importing tripDetailPage */
   reloadPage: null,
+  /** Stored filter state for re-applying after timeline refresh */
+  timelineFilter: null,
 };
 
 /**
@@ -52,4 +54,5 @@ export function resetState() {
   ctx.dateSidebarCleanup = null;
   ctx.handlers = {};
   ctx.reloadPage = null;
+  ctx.timelineFilter = null;
 }

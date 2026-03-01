@@ -8646,3 +8646,145 @@ img.lazy-loaded {
 .trip-actions-menu {
   z-index: 10;
 }
+
+/* =============================================
+   Timeline Filter Bar
+   ============================================= */
+
+.timeline-filter-bar {
+  padding: var(--spacing-2) var(--spacing-4);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.timeline-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+}
+
+.timeline-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--spacing-1);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.timeline-filter-panel {
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-3);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
+}
+
+.timeline-filter-row {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.timeline-filter-row + .timeline-filter-row {
+  margin-top: var(--spacing-3);
+}
+
+.timeline-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  flex: 1;
+  min-width: 140px;
+}
+
+.timeline-filter-label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-gray-500);
+}
+
+.timeline-filter-dates {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.timeline-filter-date-sep {
+  color: var(--color-gray-400);
+}
+
+.timeline-filter-row--groups {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.timeline-filter-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.timeline-filter-row--actions {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-filter-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.timeline-filter-no-results {
+  padding: var(--spacing-6) var(--spacing-4);
+  text-align: center;
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+}
+
+/* Disable drag handles when filters are active */
+.unified-timeline.timeline--filtered .activity-drag-handle {
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* Dark mode */
+[data-theme='dark'] .timeline-filter-panel {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+}
+
+[data-theme='dark'] .timeline-filter-bar {
+  border-bottom-color: var(--color-gray-200);
+}
+
+/* Responsive: stack fields on narrow viewports */
+@media (max-width: 600px) {
+  .timeline-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .timeline-filter-field {
+    min-width: 0;
+  }
+
+  .timeline-filter-dates {
+    flex-wrap: wrap;
+  }
+
+  .timeline-filter-groups {
+    gap: var(--spacing-1);
+  }
+
+  .timeline-filter-groups .filter-tab {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-1) var(--spacing-2);
+  }
+}

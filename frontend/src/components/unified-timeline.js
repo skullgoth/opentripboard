@@ -20,6 +20,7 @@ import { createTransportBox, createTransportEditor, attachTransportEditorListene
 import { getTransportIcon } from './transport-icons.js';
 import { formatDuration, formatDistance } from '../services/routing-api.js';
 import { escapeHtml } from '../utils/html.js';
+import { createTimelineFilter } from './timeline-filter.js';
 
 // Module-level trip date constraints for activity editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -109,11 +110,14 @@ export function createUnifiedTimeline(activities, suggestions, trip, options = {
     })
     .join('');
 
+  const filterBarHtml = createTimelineFilter(trip);
+
   return `
     <div class="unified-timeline">
       <div class="timeline-header">
         <h2>${t('trip.itinerary')}</h2>
       </div>
+      ${filterBarHtml}
       <div class="timeline-content">
         ${dayGroups}
       </div>

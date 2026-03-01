@@ -51,6 +51,7 @@ import {
   createUnifiedTimeline,
   attachUnifiedTimelineListeners,
 } from '../../components/unified-timeline.js';
+import { attachTimelineFilterListeners } from '../../components/timeline-filter.js';
 import {
   createDateSidebar,
   attachDateSidebarListeners,
@@ -311,6 +312,13 @@ export async function tripDetailPage(params) {
       });
     }
 
+    // Attach timeline filter listeners
+    const filterBar = timelineContainer?.querySelector('.timeline-filter-bar');
+    if (filterBar && timelineContainer) {
+      const filterApi = attachTimelineFilterListeners(filterBar, timelineContainer);
+      ctx.timelineFilter = filterApi;
+    }
+
     // Initialize drag-and-drop for unified timeline
     if (timelineContainer) {
       if (!document.getElementById('drag-drop-styles')) {
@@ -448,6 +456,11 @@ export function cleanupTripDetailPage() {
   if (ctx.dateSidebarCleanup) {
     ctx.dateSidebarCleanup();
     ctx.dateSidebarCleanup = null;
+  }
+
+  if (ctx.timelineFilter) {
+    ctx.timelineFilter.cleanup();
+    ctx.timelineFilter = null;
   }
 
   if (ctx.mapObserver) {

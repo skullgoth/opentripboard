@@ -982,6 +982,20 @@
     "inDays": "dans {{count}} jour",
     "inDays_plural": "dans {{count}} jours"
   },
+  "filter": {
+    "filterActivities": "Rechercher et filtrer",
+    "showFilters": "Afficher les options de recherche et filtre",
+    "searchText": "Recherche",
+    "searchPlaceholder": "Rechercher par titre ou description...",
+    "location": "Lieu",
+    "locationPlaceholder": "Filtrer par lieu...",
+    "dateRange": "Plage de dates",
+    "category": "Catégorie",
+    "all": "Toutes",
+    "clearFilters": "Effacer les filtres",
+    "noResults": "Aucune activité ne correspond à vos filtres.",
+    "resultCount": "{{count}} sur {{total}} activités"
+  },
   "dragDrop": {
     "reorderFailed": "Échec de l'enregistrement du nouvel ordre. Veuillez réessayer.",
     "keyboardHint": "Appuyez sur Espace pour saisir, touches fléchées pour déplacer, Espace pour déposer",
