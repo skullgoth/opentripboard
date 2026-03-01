@@ -1,5 +1,6 @@
 // T289: HTTP caching headers middleware
 import crypto from 'crypto';
+import fp from 'fastify-plugin';
 
 /**
  * Cache control configurations for different resource types
@@ -117,7 +118,7 @@ export function checkNotModified(request, etag) {
  * Fastify plugin for cache headers
  * @param {FastifyInstance} fastify - Fastify instance
  */
-export async function cachePlugin(fastify) {
+async function cachePluginImpl(fastify) {
   // Decorate reply with cache helper methods
   fastify.decorateReply('setCacheHeaders', function (config, etag) {
     setCacheHeaders(this, config, etag);
@@ -159,5 +160,9 @@ export async function cachePlugin(fastify) {
     return payload;
   });
 }
+
+export const cachePlugin = fp(cachePluginImpl, {
+  name: 'cache-headers',
+});
 
 export default cachePlugin;
