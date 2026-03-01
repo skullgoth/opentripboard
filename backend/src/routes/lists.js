@@ -294,6 +294,7 @@ export default async function listRoutes(fastify) {
   fastify.get(
     '/list-templates',
     {
+      schema: { tags: ['lists'] },
       preHandler: authenticate,
     },
     asyncHandler(async (request, reply) => {
@@ -314,6 +315,7 @@ export default async function listRoutes(fastify) {
   fastify.get(
     '/list-templates/:templateId',
     {
+      schema: { tags: ['lists'] },
       preHandler: authenticate,
     },
     asyncHandler(async (request, reply) => {
@@ -338,6 +340,7 @@ export default async function listRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/lists',
     {
+      schema: { tags: ['lists'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -368,6 +371,7 @@ export default async function listRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/lists',
     {
+      schema: { tags: ['lists'], params: tripIdSchema, body: createListSchema },
       preHandler: [authenticate, validateParams(tripIdSchema), validateBody(createListSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -390,6 +394,7 @@ export default async function listRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/lists/from-template/:templateId',
     {
+      schema: { tags: ['lists'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -421,6 +426,7 @@ export default async function listRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/lists/:listId',
     {
+      schema: { tags: ['lists'], params: listIdSchema },
       preHandler: [authenticate, validateParams(listIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -450,6 +456,7 @@ export default async function listRoutes(fastify) {
   fastify.patch(
     '/trips/:tripId/lists/:listId',
     {
+      schema: { tags: ['lists'], params: listIdSchema, body: updateListSchema },
       preHandler: [authenticate, validateParams(listIdSchema), validateBody(updateListSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -472,6 +479,7 @@ export default async function listRoutes(fastify) {
   fastify.delete(
     '/trips/:tripId/lists/:listId',
     {
+      schema: { tags: ['lists'], params: listIdSchema },
       preHandler: [authenticate, validateParams(listIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -494,6 +502,7 @@ export default async function listRoutes(fastify) {
   fastify.put(
     '/trips/:tripId/lists/:listId/items',
     {
+      schema: { tags: ['lists'], params: listIdSchema, body: updateItemsSchema },
       preHandler: [authenticate, validateParams(listIdSchema), validateBody(updateItemsSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -516,6 +525,7 @@ export default async function listRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/lists/:listId/items',
     {
+      schema: { tags: ['lists'], params: listIdSchema, body: addItemSchema },
       preHandler: [authenticate, validateParams(listIdSchema), validateBody(addItemSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -538,6 +548,7 @@ export default async function listRoutes(fastify) {
   fastify.patch(
     '/trips/:tripId/lists/:listId/items/:itemId',
     {
+      schema: { tags: ['lists'], params: itemIdSchema, body: toggleItemSchema },
       preHandler: [authenticate, validateParams(itemIdSchema), validateBody(toggleItemSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -564,6 +575,7 @@ export default async function listRoutes(fastify) {
   fastify.delete(
     '/trips/:tripId/lists/:listId/items/:itemId',
     {
+      schema: { tags: ['lists'], params: itemIdSchema },
       preHandler: [authenticate, validateParams(itemIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -586,6 +598,7 @@ export default async function listRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/lists/:listId/reorder',
     {
+      schema: { tags: ['lists'], params: listIdSchema, body: reorderItemsSchema },
       preHandler: [authenticate, validateParams(listIdSchema), validateBody(reorderItemsSchema)],
     },
     asyncHandler(async (request, reply) => {

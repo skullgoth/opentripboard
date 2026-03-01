@@ -38,6 +38,7 @@ export default async function categoriesRoutes(fastify) {
   fastify.get(
     '/categories',
     {
+      schema: { tags: ['categories'] },
       preHandler: [authenticate],
     },
     async (request, reply) => {
@@ -61,6 +62,7 @@ export default async function categoriesRoutes(fastify) {
     '/categories/defaults',
     {
       schema: {
+        tags: ['categories'],
         response: {
           200: {
             type: 'object',
@@ -94,6 +96,7 @@ export default async function categoriesRoutes(fastify) {
     {
       preHandler: [authenticate],
       schema: {
+        tags: ['categories'],
         body: {
           type: 'object',
           required: ['name', 'icon', 'domain'],
@@ -136,6 +139,7 @@ export default async function categoriesRoutes(fastify) {
     {
       preHandler: [authenticate],
       schema: {
+        tags: ['categories'],
         params: {
           type: 'object',
           required: ['id'],
@@ -184,6 +188,7 @@ export default async function categoriesRoutes(fastify) {
     {
       preHandler: [authenticate],
       schema: {
+        tags: ['categories'],
         params: {
           type: 'object',
           required: ['id'],
@@ -238,6 +243,7 @@ export default async function categoriesRoutes(fastify) {
     {
       preHandler: [authenticate],
       schema: {
+        tags: ['categories'],
         params: {
           type: 'object',
           required: ['id'],
@@ -284,6 +290,7 @@ export default async function categoriesRoutes(fastify) {
     {
       preHandler: [authenticate],
       schema: {
+        tags: ['categories'],
         params: {
           type: 'object',
           required: ['tripId'],

@@ -154,6 +154,7 @@ export default async function tripRoutes(fastify) {
   fastify.post(
     '/trips',
     {
+      schema: { tags: ['trips'], body: createTripSchema },
       preHandler: [authenticate, validateBody(createTripSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -168,6 +169,7 @@ export default async function tripRoutes(fastify) {
   fastify.get(
     '/trips',
     {
+      schema: { tags: ['trips'] },
       preHandler: authenticate,
     },
     asyncHandler(async (request, reply) => {
@@ -182,6 +184,7 @@ export default async function tripRoutes(fastify) {
   fastify.get(
     '/trips/:id',
     {
+      schema: { tags: ['trips'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -196,6 +199,7 @@ export default async function tripRoutes(fastify) {
   fastify.patch(
     '/trips/:id',
     {
+      schema: { tags: ['trips'], params: tripIdSchema, body: updateTripSchema },
       preHandler: [authenticate, validateParams(tripIdSchema), validateBody(updateTripSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -214,6 +218,7 @@ export default async function tripRoutes(fastify) {
   fastify.delete(
     '/trips/:id',
     {
+      schema: { tags: ['trips'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -228,6 +233,7 @@ export default async function tripRoutes(fastify) {
   fastify.get(
     '/trips/:id/stats',
     {
+      schema: { tags: ['trips'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -242,6 +248,7 @@ export default async function tripRoutes(fastify) {
   fastify.post(
     '/trips/:id/cover-image',
     {
+      schema: { tags: ['trips'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -298,6 +305,7 @@ export default async function tripRoutes(fastify) {
   fastify.delete(
     '/trips/:id/cover-image',
     {
+      schema: { tags: ['trips'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -332,6 +340,7 @@ export default async function tripRoutes(fastify) {
   fastify.post(
     '/trips/:id/optimize-route',
     {
+      schema: { tags: ['trips'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -371,6 +380,7 @@ export default async function tripRoutes(fastify) {
   fastify.post(
     '/trips/:id/calculate-distance',
     {
+      schema: { tags: ['trips'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {

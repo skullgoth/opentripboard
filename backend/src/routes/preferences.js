@@ -25,6 +25,7 @@ export default async function preferencesRoutes(fastify) {
   fastify.get(
     '/preferences',
     {
+      schema: { tags: ['preferences'] },
       preHandler: [authenticate],
     },
     async (request, reply) => {
@@ -49,6 +50,7 @@ export default async function preferencesRoutes(fastify) {
     {
       preHandler: [authenticate],
       schema: {
+        tags: ['preferences'],
         body: {
           type: 'object',
           properties: {
@@ -93,6 +95,7 @@ export default async function preferencesRoutes(fastify) {
     '/preferences/languages',
     {
       schema: {
+        tags: ['preferences'],
         response: {
           200: {
             type: 'object',
@@ -131,6 +134,7 @@ export default async function preferencesRoutes(fastify) {
     '/preferences/defaults',
     {
       schema: {
+        tags: ['preferences'],
         querystring: {
           type: 'object',
           properties: {

@@ -8,7 +8,7 @@ export default async function healthRoutes(fastify) {
   /**
    * Basic health check
    */
-  fastify.get('/health', async (request, reply) => {
+  fastify.get('/health', { schema: { tags: ['health'] } }, async (request, reply) => {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -19,7 +19,7 @@ export default async function healthRoutes(fastify) {
   /**
    * Detailed health check with database status
    */
-  fastify.get('/health/detailed', async (request, reply) => {
+  fastify.get('/health/detailed', { schema: { tags: ['health'] } }, async (request, reply) => {
     const health = {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -49,7 +49,7 @@ export default async function healthRoutes(fastify) {
   /**
    * Readiness check (for container orchestration)
    */
-  fastify.get('/health/ready', async (request, reply) => {
+  fastify.get('/health/ready', { schema: { tags: ['health'] } }, async (request, reply) => {
     try {
       await query('SELECT 1');
       return reply.code(200).send({ ready: true });
@@ -64,7 +64,7 @@ export default async function healthRoutes(fastify) {
   /**
    * Liveness check (for container orchestration)
    */
-  fastify.get('/health/live', async (request, reply) => {
+  fastify.get('/health/live', { schema: { tags: ['health'] } }, async (request, reply) => {
     return { alive: true };
   });
 }

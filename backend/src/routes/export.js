@@ -70,6 +70,7 @@ export default async function exportRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/export/pdf',
     {
+      schema: { tags: ['export'] },
       preHandler: fastify.auth,
     },
     asyncHandler(async (request, reply) => {
@@ -121,6 +122,7 @@ export default async function exportRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/export/json',
     {
+      schema: { tags: ['export'] },
       preHandler: fastify.auth,
     },
     asyncHandler(async (request, reply) => {
@@ -228,6 +230,7 @@ export default async function exportRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/share',
     {
+      schema: { tags: ['export'], body: createShareTokenSchema },
       preHandler: [fastify.auth, validateBody(createShareTokenSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -284,6 +287,7 @@ export default async function exportRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/share',
     {
+      schema: { tags: ['export'] },
       preHandler: fastify.auth,
     },
     asyncHandler(async (request, reply) => {
@@ -326,6 +330,7 @@ export default async function exportRoutes(fastify) {
   fastify.patch(
     '/trips/:tripId/share/:tokenId',
     {
+      schema: { tags: ['export'], body: updateShareTokenSchema },
       preHandler: [fastify.auth, validateBody(updateShareTokenSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -364,6 +369,7 @@ export default async function exportRoutes(fastify) {
   fastify.delete(
     '/trips/:tripId/share/:tokenId',
     {
+      schema: { tags: ['export'] },
       preHandler: fastify.auth,
     },
     asyncHandler(async (request, reply) => {
@@ -398,6 +404,9 @@ export default async function exportRoutes(fastify) {
    */
   fastify.get(
     '/shared/:token',
+    {
+      schema: { tags: ['export'] },
+    },
     asyncHandler(async (request, reply) => {
       const { token } = request.params;
 

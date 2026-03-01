@@ -168,6 +168,7 @@ export default async function expenseRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/expenses',
     {
+      schema: { tags: ['expenses'], params: tripIdSchema, body: createExpenseSchema },
       preHandler: [authenticate, validateParams(tripIdSchema), validateBody(createExpenseSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -202,6 +203,7 @@ export default async function expenseRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/expenses',
     {
+      schema: { tags: ['expenses'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -224,6 +226,7 @@ export default async function expenseRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/expenses/summary',
     {
+      schema: { tags: ['expenses'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -240,6 +243,7 @@ export default async function expenseRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/expenses/balances',
     {
+      schema: { tags: ['expenses'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -256,6 +260,7 @@ export default async function expenseRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/expenses/:expenseId',
     {
+      schema: { tags: ['expenses'], params: expenseIdSchema },
       preHandler: [authenticate, validateParams(expenseIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -272,6 +277,7 @@ export default async function expenseRoutes(fastify) {
   fastify.patch(
     '/trips/:tripId/expenses/:expenseId',
     {
+      schema: { tags: ['expenses'], params: expenseIdSchema, body: updateExpenseSchema },
       preHandler: [authenticate, validateParams(expenseIdSchema), validateBody(updateExpenseSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -298,6 +304,7 @@ export default async function expenseRoutes(fastify) {
   fastify.delete(
     '/trips/:tripId/expenses/:expenseId',
     {
+      schema: { tags: ['expenses'], params: expenseIdSchema },
       preHandler: [authenticate, validateParams(expenseIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -324,6 +331,7 @@ export default async function expenseRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/expenses/splits/:splitId/settle',
     {
+      schema: { tags: ['expenses'], params: splitIdSchema },
       preHandler: [authenticate, validateParams(splitIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -350,6 +358,7 @@ export default async function expenseRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/expenses/splits/:splitId/unsettle',
     {
+      schema: { tags: ['expenses'], params: splitIdSchema },
       preHandler: [authenticate, validateParams(splitIdSchema)],
     },
     asyncHandler(async (request, reply) => {

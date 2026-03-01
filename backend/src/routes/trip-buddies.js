@@ -66,6 +66,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/trip-buddies',
     {
+      schema: { tags: ['buddies'], params: tripIdSchema, body: inviteTripBuddySchema },
       preHandler: [authenticate, validateParams(tripIdSchema), validateBody(inviteTripBuddySchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -86,6 +87,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/trip-buddies',
     {
+      schema: { tags: ['buddies'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -104,6 +106,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.get(
     '/trip-buddies/invitations',
     {
+      schema: { tags: ['buddies'] },
       preHandler: authenticate,
     },
     asyncHandler(async (request, reply) => {
@@ -119,6 +122,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.post(
     '/trip-buddies/:id/accept',
     {
+      schema: { tags: ['buddies'], params: tripBuddyIdSchema },
       preHandler: [authenticate, validateParams(tripBuddyIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -137,6 +141,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.patch(
     '/trip-buddies/:id',
     {
+      schema: { tags: ['buddies'], params: tripBuddyIdSchema, body: updateRoleSchema },
       preHandler: [authenticate, validateParams(tripBuddyIdSchema), validateBody(updateRoleSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -156,6 +161,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.delete(
     '/trip-buddies/:id',
     {
+      schema: { tags: ['buddies'], params: tripBuddyIdSchema },
       preHandler: [authenticate, validateParams(tripBuddyIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -174,6 +180,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/leave',
     {
+      schema: { tags: ['buddies'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -192,6 +199,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/trip-buddies/stats',
     {
+      schema: { tags: ['buddies'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -210,6 +218,7 @@ export default async function tripBuddyRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/role',
     {
+      schema: { tags: ['buddies'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {

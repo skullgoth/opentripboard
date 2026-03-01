@@ -111,6 +111,7 @@ export default async function usersRoutes(fastify) {
   fastify.get(
     '/users/profile',
     {
+      schema: { tags: ['users'] },
       preHandler: fastify.auth,
     },
     asyncHandler(async (request, reply) => {
@@ -138,6 +139,7 @@ export default async function usersRoutes(fastify) {
   fastify.patch(
     '/users/profile',
     {
+      schema: { tags: ['users'], body: updateProfileSchema },
       preHandler: [fastify.auth, validateBody(updateProfileSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -173,6 +175,7 @@ export default async function usersRoutes(fastify) {
   fastify.post(
     '/users/profile/password',
     {
+      schema: { tags: ['users'], body: changePasswordSchema },
       preHandler: [fastify.auth, validateBody(changePasswordSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -215,6 +218,7 @@ export default async function usersRoutes(fastify) {
   fastify.get(
     '/admin/users',
     {
+      schema: { tags: ['users'] },
       preHandler: [fastify.auth, requireAdmin],
     },
     asyncHandler(async (request, reply) => {
@@ -250,6 +254,7 @@ export default async function usersRoutes(fastify) {
   fastify.get(
     '/admin/users/:userId',
     {
+      schema: { tags: ['users'] },
       preHandler: [fastify.auth, requireAdmin],
     },
     asyncHandler(async (request, reply) => {
@@ -279,6 +284,7 @@ export default async function usersRoutes(fastify) {
   fastify.post(
     '/admin/users',
     {
+      schema: { tags: ['users'], body: adminCreateUserSchema },
       preHandler: [fastify.auth, requireAdmin, validateBody(adminCreateUserSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -326,6 +332,7 @@ export default async function usersRoutes(fastify) {
   fastify.patch(
     '/admin/users/:userId',
     {
+      schema: { tags: ['users'], body: adminUpdateUserSchema },
       preHandler: [fastify.auth, requireAdmin, validateBody(adminUpdateUserSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -394,6 +401,7 @@ export default async function usersRoutes(fastify) {
   fastify.delete(
     '/admin/users/:userId',
     {
+      schema: { tags: ['users'] },
       preHandler: [fastify.auth, requireAdmin],
     },
     asyncHandler(async (request, reply) => {
@@ -430,6 +438,7 @@ export default async function usersRoutes(fastify) {
   fastify.post(
     '/admin/users/:userId/unlock',
     {
+      schema: { tags: ['users'] },
       preHandler: [fastify.auth, requireAdmin],
     },
     asyncHandler(async (request, reply) => {

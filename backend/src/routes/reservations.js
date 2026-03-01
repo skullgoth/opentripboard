@@ -49,6 +49,7 @@ export default async function reservationRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/reservations',
     {
+      schema: { tags: ['reservations'], params: tripIdSchema, querystring: filterSchema },
       preHandler: [authenticate, validateParams(tripIdSchema), validateQuery(filterSchema)],
     },
     asyncHandler(async (request, reply) => {

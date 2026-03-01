@@ -188,6 +188,7 @@ export default async function activityRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/activities',
     {
+      schema: { tags: ['activities'], params: tripIdSchema, body: createActivitySchema },
       preHandler: [authenticate, validateParams(tripIdSchema), validateBody(createActivitySchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -219,6 +220,7 @@ export default async function activityRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/activities',
     {
+      schema: { tags: ['activities'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -236,6 +238,7 @@ export default async function activityRoutes(fastify) {
   fastify.get(
     '/activities/:id',
     {
+      schema: { tags: ['activities'], params: activityIdSchema },
       preHandler: [authenticate, validateParams(activityIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -250,6 +253,7 @@ export default async function activityRoutes(fastify) {
   fastify.patch(
     '/activities/:id',
     {
+      schema: { tags: ['activities'], params: activityIdSchema, body: updateActivitySchema },
       preHandler: [authenticate, validateParams(activityIdSchema), validateBody(updateActivitySchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -282,6 +286,7 @@ export default async function activityRoutes(fastify) {
   fastify.delete(
     '/activities/:id',
     {
+      schema: { tags: ['activities'], params: activityIdSchema },
       preHandler: [authenticate, validateParams(activityIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -314,6 +319,7 @@ export default async function activityRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/activities/reorder',
     {
+      schema: { tags: ['activities'], params: tripIdSchema, body: reorderSchema },
       preHandler: [authenticate, validateParams(tripIdSchema), validateBody(reorderSchema)],
     },
     asyncHandler(async (request, reply) => {

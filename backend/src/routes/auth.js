@@ -70,6 +70,7 @@ export default async function authRoutes(fastify) {
   fastify.post(
     '/auth/register',
     {
+      schema: { tags: ['auth'], body: registerSchema },
       preHandler: validateBody(registerSchema),
     },
     asyncHandler(async (request, reply) => {
@@ -97,6 +98,7 @@ export default async function authRoutes(fastify) {
   fastify.post(
     '/auth/login',
     {
+      schema: { tags: ['auth'], body: loginSchema },
       preHandler: validateBody(loginSchema),
     },
     asyncHandler(async (request, reply) => {
@@ -114,6 +116,7 @@ export default async function authRoutes(fastify) {
   fastify.post(
     '/auth/refresh',
     {
+      schema: { tags: ['auth'], body: refreshSchema },
       preHandler: validateBody(refreshSchema),
     },
     asyncHandler(async (request, reply) => {
@@ -131,6 +134,7 @@ export default async function authRoutes(fastify) {
   fastify.post(
     '/auth/logout',
     {
+      schema: { tags: ['auth'], body: logoutSchema },
       preHandler: validateBody(logoutSchema),
     },
     asyncHandler(async (request, reply) => {
@@ -148,6 +152,7 @@ export default async function authRoutes(fastify) {
   fastify.post(
     '/auth/logout-all',
     {
+      schema: { tags: ['auth'] },
       preHandler: fastify.auth,
     },
     asyncHandler(async (request, reply) => {
@@ -163,6 +168,7 @@ export default async function authRoutes(fastify) {
   fastify.get(
     '/auth/me',
     {
+      schema: { tags: ['auth'] },
       preHandler: fastify.auth,
     },
     asyncHandler(async (request, reply) => {

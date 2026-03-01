@@ -87,6 +87,7 @@ export default async function documentRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/documents',
     {
+      schema: { tags: ['documents'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -109,6 +110,7 @@ export default async function documentRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/documents/stats',
     {
+      schema: { tags: ['documents'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -134,6 +136,7 @@ export default async function documentRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/documents',
     {
+      schema: { tags: ['documents'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -191,6 +194,7 @@ export default async function documentRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/documents/:documentId',
     {
+      schema: { tags: ['documents'], params: documentIdSchema },
       preHandler: [authenticate, validateParams(documentIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -212,6 +216,7 @@ export default async function documentRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/documents/:documentId/download',
     {
+      schema: { tags: ['documents'], params: documentIdSchema },
       preHandler: [authenticate, validateParams(documentIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -246,6 +251,7 @@ export default async function documentRoutes(fastify) {
   fastify.patch(
     '/trips/:tripId/documents/:documentId',
     {
+      schema: { tags: ['documents'], params: documentIdSchema, body: updateDocumentSchema },
       preHandler: [authenticate, validateParams(documentIdSchema), validateBody(updateDocumentSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -276,6 +282,7 @@ export default async function documentRoutes(fastify) {
   fastify.delete(
     '/trips/:tripId/documents/:documentId',
     {
+      schema: { tags: ['documents'], params: documentIdSchema },
       preHandler: [authenticate, validateParams(documentIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -310,6 +317,7 @@ export default async function documentRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/activities/:activityId/documents',
     {
+      schema: { tags: ['documents'] },
       preHandler: [authenticate],
     },
     asyncHandler(async (request, reply) => {

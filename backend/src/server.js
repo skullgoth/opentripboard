@@ -16,6 +16,7 @@ import { MAX_UPLOAD_SIZE_BYTES } from './config/upload.js';
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost';
+const isDev = process.env.NODE_ENV === 'development';
 
 /**
  * Get CORS origin configuration
@@ -23,7 +24,7 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost';
  * In production, use the CORS_ORIGIN environment variable
  */
 function getCorsOrigin() {
-  if (process.env.NODE_ENV === 'development') {
+  if (isDev) {
     // In development, allow localhost with any port and CORS_ORIGIN
     return (origin, callback) => {
       if (
@@ -49,7 +50,7 @@ async function createServer() {
   const fastify = Fastify({
     logger: {
       level: process.env.LOG_LEVEL || 'info',
-      ...(process.env.NODE_ENV === 'development' && {
+      ...(isDev && {
         transport: {
           target: 'pino-pretty',
           options: {
@@ -78,12 +79,72 @@ async function createServer() {
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
+        scriptSrc: ["'self'", ...(isDev ? ["'unsafe-inline'"] : [])],
         imgSrc: ["'self'", 'data:', 'https:'],
       },
     },
     crossOriginEmbedderPolicy: false,
   });
+
+  // Register Swagger API docs (development only)
+  if (isDev) {
+    const swagger = await import('@fastify/swagger');
+    const swaggerUi = await import('@fastify/swagger-ui');
+
+    await fastify.register(swagger.default, {
+      openapi: {
+        openapi: '3.0.3',
+        info: {
+          title: 'OpenTripBoard API',
+          description: 'Self-hosted travel planning API with real-time collaboration',
+          version: '1.0.0',
+        },
+        servers: [
+          {
+            url: `http://localhost:${PORT}`,
+            description: 'Local development server',
+          },
+        ],
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+            },
+          },
+        },
+        tags: [
+          { name: 'auth', description: 'Authentication & registration' },
+          { name: 'trips', description: 'Trip management' },
+          { name: 'activities', description: 'Trip activities' },
+          { name: 'buddies', description: 'Trip collaborators' },
+          { name: 'suggestions', description: 'Trip suggestions' },
+          { name: 'reservations', description: 'Travel reservations' },
+          { name: 'expenses', description: 'Trip expenses' },
+          { name: 'lists', description: 'Packing & todo lists' },
+          { name: 'documents', description: 'Trip documents' },
+          { name: 'users', description: 'User management' },
+          { name: 'preferences', description: 'User preferences' },
+          { name: 'export', description: 'Trip export' },
+          { name: 'site-config', description: 'Site configuration' },
+          { name: 'categories', description: 'Trip categories' },
+          { name: 'geocoding', description: 'Geocoding & autocomplete' },
+          { name: 'cover-images', description: 'Cover image generation' },
+          { name: 'routing', description: 'Transport routing' },
+          { name: 'health', description: 'Health checks' },
+        ],
+      },
+    });
+
+    await fastify.register(swaggerUi.default, {
+      routePrefix: '/api/docs',
+      uiConfig: {
+        docExpansion: 'list',
+        deepLinking: true,
+      },
+    });
+  }
 
   // Register rate limiting
   await registerRateLimit(fastify);

@@ -11,6 +11,9 @@ export default async function siteConfigRoutes(fastify) {
    */
   fastify.get(
     '/site-config/public',
+    {
+      schema: { tags: ['site-config'] },
+    },
     asyncHandler(async (request, reply) => {
       const settings = await siteConfigService.getPublicSettings();
 
@@ -31,6 +34,7 @@ export default async function siteConfigRoutes(fastify) {
   fastify.get(
     '/admin/site-config',
     {
+      schema: { tags: ['site-config'] },
       preHandler: [fastify.auth, requireAdmin],
     },
     asyncHandler(async (request, reply) => {
@@ -54,6 +58,7 @@ export default async function siteConfigRoutes(fastify) {
     {
       preHandler: [fastify.auth, requireAdmin],
       schema: {
+        tags: ['site-config'],
         body: {
           type: 'object',
           properties: {

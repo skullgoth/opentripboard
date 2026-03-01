@@ -159,6 +159,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.post(
     '/trips/:tripId/suggestions',
     {
+      schema: { tags: ['suggestions'], params: tripIdSchema, body: createSuggestionSchema },
       preHandler: [authenticate, validateParams(tripIdSchema), validateBody(createSuggestionSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -190,6 +191,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/suggestions',
     {
+      schema: { tags: ['suggestions'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -210,6 +212,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.get(
     '/suggestions/:id',
     {
+      schema: { tags: ['suggestions'], params: suggestionIdSchema },
       preHandler: [authenticate, validateParams(suggestionIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -228,6 +231,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.post(
     '/suggestions/:id/vote',
     {
+      schema: { tags: ['suggestions'], params: suggestionIdSchema, body: voteSchema },
       preHandler: [authenticate, validateParams(suggestionIdSchema), validateBody(voteSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -261,6 +265,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.post(
     '/suggestions/:id/accept',
     {
+      schema: { tags: ['suggestions'], params: suggestionIdSchema },
       preHandler: [authenticate, validateParams(suggestionIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -293,6 +298,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.post(
     '/suggestions/:id/reject',
     {
+      schema: { tags: ['suggestions'], params: suggestionIdSchema },
       preHandler: [authenticate, validateParams(suggestionIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -324,6 +330,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.patch(
     '/suggestions/:id',
     {
+      schema: { tags: ['suggestions'], params: suggestionIdSchema, body: updateSuggestionSchema },
       preHandler: [authenticate, validateParams(suggestionIdSchema), validateBody(updateSuggestionSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -356,6 +363,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.delete(
     '/suggestions/:id',
     {
+      schema: { tags: ['suggestions'], params: suggestionIdSchema },
       preHandler: [authenticate, validateParams(suggestionIdSchema)],
     },
     asyncHandler(async (request, reply) => {
@@ -394,6 +402,7 @@ export default async function suggestionRoutes(fastify) {
   fastify.get(
     '/trips/:tripId/suggestions/stats',
     {
+      schema: { tags: ['suggestions'], params: tripIdSchema },
       preHandler: [authenticate, validateParams(tripIdSchema)],
     },
     asyncHandler(async (request, reply) => {
