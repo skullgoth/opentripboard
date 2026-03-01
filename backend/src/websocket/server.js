@@ -4,6 +4,8 @@ import { joinRoom, leaveRoom, broadcastToRoom } from './rooms.js';
 import { handleMessage } from './handler.js';
 import logger from '../utils/logger.js';
 
+const WS_AUTH_TIMEOUT_MS = parseInt(process.env.WS_AUTH_TIMEOUT_MS, 10) || 10000;
+
 /**
  * WebSocket server routes
  */
@@ -30,7 +32,7 @@ export default async function websocketRoutes(fastify) {
         }));
         socket.close(1008, 'Authentication timeout');
       }
-    }, 10000); // 10 seconds to authenticate
+    }, WS_AUTH_TIMEOUT_MS);
 
     /**
      * Handle incoming messages

@@ -3,6 +3,10 @@ import rateLimit from '@fastify/rate-limit';
 import { extractTokenFromHeader, decodeToken } from '../utils/jwt.js';
 
 const RATE_LIMIT_DISABLED = process.env.RATE_LIMIT_DISABLED === 'true';
+const RATE_LIMIT_AUTH_MAX = parseInt(process.env.RATE_LIMIT_AUTH_MAX, 10) || 10;
+const RATE_LIMIT_AUTH_WINDOW = process.env.RATE_LIMIT_AUTH_WINDOW || '1 minute';
+const RATE_LIMIT_PASSWORD_MAX = parseInt(process.env.RATE_LIMIT_PASSWORD_MAX, 10) || 5;
+const RATE_LIMIT_PASSWORD_WINDOW = process.env.RATE_LIMIT_PASSWORD_WINDOW || '15 minutes';
 
 /**
  * Extract the best available client identifier for rate limiting
@@ -67,8 +71,8 @@ export const rateLimitConfig = {
 
   // Stricter limits for auth routes (prevent brute force)
   auth: {
-    max: 10, // 10 requests
-    timeWindow: '1 minute',
+    max: RATE_LIMIT_AUTH_MAX,
+    timeWindow: RATE_LIMIT_AUTH_WINDOW,
     // Auth routes use IP-based limiting (no JWT available yet)
     // Uses X-Forwarded-For to get real client IP in Docker/proxy setups
     keyGenerator: (request) => {
@@ -86,8 +90,8 @@ export const rateLimitConfig = {
 
   // Stricter limits for password-related routes
   password: {
-    max: 5, // 5 requests
-    timeWindow: '15 minutes',
+    max: RATE_LIMIT_PASSWORD_MAX,
+    timeWindow: RATE_LIMIT_PASSWORD_WINDOW,
     keyGenerator: (request) => {
       const forwardedFor = request.headers?.['x-forwarded-for'];
       if (forwardedFor) {

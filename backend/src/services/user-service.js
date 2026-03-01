@@ -14,6 +14,9 @@ import { hashPassword, verifyPassword, validatePasswordStrength } from '../utils
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt.js';
 import { ConflictError, AuthenticationError, ValidationError } from '../middleware/error-handler.js';
 
+const ACCOUNT_LOCKOUT_THRESHOLD = parseInt(process.env.ACCOUNT_LOCKOUT_THRESHOLD, 10) || 5;
+const ACCOUNT_LOCKOUT_DURATION_MIN = parseInt(process.env.ACCOUNT_LOCKOUT_DURATION_MIN, 10) || 15;
+
 /**
  * Register a new user
  * @param {Object} userData - User registration data
@@ -106,14 +109,10 @@ export async function authenticate(email, password) {
     // Increment failed attempts
     const updatedUser = await incrementFailedAttempts(user.id);
 
-    // Lock account after 5 failed attempts (lockout duration: 15 minutes)
-    const FAILED_ATTEMPTS_THRESHOLD = 5;
-    const LOCKOUT_DURATION_MINUTES = 15;
-
-    if (updatedUser.failed_login_attempts >= FAILED_ATTEMPTS_THRESHOLD) {
-      await lockAccount(user.id, LOCKOUT_DURATION_MINUTES);
+    if (updatedUser.failed_login_attempts >= ACCOUNT_LOCKOUT_THRESHOLD) {
+      await lockAccount(user.id, ACCOUNT_LOCKOUT_DURATION_MIN);
       throw new AuthenticationError(
-        `Account locked due to ${FAILED_ATTEMPTS_THRESHOLD} failed login attempts. Please try again in ${LOCKOUT_DURATION_MINUTES} minutes.`
+        `Account locked due to ${ACCOUNT_LOCKOUT_THRESHOLD} failed login attempts. Please try again in ${ACCOUNT_LOCKOUT_DURATION_MIN} minutes.`
       );
     }
 
