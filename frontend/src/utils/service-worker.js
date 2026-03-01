@@ -1,5 +1,7 @@
 // Service Worker registration and management
 
+import { logError } from './error-tracking.js';
+
 let registration = null;
 
 /**
@@ -42,7 +44,7 @@ export async function registerServiceWorker() {
 
     return registration;
   } catch (error) {
-    console.error('[SW] Registration failed:', error);
+    logError('[SW] Registration failed:', error);
     return null;
   }
 }

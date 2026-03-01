@@ -4,6 +4,7 @@ import apiClient from '../services/api-client.js';
 import { app } from '../main.js';
 import { showToast } from '../utils/toast.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Render profile page
@@ -173,7 +174,7 @@ async function handleProfileUpdate(e) {
 
     showToast('Profile updated successfully', 'success');
   } catch (error) {
-    console.error('Profile update failed:', error);
+    logError('Profile update failed:', error);
     showFormError('profile-general', error.message || 'Failed to update profile');
   } finally {
     submitBtn.disabled = false;
@@ -227,7 +228,7 @@ async function handlePasswordChange(e) {
     // Clear form
     form.reset();
   } catch (error) {
-    console.error('Password change failed:', error);
+    logError('Password change failed:', error);
     showFormError('password-general', error.message || 'Failed to change password');
   } finally {
     submitBtn.disabled = false;

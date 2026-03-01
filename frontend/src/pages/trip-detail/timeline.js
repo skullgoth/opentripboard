@@ -15,6 +15,7 @@ import { attachTimelineFilterListeners } from '../../components/timeline-filter.
 import { authState } from '../../state/auth-state.js';
 import { tripState } from '../../state/trip-state.js';
 import { suggestionState } from '../../state/suggestion-state.js';
+import { logError } from '../../utils/error-tracking.js';
 
 // Listen for auto route calculation completion to update the map with newly
 // calculated route data and sync any deferred WebSocket activity updates.
@@ -118,7 +119,7 @@ export async function refreshActivities() {
     ctx.currentActivities = activities;
     refreshTimeline();
   } catch (error) {
-    console.error('Failed to refresh activities:', error);
+    logError('Failed to refresh activities:', error);
   }
 }
 
@@ -133,7 +134,7 @@ export async function refreshSuggestions() {
     ctx.currentSuggestions = suggestions;
     refreshTimeline();
   } catch (error) {
-    console.error('Failed to refresh suggestions:', error);
+    logError('Failed to refresh suggestions:', error);
   }
 }
 

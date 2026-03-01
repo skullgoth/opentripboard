@@ -3,6 +3,8 @@
  * T046: Simple hash-based routing for SPA navigation
  */
 
+import { logWarning } from './error-tracking.js';
+
 /**
  * Router class for client-side navigation
  */
@@ -108,7 +110,7 @@ class Router {
         await hook(hash, previousRoute);
       }
     } else {
-      console.warn(`No route handler found for: ${hash}`);
+      logWarning(`No route handler found for: ${hash}`);
     }
   }
 

@@ -181,6 +181,42 @@ async function sendToServer(endpoint, data) {
 }
 
 /**
+ * Log an error message to console and forward to error tracking when configured.
+ * Use this instead of console.error throughout the app.
+ * @param {string} message - Human-readable error description
+ * @param {Error|*} [error] - Error object or additional data
+ */
+export function logError(message, error = null) {
+  if (error != null) {
+    console.error(message, error);
+  } else {
+    console.error(message);
+  }
+
+  if (config.enabled && error instanceof Error) {
+    captureError(error, { message });
+  }
+}
+
+/**
+ * Log a warning message to console and forward to error tracking when configured.
+ * Use this instead of console.warn throughout the app.
+ * @param {string} message - Human-readable warning description
+ * @param {*} [extra] - Additional data
+ */
+export function logWarning(message, extra = null) {
+  if (extra != null) {
+    console.warn(message, extra);
+  } else {
+    console.warn(message);
+  }
+
+  if (config.enabled) {
+    captureMessage(String(message), 'warning');
+  }
+}
+
+/**
  * Wrap a function with error tracking
  * @param {Function} fn - Function to wrap
  * @param {Object} context - Context for errors

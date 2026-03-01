@@ -1,6 +1,7 @@
 // T016: Geocoding API client service for destination search
 
 import { get, APIError } from './api-client.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Search for destinations
@@ -51,7 +52,7 @@ export async function searchDestinations(query, options = {}) {
     }
 
     // Network errors or unexpected errors
-    console.error('Geocoding API error:', error);
+    logError('Geocoding API error:', error);
     throw new Error('SERVICE_UNAVAILABLE');
   }
 }
@@ -66,7 +67,7 @@ export async function checkHealth() {
     const data = await get('/geocoding/health');
     return data;
   } catch (error) {
-    console.error('Geocoding health check error:', error);
+    logError('Geocoding health check error:', error);
     return {
       status: 'unhealthy',
       error: error.message,

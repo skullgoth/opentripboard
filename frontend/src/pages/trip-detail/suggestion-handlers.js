@@ -9,6 +9,7 @@ import {
 } from '../../components/suggestion-list.js';
 import { t } from '../../utils/i18n.js';
 import { showToast } from '../../utils/toast.js';
+import { logError } from '../../utils/error-tracking.js';
 
 /**
  * Handle add suggestion button click
@@ -135,7 +136,7 @@ export async function handleSuggestionSubmit(formData, existingSuggestion) {
     closeSuggestionModal();
     await refreshSuggestions();
   } catch (error) {
-    console.error('Failed to save suggestion:', error);
+    logError('Failed to save suggestion:', error);
     showToast(t('suggestion.saveFailed'), 'error');
   }
 }
@@ -150,7 +151,7 @@ export async function handleVoteSuggestion(suggestionId, vote) {
     await suggestionState.voteSuggestion(suggestionId, vote);
     await refreshSuggestions();
   } catch (error) {
-    console.error('Failed to vote on suggestion:', error);
+    logError('Failed to vote on suggestion:', error);
     showToast(t('suggestion.voteFailed'), 'error');
   }
 }
@@ -172,7 +173,7 @@ export async function handleAcceptSuggestion(suggestionId) {
 
     showToast(t('suggestion.accepted'), 'success');
   } catch (error) {
-    console.error('Failed to accept suggestion:', error);
+    logError('Failed to accept suggestion:', error);
     showToast(t('suggestion.acceptFailed'), 'error');
   }
 }
@@ -186,7 +187,7 @@ export async function handleRejectSuggestion(suggestionId) {
     await suggestionState.rejectSuggestion(suggestionId);
     await refreshSuggestions();
   } catch (error) {
-    console.error('Failed to reject suggestion:', error);
+    logError('Failed to reject suggestion:', error);
     showToast(t('suggestion.rejectFailed'), 'error');
   }
 }

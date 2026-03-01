@@ -7,6 +7,7 @@ import { createAutocomplete } from './autocomplete.js';
 import { searchDestinations } from '../services/geocoding-api.js';
 import { getPreferences } from '../state/preferences-state.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Create trip form modal
@@ -255,7 +256,7 @@ export function attachTripFormListeners(container, onSubmit, onClose, trip = nul
     });
 
   } catch (error) {
-    console.error('Failed to initialize autocomplete:', error);
+    logError('Failed to initialize autocomplete:', error);
     // T020: Fallback to manual input if autocomplete fails
     isAutocompleteAvailable = false;
     const fallbackInput = document.createElement('input');

@@ -8,6 +8,7 @@ import { generatePassword } from '../utils/validators.js';
 import { fetchAdminSiteConfig, updateSiteConfig } from '../services/site-config.js';
 import { setSiteConfig } from '../state/site-config-state.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 let currentPage = 0;
 const PAGE_SIZE = 20;
@@ -49,7 +50,7 @@ export async function adminUsersPage() {
   try {
     await renderUsersPage(container);
   } catch (error) {
-    console.error('Failed to load users:', error);
+    logError('Failed to load users:', error);
     container.innerHTML = `
       <div class="error-page">
         <h2>${t('admin.loadFailed')}</h2>
@@ -71,7 +72,7 @@ async function renderUsersPage(container) {
     const siteConfig = await fetchAdminSiteConfig();
     registrationEnabled = siteConfig.registrationEnabled;
   } catch (error) {
-    console.error('Failed to load site config:', error);
+    logError('Failed to load site config:', error);
   }
 
   container.innerHTML = `
@@ -481,7 +482,7 @@ async function openEditModal(userId) {
     const { user } = await apiClient.get(`/admin/users/${userId}`);
     openUserModal(user);
   } catch (error) {
-    console.error('Failed to load user:', error);
+    logError('Failed to load user:', error);
     showToast(error.message || t('admin.loadUserFailed'), 'error');
   }
 }
@@ -593,7 +594,7 @@ async function handleUserFormSubmit(e) {
     closeUserModal();
     refreshUsersList();
   } catch (error) {
-    console.error('Failed to save user:', error);
+    logError('Failed to save user:', error);
     showFormError('general', error.message || t('admin.saveFailed'));
   } finally {
     submitBtn.disabled = false;
@@ -617,7 +618,7 @@ async function handleDeleteConfirm() {
     closeDeleteModal();
     refreshUsersList();
   } catch (error) {
-    console.error('Failed to delete user:', error);
+    logError('Failed to delete user:', error);
     showToast(error.message || t('admin.deleteFailed'), 'error');
   } finally {
     deleteBtn.disabled = false;
@@ -633,7 +634,7 @@ async function refreshUsersList() {
   try {
     await renderUsersPage(container);
   } catch (error) {
-    console.error('Failed to refresh users:', error);
+    logError('Failed to refresh users:', error);
     showToast(t('admin.refreshFailed'), 'error');
   }
 }
@@ -757,7 +758,7 @@ async function handleRegistrationToggle() {
     // Update site config state to reflect change in nav
     setSiteConfig({ registrationEnabled });
   } catch (error) {
-    console.error('Failed to toggle registration:', error);
+    logError('Failed to toggle registration:', error);
     showToast(t('admin.registrationToggleFailed'), 'error');
     btn.innerHTML = originalHTML;
   } finally {

@@ -11,6 +11,7 @@ import { getCategories as getCategoriesState } from '../state/categories-state.j
 import { searchDestinations } from '../services/geocoding-api.js';
 import { getPreferences } from '../state/preferences-state.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 // Module-level trip date constraints for activity editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -679,7 +680,7 @@ async function saveAllActivityChanges(card, pendingChanges, activityId, onSave) 
       // Pass silent: true to suppress individual toasts
       await onSave(activityId, fieldName, change.newValue, { silent: true });
     } catch (error) {
-      console.error(`Failed to save field ${fieldName}:`, error);
+      logError(`Failed to save field ${fieldName}:`, error);
       hasError = true;
       // Revert this field on error
       if (change.valueSpan && change.input) {
@@ -856,7 +857,7 @@ async function searchLocation(query) {
       address: item.address,
     }));
   } catch (error) {
-    console.error('Location search error:', error);
+    logError('Location search error:', error);
     return [];
   }
 }

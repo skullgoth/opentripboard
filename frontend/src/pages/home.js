@@ -11,6 +11,7 @@ import { authState } from '../state/auth-state.js';
 import { t } from '../utils/i18n.js';
 import { confirmDialog } from '../utils/confirm-dialog.js';
 import { showToast } from '../utils/toast.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Render home page
@@ -56,7 +57,7 @@ export async function homePage() {
     attachTripListListeners(container, handleTripClick, handleCreateClick, handleDeleteClick);
   } catch (error) {
     // T084: Error handling for API calls
-    console.error('[Home] Failed to load trips:', error);
+    logError('[Home] Failed to load trips:', error);
     container.innerHTML = `
       <div class="error-page">
         <h2>${t('home.failedToLoad')}</h2>
@@ -105,7 +106,7 @@ async function handleDeleteClick(tripId) {
     // Reload the home page to show updated list
     homePage();
   } catch (error) {
-    console.error('Failed to delete trip:', error);
+    logError('Failed to delete trip:', error);
     showToast(t('home.deleteFailed'), 'error');
   }
 }
@@ -193,7 +194,7 @@ async function handleTripSubmit(tripData, existingTrip) {
     homePage();
   } catch (error) {
     // T084: Error handling - propagate to form for display
-    console.error('Failed to save trip:', error);
+    logError('Failed to save trip:', error);
     throw error;
   }
 }

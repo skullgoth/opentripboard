@@ -7,6 +7,7 @@ import { confirmDialog } from '../utils/confirm-dialog.js';
 import { updateInvitationCount } from '../main.js';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 export async function invitationsPage() {
   const container = document.getElementById('page-container');
@@ -59,7 +60,7 @@ async function loadInvitations() {
     });
 
   } catch (error) {
-    console.error('Failed to load invitations:', error);
+    logError('Failed to load invitations:', error);
     invitationsContainer.innerHTML = `
       <div class="error-state">
         <div class="error-icon">⚠️</div>
@@ -184,7 +185,7 @@ async function handleAcceptInvitation(invitationId, tripId, card) {
     }, 1000);
 
   } catch (error) {
-    console.error('Failed to accept invitation:', error);
+    logError('Failed to accept invitation:', error);
     showToast(error.message || t('invitations.acceptFailed'), 'error');
 
     // Re-enable buttons
@@ -231,7 +232,7 @@ async function handleDeclineInvitation(invitationId, card) {
     }, 300);
 
   } catch (error) {
-    console.error('Failed to decline invitation:', error);
+    logError('Failed to decline invitation:', error);
     showToast(error.message || t('invitations.declineFailed'), 'error');
 
     // Re-enable buttons

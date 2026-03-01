@@ -1,6 +1,8 @@
 // CSRF token management for frontend
 // Works with the backend CSRF middleware when enabled
 
+import { logWarning } from './error-tracking.js';
+
 const CSRF_COOKIE_NAME = 'csrf_token';
 const CSRF_HEADER_NAME = 'X-CSRF-Token';
 
@@ -34,7 +36,7 @@ async function fetchToken() {
       return csrfToken;
     }
   } catch (error) {
-    console.warn('Failed to fetch CSRF token:', error);
+    logWarning('Failed to fetch CSRF token:', error);
   }
 
   // Fallback to cookie if fetch fails

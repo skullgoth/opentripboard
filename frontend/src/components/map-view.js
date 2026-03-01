@@ -6,6 +6,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError, logWarning } from '../utils/error-tracking.js';
 
 /**
  * Type-to-icon mapping for all activity and reservation types
@@ -73,7 +74,7 @@ async function loadLeaflet() {
       await import('leaflet.markercluster');
       markerClusterLoaded = true;
     } catch (error) {
-      console.warn('Failed to load marker clustering plugin:', error);
+      logWarning('Failed to load marker clustering plugin:', error);
     }
   }
 
@@ -139,7 +140,7 @@ export async function initializeMap(containerId, activities = [], options = {}) 
 
   const container = document.getElementById(containerId);
   if (!container) {
-    console.error(`Map container #${containerId} not found`);
+    logError(`Map container #${containerId} not found`);
     return null;
   }
 
@@ -205,7 +206,7 @@ export async function initializeMap(containerId, activities = [], options = {}) 
     );
 
     if (validActivities.length === 0) {
-      console.warn('No activities with coordinates to display on map');
+      logWarning('No activities with coordinates to display on map');
       return;
     }
 
@@ -412,13 +413,13 @@ export async function initializeMap(containerId, activities = [], options = {}) 
   function zoomToActivity(activityId) {
     const marker = markers.find(m => m.activityData && m.activityData.id === activityId);
     if (!marker) {
-      console.warn(`Marker not found for activity ID: ${activityId}`);
+      logWarning(`Marker not found for activity ID: ${activityId}`);
       return;
     }
 
     const activity = marker.activityData;
     if (!activity.latitude || !activity.longitude) {
-      console.warn(`Activity ${activityId} has no coordinates`);
+      logWarning(`Activity ${activityId} has no coordinates`);
       return;
     }
 

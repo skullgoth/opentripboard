@@ -7,6 +7,7 @@ import { tripState } from '../../state/trip-state.js';
 import { showToast } from '../../utils/toast.js';
 import { t } from '../../utils/i18n.js';
 import { isLodgingType } from '../../utils/default-categories.js';
+import { logError, logWarning } from '../../utils/error-tracking.js';
 
 /**
  * Handle add activity — creates inline activity directly
@@ -149,7 +150,7 @@ export async function handleAddActivity(defaultDate, afterActivityId = null) {
       }, 2000);
     }, 100);
   } catch (error) {
-    console.error('Failed to create activity:', error);
+    logError('Failed to create activity:', error);
     showToast(t('activity.createFailed'), 'error');
   }
 }
@@ -188,7 +189,7 @@ export async function handleDeleteActivity(activityId) {
     refreshTimeline();
     showToast(t('activity.deleted'), 'success');
   } catch (error) {
-    console.error('Failed to delete activity:', error);
+    logError('Failed to delete activity:', error);
     showToast(t('activity.deleteFailed'), 'error');
   }
 }
@@ -230,7 +231,7 @@ export async function handleSaveActivityField(
   } else if (fieldName === 'endTime') {
     updates.endTime = newValue ? new Date(newValue).toISOString() : null;
   } else {
-    console.warn('Unknown activity field:', fieldName);
+    logWarning('Unknown activity field:', fieldName);
     return;
   }
 
@@ -241,7 +242,7 @@ export async function handleSaveActivityField(
         showToast(t('activity.saved'), 'success');
       }
     } catch (error) {
-      console.error('Failed to save activity field:', error);
+      logError('Failed to save activity field:', error);
       if (!options.silent) {
         showToast(t('activity.saveFailed'), 'error');
       }
@@ -263,7 +264,7 @@ export async function handleTransportChange(
 ) {
   const activity = ctx.currentActivities.find((a) => a.id === activityId);
   if (!activity) {
-    console.error('Activity not found for transport change:', activityId);
+    logError('Activity not found for transport change:', activityId);
     return;
   }
 
@@ -281,7 +282,7 @@ export async function handleTransportChange(
       refreshTimeline();
     }
   } catch (error) {
-    console.error('Failed to save transport:', error);
+    logError('Failed to save transport:', error);
     if (!options.skipRefresh) {
       showToast(t('activity.saveFailed'), 'error');
     }

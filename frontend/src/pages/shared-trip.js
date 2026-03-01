@@ -1,6 +1,7 @@
 // US9: Public shared trip view page (no authentication required)
 
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
@@ -33,7 +34,7 @@ export async function sharedTripPage(token) {
     const data = await response.json();
     renderSharedTrip(container, data);
   } catch (error) {
-    console.error('Failed to load shared trip:', error);
+    logError('Failed to load shared trip:', error);
     container.innerHTML = `
       <div class="shared-trip-error">
         <div class="error-icon">🔗</div>

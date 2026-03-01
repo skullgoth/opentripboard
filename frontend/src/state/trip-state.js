@@ -1,6 +1,7 @@
 // T079: Trip state management - current trip, activities, CRUD operations
 import { apiClient } from '../utils/api-client.js';
 import { realtimeManager } from '../services/realtime-updates.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Trip state management
@@ -25,7 +26,7 @@ class TripState {
       this.notifyListeners();
       return this.trips;
     } catch (error) {
-      console.error('Failed to load trips:', error);
+      logError('Failed to load trips:', error);
       throw error;
     }
   }
@@ -43,7 +44,7 @@ class TripState {
       this.notifyListeners();
       return this.currentTrip;
     } catch (error) {
-      console.error('Failed to load trip:', error);
+      logError('Failed to load trip:', error);
       throw error;
     }
   }
@@ -64,7 +65,7 @@ class TripState {
 
       return newTrip;
     } catch (error) {
-      console.error('Failed to create trip:', error);
+      logError('Failed to create trip:', error);
       throw error;
     }
   }
@@ -94,7 +95,7 @@ class TripState {
       this.notifyListeners();
       return updatedTrip;
     } catch (error) {
-      console.error('Failed to update trip:', error);
+      logError('Failed to update trip:', error);
       throw error;
     }
   }
@@ -119,7 +120,7 @@ class TripState {
 
       this.notifyListeners();
     } catch (error) {
-      console.error('Failed to delete trip:', error);
+      logError('Failed to delete trip:', error);
       throw error;
     }
   }
@@ -154,7 +155,7 @@ class TripState {
       this.notifyListeners();
       return updatedTrip;
     } catch (error) {
-      console.error('Failed to upload cover image:', error);
+      logError('Failed to upload cover image:', error);
       throw error;
     }
   }
@@ -184,7 +185,7 @@ class TripState {
       this.notifyListeners();
       return updatedTrip;
     } catch (error) {
-      console.error('Failed to delete cover image:', error);
+      logError('Failed to delete cover image:', error);
       throw error;
     }
   }
@@ -202,7 +203,7 @@ class TripState {
       this.notifyListeners();
       return this.currentActivities;
     } catch (error) {
-      console.error('Failed to load activities:', error);
+      logError('Failed to load activities:', error);
       throw error;
     }
   }
@@ -224,7 +225,7 @@ class TripState {
 
       return newActivity;
     } catch (error) {
-      console.error('Failed to create activity:', error);
+      logError('Failed to create activity:', error);
       throw error;
     }
   }
@@ -248,7 +249,7 @@ class TripState {
       this.notifyListeners();
       return updatedActivity;
     } catch (error) {
-      console.error('Failed to update activity:', error);
+      logError('Failed to update activity:', error);
       throw error;
     }
   }
@@ -266,7 +267,7 @@ class TripState {
       this.currentActivities = this.currentActivities.filter((a) => a.id !== activityId);
       this.notifyListeners();
     } catch (error) {
-      console.error('Failed to delete activity:', error);
+      logError('Failed to delete activity:', error);
       throw error;
     }
   }
@@ -294,7 +295,7 @@ class TripState {
 
       this.notifyListeners();
     } catch (error) {
-      console.error('Failed to reorder activities:', error);
+      logError('Failed to reorder activities:', error);
       throw error;
     }
   }
@@ -322,7 +323,7 @@ class TripState {
 
       this.notifyListeners();
     } catch (error) {
-      console.error('Failed to reorder reservations:', error);
+      logError('Failed to reorder reservations:', error);
       throw error;
     }
   }
@@ -377,7 +378,7 @@ class TripState {
           currentActivities: this.currentActivities,
         });
       } catch (error) {
-        console.error('Trip listener error:', error);
+        logError('Trip listener error:', error);
       }
     });
   }

@@ -13,6 +13,7 @@ import router from '../utils/router.js';
 import { setLanguage, t } from '../utils/i18n.js';
 import { getDefaultPreferences } from '../utils/locale-detection.js';
 import { createCategoryManager } from '../components/category-manager.js';
+import { logError } from '../utils/error-tracking.js';
 
 // Category manager instance
 let categoryManagerInstance = null;
@@ -304,7 +305,7 @@ async function handleSettingChange(setting, value) {
     showToast(t('settings.preferencesSaved'), 'success');
   } catch (error) {
     // Rollback on error
-    console.error('[Settings] Failed to save preferences:', error);
+    logError('[Settings] Failed to save preferences:', error);
     setPreferences(oldPreferences);
     updateToggleUI(setting, oldPreferences[setting]);
     updatePreview(oldPreferences);

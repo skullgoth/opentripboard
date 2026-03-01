@@ -3,6 +3,7 @@ import apiClient from '../services/api-client.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../utils/i18n.js';
 import { confirmDialog } from '../utils/confirm-dialog.js';
+import { logError } from '../utils/error-tracking.js';
 
 let currentTripId = null;
 let shareTokens = [];
@@ -101,7 +102,7 @@ async function loadShareLinks() {
     shareTokens = response.shareTokens || [];
     renderShareLinks();
   } catch (error) {
-    console.error('Failed to load share links:', error);
+    logError('Failed to load share links:', error);
     shareTokens = [];
     renderShareLinks();
   }
@@ -174,7 +175,7 @@ async function handleCreateShareLink() {
     await handleCopyLink(response.shareToken.shareUrl);
     showToast(t('share.linkCreatedAndCopied'), 'success');
   } catch (error) {
-    console.error('Failed to create share link:', error);
+    logError('Failed to create share link:', error);
     showToast(error.message || t('share.createFailed'), 'error');
   }
 }
@@ -212,7 +213,7 @@ async function handleDeleteShareLink(tokenId) {
     renderShareLinks();
     showToast(t('share.linkDeleted'), 'success');
   } catch (error) {
-    console.error('Failed to delete share link:', error);
+    logError('Failed to delete share link:', error);
     showToast(error.message || t('share.deleteFailed'), 'error');
   }
 }

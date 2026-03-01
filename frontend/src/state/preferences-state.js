@@ -1,6 +1,7 @@
 // User preferences state management
 
 import { getDefaultPreferences } from '../utils/locale-detection.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * @typedef {Object} Preferences
@@ -97,7 +98,7 @@ function notifySubscribers(newPrefs, oldPrefs) {
     try {
       callback(newPrefs, oldPrefs);
     } catch (error) {
-      console.error('[PreferencesState] Subscriber error:', error);
+      logError('[PreferencesState] Subscriber error:', error);
     }
   });
 }

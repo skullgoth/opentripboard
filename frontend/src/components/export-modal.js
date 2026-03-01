@@ -2,6 +2,7 @@
 import { t } from '../utils/i18n.js';
 import { showToast } from '../utils/toast.js';
 import { getItem } from '../utils/storage.js';
+import { logError } from '../utils/error-tracking.js';
 
 let currentTrip = null;
 
@@ -153,7 +154,7 @@ async function handleExportPdf() {
 
     showToast(t('export.pdfSuccess'), 'success');
   } catch (error) {
-    console.error('Failed to export PDF:', error);
+    logError('Failed to export PDF:', error);
     showToast(t('export.pdfFailed'), 'error');
   }
 }
@@ -186,7 +187,7 @@ async function handleExportJson() {
 
     showToast(t('export.jsonSuccess'), 'success');
   } catch (error) {
-    console.error('Failed to export JSON:', error);
+    logError('Failed to export JSON:', error);
     showToast(t('export.jsonFailed'), 'error');
   }
 }

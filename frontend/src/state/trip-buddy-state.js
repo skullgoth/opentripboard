@@ -1,5 +1,6 @@
 // Trip Buddy state management - CRUD operations for trip tripBuddies
 import { apiClient } from '../utils/api-client.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Trip Buddy state management
@@ -22,7 +23,7 @@ class TripBuddyState {
       this.notifyListeners();
       return this.tripBuddies;
     } catch (error) {
-      console.error('Failed to load tripBuddies:', error);
+      logError('Failed to load tripBuddies:', error);
       throw error;
     }
   }
@@ -43,7 +44,7 @@ class TripBuddyState {
 
       return newTripBuddy;
     } catch (error) {
-      console.error('Failed to invite tripBuddy:', error);
+      logError('Failed to invite tripBuddy:', error);
       throw error;
     }
   }
@@ -67,7 +68,7 @@ class TripBuddyState {
       this.notifyListeners();
       return updatedTripBuddy;
     } catch (error) {
-      console.error('Failed to update tripBuddy:', error);
+      logError('Failed to update tripBuddy:', error);
       throw error;
     }
   }
@@ -85,7 +86,7 @@ class TripBuddyState {
       this.tripBuddies = this.tripBuddies.filter((c) => c.id !== tripBuddyId);
       this.notifyListeners();
     } catch (error) {
-      console.error('Failed to remove tripBuddy:', error);
+      logError('Failed to remove tripBuddy:', error);
       throw error;
     }
   }
@@ -110,7 +111,7 @@ class TripBuddyState {
       try {
         listener(this.tripBuddies);
       } catch (error) {
-        console.error('Error in tripBuddy state listener:', error);
+        logError('Error in tripBuddy state listener:', error);
       }
     });
   }

@@ -2,6 +2,7 @@
 // US2: Language preference support
 
 import { getPreferences } from '../state/preferences-state.js';
+import { logError, logWarning } from './error-tracking.js';
 
 /**
  * Translation store
@@ -34,7 +35,7 @@ export async function loadTranslations(lang) {
     translations[lang] = data;
     return data;
   } catch (error) {
-    console.error(`[i18n] Failed to load ${lang} translations:`, error);
+    logError(`[i18n] Failed to load ${lang} translations:`, error);
     // Fall back to English if available
     if (lang !== 'en' && translations['en']) {
       return translations['en'];
@@ -81,7 +82,7 @@ export async function initI18n(lang) {
  */
 export async function setLanguage(lang) {
   if (!SUPPORTED_LANGUAGES.find(l => l.code === lang)) {
-    console.warn(`[i18n] Unsupported language: ${lang}`);
+    logWarning(`[i18n] Unsupported language: ${lang}`);
     return;
   }
 
@@ -122,7 +123,7 @@ export function t(key, params = {}) {
   if (value === undefined) {
     // Only warn if translations are loaded (avoid noise during initialization)
     if (isLoaded) {
-      console.warn(`[i18n] Missing translation: ${key}`);
+      logWarning(`[i18n] Missing translation: ${key}`);
     }
     return key;
   }
@@ -185,7 +186,7 @@ function notifyLanguageChange(lang) {
     try {
       callback(lang);
     } catch (error) {
-      console.error('[i18n] Language change listener error:', error);
+      logError('[i18n] Language change listener error:', error);
     }
   });
 }

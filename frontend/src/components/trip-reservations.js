@@ -12,6 +12,7 @@ import { formatDate as formatDateLocale, formatTime as formatTimeLocale } from '
 import { searchDestinations } from '../services/geocoding-api.js';
 import { getPreferences } from '../state/preferences-state.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 // Module-level trip date constraints for reservation editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -635,7 +636,7 @@ async function searchNominatim(query) {
       address: item.address,
     }));
   } catch (error) {
-    console.error('Location search error:', error);
+    logError('Location search error:', error);
     return [];
   }
 }
@@ -882,7 +883,7 @@ async function saveAllPendingChanges(card, pendingChanges, reservationId, reserv
         newType = change.newValue;
       }
     } catch (error) {
-      console.error(`Failed to save field ${fieldName}:`, error);
+      logError(`Failed to save field ${fieldName}:`, error);
       hasError = true;
       // Revert this field on error
       if (change.valueSpan && change.input) {

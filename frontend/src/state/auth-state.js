@@ -2,6 +2,7 @@
 // US8: Extended with role-based access control helpers
 import { apiClient } from '../utils/api-client.js';
 import { getItem, setItem } from '../utils/storage.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Authentication state management
@@ -91,7 +92,7 @@ class AuthState {
 
       return response.user;
     } catch (error) {
-      console.error('Registration failed:', error);
+      logError('Registration failed:', error);
       throw error;
     }
   }
@@ -114,7 +115,7 @@ class AuthState {
 
       return response.user;
     } catch (error) {
-      console.error('Login failed:', error);
+      logError('Login failed:', error);
       throw error;
     }
   }
@@ -174,7 +175,7 @@ class AuthState {
       try {
         listener(this.user);
       } catch (error) {
-        console.error('Auth listener error:', error);
+        logError('Auth listener error:', error);
       }
     });
   }
@@ -194,7 +195,7 @@ class AuthState {
 
       return response.token;
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      logError('Token refresh failed:', error);
       this.logout();
       throw error;
     }

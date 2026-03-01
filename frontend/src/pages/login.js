@@ -3,6 +3,7 @@ import { authState } from '../state/auth-state.js';
 import { app } from '../main.js';
 import { t } from '../utils/i18n.js';
 import { isRegistrationEnabled } from '../state/site-config-state.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Render login page
@@ -101,7 +102,7 @@ async function handleLogin(e) {
     // Navigate to home on success
     app.router.navigate('/');
   } catch (error) {
-    console.error('Login failed:', error);
+    logError('Login failed:', error);
 
     // Show user-friendly error message
     const errorMessage = error.message && error.message.includes('Invalid email or password')

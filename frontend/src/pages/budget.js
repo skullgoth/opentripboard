@@ -15,6 +15,7 @@ import { wsClient } from '../services/websocket-client.js';
 import { realtimeManager } from '../services/realtime-updates.js';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 let currentTrip = null;
 let currentExpenses = [];
@@ -72,7 +73,7 @@ export async function budgetPage(params) {
     subscribeToExpenseUpdates();
 
   } catch (error) {
-    console.error('Failed to load budget:', error);
+    logError('Failed to load budget:', error);
     container.innerHTML = `
       <div class="error-page">
         <h2>${t('budget.loadFailed')}</h2>
@@ -370,7 +371,7 @@ async function handleExpenseSubmit(form, existingExpenseId) {
     await refreshData();
 
   } catch (error) {
-    console.error('Failed to save expense:', error);
+    logError('Failed to save expense:', error);
     showToast(error.message || t('budget.saveFailed'), 'error');
   }
 }
@@ -388,7 +389,7 @@ async function handleDeleteExpense(tripId, expenseId) {
     showToast(t('budget.expenseDeleted'), 'success');
     await refreshData();
   } catch (error) {
-    console.error('Failed to delete expense:', error);
+    logError('Failed to delete expense:', error);
     showToast(error.message || t('budget.deleteFailed'), 'error');
   }
 }
@@ -413,7 +414,7 @@ async function handleBudgetUpdate(budgetAmount, currency) {
     closeModals();
     await refreshData();
   } catch (error) {
-    console.error('Failed to update budget:', error);
+    logError('Failed to update budget:', error);
     showToast(error.message || t('budget.budgetForm.updateFailed'), 'error');
   }
 }
@@ -452,7 +453,7 @@ async function handleSettleDebt(tripId, fromId, fromName, toId, toName, amount) 
     await refreshData();
 
   } catch (error) {
-    console.error('Failed to record settlement:', error);
+    logError('Failed to record settlement:', error);
     showToast(error.message || t('balanceSheet.settleFailed'), 'error');
   }
 }
@@ -504,7 +505,7 @@ async function refreshData() {
     attachEventListeners(container, currentTrip.id, currentUser);
 
   } catch (error) {
-    console.error('Failed to refresh data:', error);
+    logError('Failed to refresh data:', error);
     showToast(t('errors.generic'), 'error');
   }
 }
@@ -521,7 +522,7 @@ function joinBudgetRoom(tripId) {
       .connect()
       .then(() => wsClient.joinTrip(tripId))
       .catch((error) => {
-        console.error('Failed to join budget room:', error);
+        logError('Failed to join budget room:', error);
       });
   }
 }

@@ -29,6 +29,7 @@ import { initI18n, setLanguage, t, onLanguageChange } from './utils/i18n.js';
 import { setSiteConfig, isRegistrationEnabled, subscribeToSiteConfig } from './state/site-config-state.js';
 import { fetchPublicSiteConfig } from './services/site-config.js';
 import { initCsrf } from './utils/csrf.js';
+import { logError, logWarning } from './utils/error-tracking.js';
 
 /**
  * Application state
@@ -105,7 +106,7 @@ async function loadUserPreferences() {
         setPreferences(browserDefaults);
         await initI18n(browserDefaults.language);
       } catch (saveError) {
-        console.warn('[Preferences] Failed to save browser defaults:', saveError);
+        logWarning('[Preferences] Failed to save browser defaults:', saveError);
         // Fall back to browser defaults locally
         setPreferences(browserDefaults);
         await initI18n(browserDefaults.language);
@@ -117,7 +118,7 @@ async function loadUserPreferences() {
       await initI18n(userPrefs.language);
     }
   } catch (error) {
-    console.error('[Preferences] Failed to load preferences:', error);
+    logError('[Preferences] Failed to load preferences:', error);
     // Keep using browser defaults if API fails
     const defaults = getDefaultPreferences();
     setPreferences(defaults);
@@ -135,7 +136,7 @@ async function loadSiteConfig() {
     const config = await fetchPublicSiteConfig();
     setSiteConfig(config);
   } catch (error) {
-    console.error('[SiteConfig] Failed to load site config:', error);
+    logError('[SiteConfig] Failed to load site config:', error);
     // Default to registration enabled on error
     setSiteConfig({ registrationEnabled: true });
   }
@@ -538,7 +539,7 @@ async function updateInvitationCount() {
       }
     }
   } catch (error) {
-    console.error('Failed to fetch invitation count:', error);
+    logError('Failed to fetch invitation count:', error);
   }
 }
 

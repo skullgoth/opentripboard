@@ -11,6 +11,7 @@ import { authState } from '../state/auth-state.js';
 import * as api from '../services/api-client.js';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 let currentTrip = null;
 let currentDocuments = [];
@@ -59,7 +60,7 @@ export async function documentsPage(params) {
     attachEventListeners(container, tripId);
 
   } catch (error) {
-    console.error('Failed to load documents:', error);
+    logError('Failed to load documents:', error);
     container.innerHTML = `
       <div class="error-page">
         <h2>${t('documents.loadFailed')}</h2>
@@ -294,7 +295,7 @@ async function handleUpload(form) {
     await refreshData();
 
   } catch (error) {
-    console.error('Upload failed:', error);
+    logError('Upload failed:', error);
     showToast(error.message || t('documents.uploadFailed'), 'error');
 
     // Reset button
@@ -317,7 +318,7 @@ async function handleEdit(form, documentId) {
     await refreshData();
 
   } catch (error) {
-    console.error('Update failed:', error);
+    logError('Update failed:', error);
     showToast(error.message || t('documents.updateFailed'), 'error');
   }
 }
@@ -330,7 +331,7 @@ async function handleDownload(tripId, documentId) {
   try {
     await api.downloadDocument(tripId, documentId, doc?.fileName);
   } catch (error) {
-    console.error('Download failed:', error);
+    logError('Download failed:', error);
     showToast(error.message || t('documents.downloadFailed'), 'error');
   }
 }
@@ -349,7 +350,7 @@ async function handleDelete(tripId, documentId) {
     await refreshData();
 
   } catch (error) {
-    console.error('Delete failed:', error);
+    logError('Delete failed:', error);
     showToast(error.message || t('documents.deleteFailed'), 'error');
   }
 }
@@ -373,7 +374,7 @@ async function refreshData() {
     attachEventListeners(container, currentTrip.id);
 
   } catch (error) {
-    console.error('Failed to refresh data:', error);
+    logError('Failed to refresh data:', error);
     showToast(t('errors.generic'), 'error');
   }
 }

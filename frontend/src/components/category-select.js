@@ -6,6 +6,7 @@ import { t } from '../utils/i18n.js';
 import { getAllCategoriesForDomain, getCategoriesByDomain } from '../state/categories-state.js';
 import { fetchTripCategories } from '../services/categories.js';
 import { buildCategoryOptions, resolveCategory } from '../utils/category-resolver.js';
+import { logError } from '../utils/error-tracking.js';
 
 // Threshold for showing search input (when total categories exceed this)
 const SEARCH_THRESHOLD = 10;
@@ -378,7 +379,7 @@ export function createCategorySelect(options) {
         renderNativeOptions();
       }
     } catch (error) {
-      console.error('Failed to load categories:', error);
+      logError('Failed to load categories:', error);
       // Fallback to defaults only
       categories = getCategoriesByDomain(domain);
       wrapper.innerHTML = '';

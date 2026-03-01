@@ -3,6 +3,7 @@
 import Sortable from 'sortablejs';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 // Track keyboard drag state
 let keyboardDragState = {
@@ -116,7 +117,7 @@ async function handleReorder(evt, onReorder, onDateChange) {
       await onReorder(allItems);
     }
   } catch (error) {
-    console.error('Failed to reorder items:', error);
+    logError('Failed to reorder items:', error);
 
     // Show error message
     showToast(t('dragDrop.reorderFailed'), 'error');

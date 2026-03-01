@@ -3,6 +3,8 @@
  * Handles light/dark theme switching with cookie persistence and OS preference detection
  */
 
+import { logError } from './error-tracking.js';
+
 const THEME_COOKIE_NAME = 'theme-preference';
 const THEME_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year in seconds
 const THEME_LIGHT = 'light';
@@ -82,7 +84,7 @@ function applyTheme(theme) {
  */
 function setTheme(theme) {
   if (theme !== THEME_LIGHT && theme !== THEME_DARK) {
-    console.error(`Invalid theme: ${theme}`);
+    logError(`Invalid theme: ${theme}`);
     return;
   }
 

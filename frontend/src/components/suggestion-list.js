@@ -6,6 +6,7 @@ import { t } from '../utils/i18n.js';
 import { createAutocomplete } from './autocomplete.js';
 import { searchDestinations } from '../services/geocoding-api.js';
 import { getPreferences } from '../state/preferences-state.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Create suggestion list component
@@ -362,7 +363,7 @@ export function attachSuggestionFormListeners(container) {
       });
 
     } catch (error) {
-      console.error('Failed to initialize location autocomplete:', error);
+      logError('Failed to initialize location autocomplete:', error);
       // Fallback to plain text input
       const fallbackInput = document.createElement('input');
       fallbackInput.type = 'text';

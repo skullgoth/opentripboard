@@ -1,5 +1,6 @@
 // T047: WebSocket client with connection, reconnection, message dispatch
 import { getItem } from '../utils/storage.js';
+import { logError } from '../utils/error-tracking.js';
 
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost/ws';
 
@@ -37,7 +38,7 @@ export class WebSocketClient {
               resolve();
             })
             .catch((error) => {
-              console.error('[WS] Authentication failed:', error);
+              logError('[WS] Authentication failed:', error);
               reject(error);
             });
         };
@@ -47,7 +48,7 @@ export class WebSocketClient {
         };
 
         this.ws.onerror = (error) => {
-          console.error('[WS] WebSocket error:', error);
+          logError('[WS] WebSocket error:', error);
         };
 
         this.ws.onclose = () => {
@@ -59,7 +60,7 @@ export class WebSocketClient {
         };
 
       } catch (error) {
-        console.error('[WS] Failed to create WebSocket:', error);
+        logError('[WS] Failed to create WebSocket:', error);
         reject(error);
       }
     });
@@ -89,7 +90,7 @@ export class WebSocketClient {
       };
 
       const errorHandler = (message) => {
-        console.error('WebSocket authentication failed:', message.message);
+        logError('WebSocket authentication failed:', message.message);
         this.off('auth:success', authHandler);
         this.off('auth:error', errorHandler);
         reject(new Error(message.message || 'Authentication failed'));
@@ -111,7 +112,7 @@ export class WebSocketClient {
    */
   reconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('Max reconnection attempts reached');
+      logError('Max reconnection attempts reached');
       return;
     }
 
@@ -127,7 +128,7 @@ export class WebSocketClient {
           }
         })
         .catch((error) => {
-          console.error('Reconnection failed:', error);
+          logError('Reconnection failed:', error);
         });
     }, delay);
   }
@@ -151,12 +152,12 @@ export class WebSocketClient {
    */
   joinTrip(tripId) {
     if (!this.isAuthenticated) {
-      console.error('[WS] Cannot join trip: not authenticated');
+      logError('[WS] Cannot join trip: not authenticated');
       return;
     }
 
     if (!this.isConnected) {
-      console.error('[WS] Cannot join trip: not connected');
+      logError('[WS] Cannot join trip: not connected');
       return;
     }
 
@@ -188,14 +189,14 @@ export class WebSocketClient {
    */
   send(message) {
     if (!this.isConnected || !this.ws) {
-      console.error('Cannot send message: not connected');
+      logError('Cannot send message: not connected');
       return;
     }
 
     try {
       this.ws.send(JSON.stringify(message));
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logError('Failed to send message:', error);
     }
   }
 
@@ -214,12 +215,12 @@ export class WebSocketClient {
         try {
           handler(message);
         } catch (error) {
-          console.error(`Error in message handler for ${message.type}:`, error);
+          logError(`Error in message handler for ${message.type}:`, error);
         }
       });
 
     } catch (error) {
-      console.error('Failed to parse WebSocket message:', error);
+      logError('Failed to parse WebSocket message:', error);
     }
   }
 

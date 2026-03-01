@@ -7,6 +7,7 @@
  */
 
 import { wsClient } from './websocket-client.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Real-time update manager
@@ -332,7 +333,7 @@ export class RealTimeUpdateManager {
       return result;
 
     } catch (error) {
-      console.error('Optimistic update failed:', error);
+      logError('Optimistic update failed:', error);
 
       // Rollback
       this.pendingOperations.delete(opKey);
@@ -379,7 +380,7 @@ export class RealTimeUpdateManager {
       }, 5000);
 
     } catch (error) {
-      console.error('Optimistic delete failed:', error);
+      logError('Optimistic delete failed:', error);
 
       // Rollback
       this.pendingOperations.delete(opKey);
@@ -430,7 +431,7 @@ export class RealTimeUpdateManager {
       return result;
 
     } catch (error) {
-      console.error('Optimistic vote failed:', error);
+      logError('Optimistic vote failed:', error);
 
       // Rollback
       this.pendingOperations.delete(opKey);
@@ -534,7 +535,7 @@ export class RealTimeUpdateManager {
       try {
         handler(event);
       } catch (error) {
-        console.error('Error in activity handler:', error);
+        logError('Error in activity handler:', error);
       }
     });
   }
@@ -548,7 +549,7 @@ export class RealTimeUpdateManager {
       try {
         handler(event);
       } catch (error) {
-        console.error('Error in suggestion handler:', error);
+        logError('Error in suggestion handler:', error);
       }
     });
   }
@@ -562,7 +563,7 @@ export class RealTimeUpdateManager {
       try {
         handler(event);
       } catch (error) {
-        console.error('Error in expense handler:', error);
+        logError('Error in expense handler:', error);
       }
     });
   }
@@ -576,7 +577,7 @@ export class RealTimeUpdateManager {
       try {
         handler(event);
       } catch (error) {
-        console.error('Error in presence handler:', error);
+        logError('Error in presence handler:', error);
       }
     });
   }

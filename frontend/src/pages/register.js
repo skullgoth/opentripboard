@@ -5,6 +5,7 @@ import { t } from '../utils/i18n.js';
 import { generatePassword } from '../utils/validators.js';
 import { showToast } from '../utils/toast.js';
 import { isRegistrationEnabled } from '../state/site-config-state.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Render register page
@@ -164,7 +165,7 @@ async function handleRegister(e) {
     // Navigate to home on success
     app.router.navigate('/');
   } catch (error) {
-    console.error('Registration failed:', error);
+    logError('Registration failed:', error);
     showFormError('general', error.message || t('auth.registrationFailed'));
 
     // Restore button state

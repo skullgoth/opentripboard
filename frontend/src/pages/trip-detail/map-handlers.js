@@ -5,6 +5,7 @@ import { initializeMap, generateGoogleMapsUrl } from '../../components/map-view.
 import { showToast } from '../../utils/toast.js';
 import { getItem } from '../../utils/storage.js';
 import { t } from '../../utils/i18n.js';
+import { logError, logWarning } from '../../utils/error-tracking.js';
 
 /**
  * Perform the actual map initialization.
@@ -20,7 +21,7 @@ async function doMapInit() {
       showRoute: true,
     });
   } catch (error) {
-    console.error('Failed to initialize map:', error);
+    logError('Failed to initialize map:', error);
     showToast(t('map.loadFailed'), 'error');
   }
 }
@@ -75,7 +76,7 @@ export function scrollToAndExpandCard(activityId) {
   );
 
   if (!card) {
-    console.warn(`Card not found for activity ID: ${activityId}`);
+    logWarning(`Card not found for activity ID: ${activityId}`);
     return;
   }
 
@@ -213,7 +214,7 @@ export async function handleOptimizeRoute() {
       optimizeBtn.innerHTML = originalContent;
     }
   } catch (error) {
-    console.error('Failed to optimize route:', error);
+    logError('Failed to optimize route:', error);
     showToast(t('map.optimizeFailed'), 'error');
 
     const optimizeBtn = document.querySelector(

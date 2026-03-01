@@ -20,6 +20,7 @@ import {
 } from '../state/categories-state.js';
 import { showToast } from '../utils/toast.js';
 import { confirmDialog } from '../utils/confirm-dialog.js';
+import { logError } from '../utils/error-tracking.js';
 
 import { ACTIVITY_GROUPS, getGroupName } from '../utils/default-categories.js';
 
@@ -519,7 +520,7 @@ export function createCategoryManager(container) {
         closeModal(modal);
         render();
       } catch (error) {
-        console.error('Failed to save category:', error);
+        logError('Failed to save category:', error);
         errorContainer.textContent = error.message || (category
           ? (t('settings.tripCategories.updateFailed') || 'Failed to update category')
           : (t('settings.tripCategories.createFailed') || 'Failed to create category'));
@@ -584,7 +585,7 @@ export function createCategoryManager(container) {
       showToast(t('settings.tripCategories.categoryDeleted') || 'Category deleted', 'success');
       render();
     } catch (error) {
-      console.error('Failed to delete category:', error);
+      logError('Failed to delete category:', error);
       showToast(t('settings.tripCategories.deleteFailed') || 'Failed to delete category', 'error');
     }
   }
@@ -603,7 +604,7 @@ export function createCategoryManager(container) {
       setCategories(data);
       render();
     } catch (error) {
-      console.error('Failed to load categories:', error);
+      logError('Failed to load categories:', error);
       showToast(t('settings.tripCategories.loadFailed') || 'Failed to load categories', 'error');
     } finally {
       isLoading = false;

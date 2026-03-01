@@ -1,5 +1,6 @@
 // Suggestion state management - CRUD operations for suggestions
 import { apiClient } from '../utils/api-client.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Suggestion state management
@@ -24,7 +25,7 @@ class SuggestionState {
       this.notifyListeners();
       return this.suggestions;
     } catch (error) {
-      console.error('Failed to load suggestions:', error);
+      logError('Failed to load suggestions:', error);
       throw error;
     }
   }
@@ -39,7 +40,7 @@ class SuggestionState {
       const suggestion = await apiClient.get(`/suggestions/${suggestionId}`);
       return suggestion;
     } catch (error) {
-      console.error('Failed to load suggestion:', error);
+      logError('Failed to load suggestion:', error);
       throw error;
     }
   }
@@ -60,7 +61,7 @@ class SuggestionState {
 
       return newSuggestion;
     } catch (error) {
-      console.error('Failed to create suggestion:', error);
+      logError('Failed to create suggestion:', error);
       throw error;
     }
   }
@@ -84,7 +85,7 @@ class SuggestionState {
       this.notifyListeners();
       return updatedSuggestion;
     } catch (error) {
-      console.error('Failed to vote on suggestion:', error);
+      logError('Failed to vote on suggestion:', error);
       throw error;
     }
   }
@@ -107,7 +108,7 @@ class SuggestionState {
       this.notifyListeners();
       return result;
     } catch (error) {
-      console.error('Failed to accept suggestion:', error);
+      logError('Failed to accept suggestion:', error);
       throw error;
     }
   }
@@ -130,7 +131,7 @@ class SuggestionState {
       this.notifyListeners();
       return updatedSuggestion;
     } catch (error) {
-      console.error('Failed to reject suggestion:', error);
+      logError('Failed to reject suggestion:', error);
       throw error;
     }
   }
@@ -154,7 +155,7 @@ class SuggestionState {
       this.notifyListeners();
       return updatedSuggestion;
     } catch (error) {
-      console.error('Failed to update suggestion:', error);
+      logError('Failed to update suggestion:', error);
       throw error;
     }
   }
@@ -172,7 +173,7 @@ class SuggestionState {
       this.suggestions = this.suggestions.filter((s) => s.id !== suggestionId);
       this.notifyListeners();
     } catch (error) {
-      console.error('Failed to delete suggestion:', error);
+      logError('Failed to delete suggestion:', error);
       throw error;
     }
   }
@@ -187,7 +188,7 @@ class SuggestionState {
       const stats = await apiClient.get(`/trips/${tripId}/suggestions/stats`);
       return stats;
     } catch (error) {
-      console.error('Failed to load suggestion stats:', error);
+      logError('Failed to load suggestion stats:', error);
       throw error;
     }
   }
@@ -212,7 +213,7 @@ class SuggestionState {
       try {
         listener(this.suggestions);
       } catch (error) {
-        console.error('Error in suggestion state listener:', error);
+        logError('Error in suggestion state listener:', error);
       }
     });
   }

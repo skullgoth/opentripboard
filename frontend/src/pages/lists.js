@@ -11,6 +11,7 @@ import { authState } from '../state/auth-state.js';
 import * as api from '../services/api-client.js';
 import { t } from '../utils/i18n.js';
 import { escapeHtml } from '../utils/html.js';
+import { logError } from '../utils/error-tracking.js';
 
 let currentTrip = null;
 let currentLists = [];
@@ -58,7 +59,7 @@ export async function listsPage(params) {
     attachListManagerListeners(container, tripId);
 
   } catch (error) {
-    console.error('Failed to load lists:', error);
+    logError('Failed to load lists:', error);
     container.innerHTML = `
       <div class="error-page">
         <h2>${t('lists.loadFailed')}</h2>
@@ -289,7 +290,7 @@ async function openList(listId, container) {
     renderSingleListView(container);
     attachSingleListListeners(container, currentTrip.id);
   } catch (error) {
-    console.error('Failed to load list:', error);
+    logError('Failed to load list:', error);
     showToast(t('lists.loadListFailed'), 'error');
   }
 }
@@ -437,7 +438,7 @@ async function handleListFormSubmit(form, existingListId) {
     await refreshLists();
 
   } catch (error) {
-    console.error('Failed to save list:', error);
+    logError('Failed to save list:', error);
     showToast(error.message || t('lists.saveFailed'), 'error');
   }
 }
@@ -462,7 +463,7 @@ async function handleCreateFromTemplate(templateId) {
     await refreshLists();
 
   } catch (error) {
-    console.error('Failed to create from template:', error);
+    logError('Failed to create from template:', error);
     showToast(error.message || t('lists.saveFailed'), 'error');
   }
 }
@@ -493,7 +494,7 @@ async function handleDeleteList(tripId, listId, container) {
     }
 
   } catch (error) {
-    console.error('Failed to delete list:', error);
+    logError('Failed to delete list:', error);
     showToast(error.message || t('lists.deleteFailed'), 'error');
   }
 }
@@ -507,7 +508,7 @@ async function handleAddItem(tripId, listId, text, container) {
     renderSingleListView(container);
     attachSingleListListeners(container, tripId);
   } catch (error) {
-    console.error('Failed to add item:', error);
+    logError('Failed to add item:', error);
     showToast(error.message || t('lists.addItemFailed'), 'error');
   }
 }
@@ -529,7 +530,7 @@ async function handleToggleItem(tripId, listId, itemId, checked, container) {
     }
     updateProgressDisplay(container);
   } catch (error) {
-    console.error('Failed to toggle item:', error);
+    logError('Failed to toggle item:', error);
     showToast(error.message || t('lists.updateItemFailed'), 'error');
     // Re-render to restore state
     renderSingleListView(container);
@@ -546,7 +547,7 @@ async function handleDeleteItem(tripId, listId, itemId, container) {
     renderSingleListView(container);
     attachSingleListListeners(container, tripId);
   } catch (error) {
-    console.error('Failed to delete item:', error);
+    logError('Failed to delete item:', error);
     showToast(error.message || t('lists.deleteItemFailed'), 'error');
   }
 }
@@ -567,7 +568,7 @@ async function handleClearChecked(tripId, listId, container) {
     attachSingleListListeners(container, tripId);
     showToast(t('lists.checkedCleared'), 'success');
   } catch (error) {
-    console.error('Failed to clear checked items:', error);
+    logError('Failed to clear checked items:', error);
     showToast(error.message || t('errors.generic'), 'error');
   }
 }
@@ -583,7 +584,7 @@ async function handleUncheckAll(tripId, listId, container) {
     renderSingleListView(container);
     attachSingleListListeners(container, tripId);
   } catch (error) {
-    console.error('Failed to uncheck items:', error);
+    logError('Failed to uncheck items:', error);
     showToast(error.message || t('errors.generic'), 'error');
   }
 }
@@ -599,7 +600,7 @@ async function handleCheckAll(tripId, listId, container) {
     renderSingleListView(container);
     attachSingleListListeners(container, tripId);
   } catch (error) {
-    console.error('Failed to check items:', error);
+    logError('Failed to check items:', error);
     showToast(error.message || t('errors.generic'), 'error');
   }
 }
@@ -667,7 +668,7 @@ async function handleReorderItems(evt) {
   try {
     currentList = await api.reorderListItems(currentTrip.id, currentList.id, newOrder);
   } catch (error) {
-    console.error('Failed to reorder items:', error);
+    logError('Failed to reorder items:', error);
     showToast(error.message || t('lists.reorderFailed'), 'error');
     // Re-render to restore original order
     const container = document.getElementById('page-container');
@@ -698,7 +699,7 @@ async function refreshLists() {
     }
 
   } catch (error) {
-    console.error('Failed to refresh lists:', error);
+    logError('Failed to refresh lists:', error);
     showToast(t('errors.generic'), 'error');
   }
 }

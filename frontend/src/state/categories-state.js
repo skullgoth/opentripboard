@@ -2,6 +2,7 @@
 
 import { getDefaultCategories } from '../utils/default-categories.js';
 import { onLanguageChange, isI18nLoaded } from '../utils/i18n.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * @typedef {Object} Category
@@ -288,7 +289,7 @@ function notifySubscribers(newState, oldState) {
     try {
       callback(newState, oldState);
     } catch (error) {
-      console.error('[CategoriesState] Subscriber error:', error);
+      logError('[CategoriesState] Subscriber error:', error);
     }
   });
 }

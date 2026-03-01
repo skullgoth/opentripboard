@@ -76,6 +76,7 @@ import { tripBuddyState } from '../../state/trip-buddy-state.js';
 import { authState } from '../../state/auth-state.js';
 import { formatDate } from '../../utils/date-helpers.js';
 import { t } from '../../utils/i18n.js';
+import { logError } from '../../utils/error-tracking.js';
 
 /**
  * Render trip detail page
@@ -433,7 +434,7 @@ export async function tripDetailPage(params) {
     subscribeToSuggestionUpdates();
     subscribeToActivityUpdates();
   } catch (error) {
-    console.error('Failed to load trip:', error);
+    logError('Failed to load trip:', error);
     container.innerHTML = `
       <div class="error-page">
         <h2>${t('trip.loadFailed')}</h2>

@@ -1,5 +1,7 @@
 // T048: Local storage utility with JSON serialization
 
+import { logError } from './error-tracking.js';
+
 /**
  * Get an item from localStorage
  * @param {string} key - Storage key
@@ -15,7 +17,7 @@ export function getItem(key) {
 
     return JSON.parse(item);
   } catch (error) {
-    console.error(`Failed to get item from localStorage: ${key}`, error);
+    logError(`Failed to get item from localStorage: ${key}`, error);
     return null;
   }
 }
@@ -33,7 +35,7 @@ export function setItem(key, value) {
       localStorage.setItem(key, JSON.stringify(value));
     }
   } catch (error) {
-    console.error(`Failed to set item in localStorage: ${key}`, error);
+    logError(`Failed to set item in localStorage: ${key}`, error);
   }
 }
 
@@ -45,7 +47,7 @@ export function removeItem(key) {
   try {
     localStorage.removeItem(key);
   } catch (error) {
-    console.error(`Failed to remove item from localStorage: ${key}`, error);
+    logError(`Failed to remove item from localStorage: ${key}`, error);
   }
 }
 
@@ -56,7 +58,7 @@ export function clear() {
   try {
     localStorage.clear();
   } catch (error) {
-    console.error('Failed to clear localStorage', error);
+    logError('Failed to clear localStorage', error);
   }
 }
 
@@ -77,7 +79,7 @@ export function getAllKeys() {
   try {
     return Object.keys(localStorage);
   } catch (error) {
-    console.error('Failed to get keys from localStorage', error);
+    logError('Failed to get keys from localStorage', error);
     return [];
   }
 }

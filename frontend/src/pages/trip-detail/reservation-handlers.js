@@ -7,6 +7,7 @@ import { tripState } from '../../state/trip-state.js';
 import { showToast } from '../../utils/toast.js';
 import { t } from '../../utils/i18n.js';
 import { confirmDialog } from '../../utils/confirm-dialog.js';
+import { logError } from '../../utils/error-tracking.js';
 
 /**
  * Handle add reservation — creates inline reservation directly
@@ -49,7 +50,7 @@ export async function handleAddReservation(defaultType) {
       }, 2000);
     }, 100);
   } catch (error) {
-    console.error('Failed to create activity:', error);
+    logError('Failed to create activity:', error);
   }
 }
 
@@ -193,7 +194,7 @@ export async function handleSaveReservationField(
         showToast(t('activity.saved'), 'success');
       }
     } catch (error) {
-      console.error('Failed to save reservation field:', error);
+      logError('Failed to save reservation field:', error);
       if (!options.silent) {
         showToast(t('activity.saveFailed'), 'error');
       }
@@ -234,7 +235,7 @@ export async function handleDeleteReservation(reservationId) {
     refreshTimeline();
     showToast(t('reservation.deleted'), 'success');
   } catch (error) {
-    console.error('Failed to delete reservation:', error);
+    logError('Failed to delete reservation:', error);
     showToast(t('reservation.deleteFailed'), 'error');
   }
 }
@@ -256,7 +257,7 @@ export async function handleReorder(items) {
       await tripState.reorderActivities(ctx.currentTrip.id, activities);
     }
   } catch (error) {
-    console.error('Failed to reorder items:', error);
+    logError('Failed to reorder items:', error);
     throw error;
   }
 }
@@ -270,7 +271,7 @@ export async function handleActivityDateChange(activityId, newDate) {
   try {
     const activity = ctx.currentActivities.find((a) => a.id === activityId);
     if (!activity) {
-      console.error('Activity not found:', activityId);
+      logError('Activity not found:', activityId);
       return;
     }
 
@@ -309,7 +310,7 @@ export async function handleActivityDateChange(activityId, newDate) {
 
     showToast(t('activity.movedToDate'), 'success');
   } catch (error) {
-    console.error('Failed to update activity date:', error);
+    logError('Failed to update activity date:', error);
     showToast(t('activity.moveFailed'), 'error');
     throw error;
   }

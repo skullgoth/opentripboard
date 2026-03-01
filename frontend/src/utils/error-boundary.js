@@ -1,7 +1,7 @@
 // T300: Global error boundary for frontend error handling
 // T303: Integrated with error tracking (Sentry)
 
-import { captureError, initErrorTracking } from './error-tracking.js';
+import { captureError, initErrorTracking, logError } from './error-tracking.js';
 import { t } from './i18n.js';
 
 /**
@@ -55,7 +55,7 @@ function handleError(errorInfo) {
   };
 
   // Log to console
-  console.error('Global error caught:', lastError);
+  logError('Global error caught:', lastError);
 
   // Send to error tracking service (Sentry or fallback)
   captureError(errorInfo.error || new Error(errorInfo.message), {
@@ -71,7 +71,7 @@ function handleError(errorInfo) {
     try {
       errorCallback(lastError);
     } catch (callbackError) {
-      console.error('Error in error callback:', callbackError);
+      logError('Error in error callback:', callbackError);
     }
   }
 
@@ -202,7 +202,7 @@ export function tryCatch(fn, fallback = null) {
   try {
     return fn();
   } catch (error) {
-    console.error('tryCatch error:', error);
+    logError('tryCatch error:', error);
     return fallback;
   }
 }

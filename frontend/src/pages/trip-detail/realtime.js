@@ -9,6 +9,7 @@ import {
 import { wsClient } from '../../services/websocket-client.js';
 import { realtimeManager } from '../../services/realtime-updates.js';
 import { isAutoCalculatingRoutes } from '../../components/unified-timeline.js';
+import { logError } from '../../utils/error-tracking.js';
 
 /**
  * Join trip room for real-time updates
@@ -22,7 +23,7 @@ export function joinTripRoom(tripId) {
       .connect()
       .then(() => wsClient.joinTrip(tripId))
       .catch((error) => {
-        console.error('Failed to join trip room:', error);
+        logError('Failed to join trip room:', error);
       });
   }
 }

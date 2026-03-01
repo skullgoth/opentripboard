@@ -1,5 +1,7 @@
 // Site configuration state management
 
+import { logError } from '../utils/error-tracking.js';
+
 /**
  * @typedef {Object} SiteConfig
  * @property {boolean} registrationEnabled - Whether registration is allowed
@@ -63,7 +65,7 @@ function notifySubscribers() {
     try {
       callback(state.config);
     } catch (error) {
-      console.error('[SiteConfigState] Subscriber error:', error);
+      logError('[SiteConfigState] Subscriber error:', error);
     }
   });
 }

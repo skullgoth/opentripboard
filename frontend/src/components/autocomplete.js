@@ -1,4 +1,5 @@
 // T015: Reusable Autocomplete component with debouncing, keyboard navigation, and ARIA attributes
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Create an autocomplete component
@@ -227,7 +228,7 @@ export function createAutocomplete(options) {
 
       updateDropdown();
     } catch (error) {
-      console.error('Autocomplete search error:', error);
+      logError('Autocomplete search error:', error);
       isLoading = false;
       hasError = true;
       results = [];

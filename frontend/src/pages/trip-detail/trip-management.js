@@ -25,6 +25,7 @@ import {
   generateGoogleMapsUrl as generateRouteMapsUrl,
   openInGoogleMaps,
 } from '../../utils/google-maps.js';
+import { logError } from '../../utils/error-tracking.js';
 
 // --- Trip modal ---
 
@@ -92,7 +93,7 @@ export async function handleTripSubmit(tripData, existingTrip) {
       await ctx.reloadPage(existingTrip.id);
     }
   } catch (error) {
-    console.error('Failed to update trip:', error);
+    logError('Failed to update trip:', error);
     throw error;
   }
 }
@@ -138,7 +139,7 @@ export async function handleCoverImageUpload(file) {
       await ctx.reloadPage(ctx.currentTrip.id);
     }
   } catch (error) {
-    console.error('Failed to upload cover image:', error);
+    logError('Failed to upload cover image:', error);
     showToast(t('cover.uploadFailed'), 'error');
 
     const coverImage = document.querySelector('.trip-cover-image');
@@ -169,7 +170,7 @@ export async function handleDeleteCoverImage() {
       await ctx.reloadPage(ctx.currentTrip.id);
     }
   } catch (error) {
-    console.error('Failed to delete cover image:', error);
+    logError('Failed to delete cover image:', error);
     showToast(t('cover.deleteFailed'), 'error');
 
     const coverImage = document.querySelector('.trip-cover-image');
@@ -195,7 +196,7 @@ export async function handleDeleteTrip(trip) {
     await tripState.deleteTrip(trip.id);
     app.router.navigate('/');
   } catch (error) {
-    console.error('Failed to delete trip:', error);
+    logError('Failed to delete trip:', error);
     showToast(t('trip.deleteFailed'), 'error');
   }
 }
@@ -325,7 +326,7 @@ export async function handleInviteTripBuddy(formData) {
 
     showToast(t('tripBuddy.inviteSuccess'), 'success');
   } catch (error) {
-    console.error('Failed to invite trip buddy:', error);
+    logError('Failed to invite trip buddy:', error);
     showToast(error.message || t('tripBuddy.inviteFailed'), 'error');
   }
 }
@@ -344,7 +345,7 @@ export async function handleRemoveTripBuddy(tripBuddyId) {
 
     showToast(t('tripBuddy.removeSuccess'), 'success');
   } catch (error) {
-    console.error('Failed to remove trip buddy:', error);
+    logError('Failed to remove trip buddy:', error);
     showToast(error.message || t('tripBuddy.removeFailed'), 'error');
   }
 }
@@ -390,6 +391,6 @@ export async function refreshTripBuddies() {
       tripBuddiesInline.innerHTML = tripBuddyCompactHtml;
     }
   } catch (error) {
-    console.error('Failed to refresh tripBuddies:', error);
+    logError('Failed to refresh tripBuddies:', error);
   }
 }

@@ -3,6 +3,7 @@
 import { getTransportIcon, getTransportModes } from './transport-icons.js';
 import { getRoute, formatDuration, formatDistance, TRANSPORT_MODES } from '../services/routing-api.js';
 import { t } from '../utils/i18n.js';
+import { logError } from '../utils/error-tracking.js';
 
 // Default transport mode when auto-calculating
 export const DEFAULT_TRANSPORT_MODE = 'drive';
@@ -131,7 +132,7 @@ export function attachTransportEditorListeners(editorElement, options) {
           onTransportChange(activityId, transportData);
         }
       } catch (error) {
-        console.error('Failed to calculate route:', error);
+        logError('Failed to calculate route:', error);
         // Still save the mode, just without cached data
         if (onTransportChange) {
           onTransportChange(activityId, { mode, cachedDistance: null, cachedDuration: null, routeGeometry: null, cachedAt: new Date().toISOString() });
@@ -290,7 +291,7 @@ export async function calculateRoute(fromCoords, toCoords, mode = DEFAULT_TRANSP
       cachedAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('Failed to calculate route:', error);
+    logError('Failed to calculate route:', error);
     return {
       mode,
       cachedDistance: null,

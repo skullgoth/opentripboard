@@ -2,6 +2,7 @@
 
 import { get, APIError } from './api-client.js';
 import { t } from '../utils/i18n.js';
+import { logError } from '../utils/error-tracking.js';
 
 /**
  * Valid transport modes
@@ -60,7 +61,7 @@ export async function getRoute(fromLat, fromLng, toLat, toLng, mode) {
       }
     }
 
-    console.error('Routing API error:', error);
+    logError('Routing API error:', error);
     throw new Error('SERVICE_UNAVAILABLE');
   }
 }
@@ -74,7 +75,7 @@ export async function checkHealth() {
     const data = await get('/routing/health');
     return data;
   } catch (error) {
-    console.error('Routing health check error:', error);
+    logError('Routing health check error:', error);
     return {
       status: 'unhealthy',
       error: error.message,

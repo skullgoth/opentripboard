@@ -21,6 +21,7 @@ import { getTransportIcon } from './transport-icons.js';
 import { formatDuration, formatDistance } from '../services/routing-api.js';
 import { escapeHtml } from '../utils/html.js';
 import { createTimelineFilter } from './timeline-filter.js';
+import { logError } from '../utils/error-tracking.js';
 
 // Module-level trip date constraints for activity editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -1462,7 +1463,7 @@ async function autoCalculateRoutes(container, onTransportChange) {
         if (errMsg.includes('Too many requests') || errMsg.includes('SERVICE_UNAVAILABLE')) {
           hitRateLimit = true;
         } else {
-          console.error('Failed to calculate route:', result.reason);
+          logError('Failed to calculate route:', result.reason);
         }
         // Remove loading state so failed routes don't trigger infinite retries
         const failedRoute = batch[results.indexOf(result)];
@@ -1852,7 +1853,7 @@ async function saveAllActivityChanges(card, pendingChanges, activityId, activity
         newType = change.newValue;
       }
     } catch (error) {
-      console.error(`Failed to save field ${fieldName}:`, error);
+      logError(`Failed to save field ${fieldName}:`, error);
       hasError = true;
       revertChange(change);
     }
@@ -2097,7 +2098,7 @@ function attachLocationFieldListeners(field, pendingChanges) {
         }
       } catch (error) {
         searchIndicator.style.display = 'none';
-        console.error('Location search error:', error);
+        logError('Location search error:', error);
       }
 
       trackLocationChange();
