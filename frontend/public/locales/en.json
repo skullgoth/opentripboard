@@ -148,6 +148,13 @@
     "saveFailed": "Failed to save changes",
     "movedToDate": "Activity moved to new date",
     "moveFailed": "Failed to move activity",
+    "notesAttachments": "Notes & Attachments",
+    "addNote": "Add a note...",
+    "editNote": "Edit note",
+    "deleteNote": "Delete note",
+    "attachFile": "Attach file",
+    "noNotesYet": "No notes yet",
+    "noAttachmentsYet": "No attachments yet",
     "types": {
       "market": "Market",
       "monument": "Monument",

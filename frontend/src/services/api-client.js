@@ -745,6 +745,54 @@ export async function getActivityDocuments(tripId, activityId) {
   return get(`/trips/${tripId}/activities/${activityId}/documents`);
 }
 
+// ============================================
+// Activity Notes API Methods
+// ============================================
+
+/**
+ * Get notes for an activity
+ * @param {string} tripId - Trip ID
+ * @param {string} activityId - Activity ID
+ * @returns {Promise<Array>} Array of notes
+ */
+export async function getActivityNotes(tripId, activityId) {
+  return get(`/trips/${tripId}/activities/${activityId}/notes`);
+}
+
+/**
+ * Create a note on an activity
+ * @param {string} tripId - Trip ID
+ * @param {string} activityId - Activity ID
+ * @param {string} content - Note content
+ * @returns {Promise<Object>} Created note
+ */
+export async function createActivityNote(tripId, activityId, content) {
+  return post(`/trips/${tripId}/activities/${activityId}/notes`, { content });
+}
+
+/**
+ * Update an activity note
+ * @param {string} tripId - Trip ID
+ * @param {string} activityId - Activity ID
+ * @param {string} noteId - Note ID
+ * @param {string} content - New content
+ * @returns {Promise<Object>} Updated note
+ */
+export async function updateActivityNote(tripId, activityId, noteId, content) {
+  return patch(`/trips/${tripId}/activities/${activityId}/notes/${noteId}`, { content });
+}
+
+/**
+ * Delete an activity note
+ * @param {string} tripId - Trip ID
+ * @param {string} activityId - Activity ID
+ * @param {string} noteId - Note ID
+ * @returns {Promise<void>}
+ */
+export async function deleteActivityNote(tripId, activityId, noteId) {
+  return del(`/trips/${tripId}/activities/${activityId}/notes/${noteId}`);
+}
+
 // Export the request function for custom requests
 export { request };
 
@@ -785,6 +833,10 @@ const apiClient = {
   getExpenseBalances,
   settleExpenseSplit,
   unsettleExpenseSplit,
+  getActivityNotes,
+  createActivityNote,
+  updateActivityNote,
+  deleteActivityNote,
   request,
   APIError
 };

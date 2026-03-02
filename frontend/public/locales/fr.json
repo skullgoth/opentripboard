@@ -148,6 +148,13 @@
     "saveFailed": "Échec de l'enregistrement",
     "movedToDate": "Activité déplacée à la nouvelle date",
     "moveFailed": "Échec du déplacement de l'activité",
+    "notesAttachments": "Notes & Pièces jointes",
+    "addNote": "Ajouter une note...",
+    "editNote": "Modifier la note",
+    "deleteNote": "Supprimer la note",
+    "attachFile": "Joindre un fichier",
+    "noNotesYet": "Aucune note pour le moment",
+    "noAttachmentsYet": "Aucune pièce jointe pour le moment",
     "types": {
       "market": "Marché",
       "monument": "Monument",

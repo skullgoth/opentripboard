@@ -9,6 +9,8 @@ import {
 import { wsClient } from '../../services/websocket-client.js';
 import { realtimeManager } from '../../services/realtime-updates.js';
 import { isAutoCalculatingRoutes } from '../../components/unified-timeline.js';
+import { refreshActivityNotes } from '../../components/activity-notes-attachments.js';
+import { authState } from '../../state/auth-state.js';
 import { logError } from '../../utils/error-tracking.js';
 
 /**
@@ -251,4 +253,29 @@ function handleSuggestionDeletedEvent(event) {
     (s) => s.id !== event.suggestionId
   );
   updateSuggestionList();
+}
+
+// --- Activity Notes real-time events ---
+
+/**
+ * Subscribe to activity note updates from WebSocket
+ */
+export function subscribeToActivityNoteUpdates() {
+  wsClient.on('activity:note-added', handleActivityNoteEvent);
+  wsClient.on('activity:note-updated', handleActivityNoteEvent);
+  wsClient.on('activity:note-deleted', handleActivityNoteEvent);
+}
+
+function handleActivityNoteEvent(message) {
+  const { activityId, tripId } = message;
+  if (!activityId || !ctx.currentTrip) return;
+
+  // Find the activity card in the DOM and refresh its notes section
+  const card = document.querySelector(
+    `.activity-card[data-activity-id="${activityId}"]`
+  );
+  if (card) {
+    const currentUser = authState.getCurrentUser();
+    refreshActivityNotes(card, tripId, activityId, currentUser?.id);
+  }
 }

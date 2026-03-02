@@ -73,6 +73,9 @@ export function refreshTimeline() {
         onRejectSuggestion: ctx.handlers.handleRejectSuggestion,
         onTransportChange: ctx.handlers.handleTransportChange,
         onActivityClick: ctx.handlers.handleActivityClick,
+        onUploadFile: ctx.handlers.handleUploadFileForActivity,
+        tripId: ctx.currentTrip.id,
+        currentUserId: currentUser?.id,
       });
 
       // Reinitialize drag and drop

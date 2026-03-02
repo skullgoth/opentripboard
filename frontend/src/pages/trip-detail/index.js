@@ -30,6 +30,7 @@ import {
   subscribeToPresenceUpdates,
   subscribeToActivityUpdates,
   subscribeToSuggestionUpdates,
+  subscribeToActivityNoteUpdates,
 } from './realtime.js';
 import {
   handleAddSuggestion,
@@ -77,6 +78,43 @@ import { authState } from '../../state/auth-state.js';
 import { formatDate } from '../../utils/date-helpers.js';
 import { t } from '../../utils/i18n.js';
 import { logError } from '../../utils/error-tracking.js';
+import { uploadDocument } from '../../services/api-client.js';
+import { showToast } from '../../utils/toast.js';
+
+/**
+ * Handle file upload from activity card inline attach button
+ * Opens a file picker and uploads the selected file linked to the activity
+ * @param {string} activityId - Activity ID to link the file to
+ */
+function handleUploadFileForActivity(activityId) {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp,.gif';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    document.body.removeChild(fileInput);
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('category', 'other');
+    formData.append('activityId', activityId);
+    formData.append('file', file);
+
+    try {
+      await uploadDocument(ctx.currentTrip.id, formData);
+      showToast(t('documents.uploadSuccess'), 'success');
+      refreshTimeline();
+    } catch (error) {
+      logError('Failed to upload file for activity:', error);
+      showToast(error.message || t('documents.uploadFailed'), 'error');
+    }
+  });
+
+  fileInput.click();
+}
 
 /**
  * Render trip detail page
@@ -285,6 +323,7 @@ export async function tripDetailPage(params) {
       handleActivityClick,
       handleReorder,
       handleActivityDateChange,
+      handleUploadFileForActivity,
     };
 
     // Attach date sidebar listeners
@@ -310,6 +349,9 @@ export async function tripDetailPage(params) {
         onRejectSuggestion: handleRejectSuggestion,
         onTransportChange: handleTransportChange,
         onActivityClick: handleActivityClick,
+        onUploadFile: handleUploadFileForActivity,
+        tripId: trip.id,
+        currentUserId: currentUser?.id,
       });
     }
 
@@ -433,6 +475,7 @@ export async function tripDetailPage(params) {
     subscribeToPresenceUpdates();
     subscribeToSuggestionUpdates();
     subscribeToActivityUpdates();
+    subscribeToActivityNoteUpdates();
   } catch (error) {
     logError('Failed to load trip:', error);
     container.innerHTML = `

@@ -198,6 +198,7 @@ async function createServer() {
       await instance.register(import('./routes/expenses.js'));
       await instance.register(import('./routes/lists.js'));
       await instance.register(import('./routes/documents.js'));
+      await instance.register(import('./routes/activity-notes.js'));
       await instance.register(import('./routes/users.js'));
       await instance.register(import('./routes/export.js'));
       await instance.register(import('./routes/preferences.js'));

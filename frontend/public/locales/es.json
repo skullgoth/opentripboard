@@ -148,6 +148,13 @@
     "saveFailed": "Error al guardar los cambios",
     "movedToDate": "Actividad movida a la nueva fecha",
     "moveFailed": "Error al mover la actividad",
+    "notesAttachments": "Notas y Archivos adjuntos",
+    "addNote": "Añadir una nota...",
+    "editNote": "Editar nota",
+    "deleteNote": "Eliminar nota",
+    "attachFile": "Adjuntar archivo",
+    "noNotesYet": "Sin notas aún",
+    "noAttachmentsYet": "Sin archivos adjuntos aún",
     "types": {
       "market": "Mercado",
       "monument": "Monumento",

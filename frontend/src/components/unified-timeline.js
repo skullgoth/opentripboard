@@ -22,6 +22,7 @@ import { formatDuration, formatDistance } from '../services/routing-api.js';
 import { escapeHtml } from '../utils/html.js';
 import { createTimelineFilter } from './timeline-filter.js';
 import { logError } from '../utils/error-tracking.js';
+import { createNotesAttachmentsSection, attachNotesAttachmentsListeners } from './activity-notes-attachments.js';
 
 // Module-level trip date constraints for activity editing
 let tripDateConstraints = { minDate: '', maxDate: '' };
@@ -533,6 +534,7 @@ function createActivityTimelineCard(activity) {
           <div class="activity-fields">
             ${fields}
           </div>
+          ${createNotesAttachmentsSection()}
         </div>
       </div>
     </div>
@@ -1070,6 +1072,9 @@ export function attachUnifiedTimelineListeners(container, callbacks) {
     onRejectSuggestion,
     onTransportChange,
     onActivityClick,
+    onUploadFile,
+    tripId,
+    currentUserId,
     // Legacy callback aliases for backwards compatibility
     onDeleteReservation,
     onSaveReservation,
@@ -1106,6 +1111,12 @@ export function attachUnifiedTimelineListeners(container, callbacks) {
 
   container.querySelectorAll('.activity-card[data-item-type="activity"]').forEach((card) => {
     setupActivityCard(card, container, saveCallback, deleteCallback, typeChangeCallback, onActivityClick);
+
+    // Attach notes & attachments listeners
+    if (tripId) {
+      const activityId = card.dataset.activityId;
+      attachNotesAttachmentsListeners(card, tripId, activityId, currentUserId, { onUploadFile });
+    }
   });
 
   // Handle suggestion cards
