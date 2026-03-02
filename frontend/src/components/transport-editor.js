@@ -3,6 +3,7 @@
 import { getTransportIcon, getTransportModes } from './transport-icons.js';
 import { getRoute, formatDuration, formatDistance, TRANSPORT_MODES } from '../services/routing-api.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 import { logError } from '../utils/error-tracking.js';
 
 // Default transport mode when auto-calculating
@@ -249,7 +250,7 @@ export function createTransportBox(options) {
 
   // Cross-day label
   const crossDayLabel = isCrossDay && fromLocationName
-    ? `<span class="transport-line-from">${t('transport.from', 'from')} ${fromLocationName}</span>`
+    ? `<span class="transport-line-from">${t('transport.from', 'from')} ${escapeHtml(fromLocationName)}</span>`
     : '';
 
   return `

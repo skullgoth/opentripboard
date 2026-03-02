@@ -3,6 +3,7 @@
 // T057: Added searchable dropdown for users with many categories
 
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 import { getAllCategoriesForDomain, getCategoriesByDomain } from '../state/categories-state.js';
 import { fetchTripCategories } from '../services/categories.js';
 import { buildCategoryOptions, resolveCategory } from '../utils/category-resolver.js';
@@ -178,7 +179,7 @@ export function createCategorySelect(options) {
       const info = getDisplayInfo();
       triggerBtn.innerHTML = `
         <span class="category-select-trigger-icon">${info.icon}</span>
-        <span class="category-select-trigger-text">${info.name}</span>
+        <span class="category-select-trigger-text">${escapeHtml(info.name)}</span>
         <span class="category-select-trigger-arrow">▼</span>
       `;
     } else {
@@ -551,7 +552,7 @@ export function createCategorySelect(options) {
 
     optionEl.innerHTML = `
       <span class="category-select-option-icon">${opt.icon}</span>
-      <span class="category-select-option-label">${opt.label}</span>
+      <span class="category-select-option-label">${escapeHtml(opt.label)}</span>
       ${opt.value === currentValue ? '<span class="category-select-option-check">✓</span>' : ''}
     `;
 
@@ -703,13 +704,13 @@ export function createCategorySelectHTML(options) {
   // Render options
   optionGroups.forEach((item) => {
     if (item.groupLabel) {
-      html += `<optgroup label="${item.groupLabel}">`;
+      html += `<optgroup label="${escapeHtml(item.groupLabel)}">`;
       item.options.forEach((opt) => {
-        html += `<option value="${opt.value}" ${opt.value === value ? 'selected' : ''} data-icon="${opt.icon}">${opt.icon} ${opt.label}</option>`;
+        html += `<option value="${escapeHtml(opt.value)}" ${opt.value === value ? 'selected' : ''} data-icon="${opt.icon}">${opt.icon} ${escapeHtml(opt.label)}</option>`;
       });
       html += `</optgroup>`;
     } else {
-      html += `<option value="${item.value}" ${item.value === value ? 'selected' : ''} data-icon="${item.icon}">${item.icon} ${item.label}</option>`;
+      html += `<option value="${escapeHtml(item.value)}" ${item.value === value ? 'selected' : ''} data-icon="${item.icon}">${item.icon} ${escapeHtml(item.label)}</option>`;
     }
   });
 

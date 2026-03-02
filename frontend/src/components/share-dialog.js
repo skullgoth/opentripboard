@@ -2,6 +2,7 @@
 import apiClient from '../services/api-client.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../utils/i18n.js';
+import { escapeHtml } from '../utils/html.js';
 import { confirmDialog } from '../utils/confirm-dialog.js';
 import { logError } from '../utils/error-tracking.js';
 
@@ -126,8 +127,8 @@ function renderShareLinks() {
     <div class="share-link-item" data-token-id="${token.id}">
       <div class="share-link-info">
         <div class="share-link-url">
-          <input type="text" readonly value="${token.shareUrl}" class="form-input share-url-input" />
-          <button type="button" class="btn btn-sm btn-secondary copy-btn" data-url="${token.shareUrl}" aria-label="${t('share.copyToClipboard')}">
+          <input type="text" readonly value="${escapeHtml(token.shareUrl)}" class="form-input share-url-input" />
+          <button type="button" class="btn btn-sm btn-secondary copy-btn" data-url="${escapeHtml(token.shareUrl)}" aria-label="${t('share.copyToClipboard')}">
             ${t('share.copy')}
           </button>
         </div>
