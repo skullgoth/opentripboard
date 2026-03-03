@@ -30,6 +30,17 @@ import { setSiteConfig, isRegistrationEnabled, subscribeToSiteConfig } from './s
 import { fetchPublicSiteConfig } from './services/site-config.js';
 import { initCsrf } from './utils/csrf.js';
 import { logError, logWarning } from './utils/error-tracking.js';
+import { wsClient } from './services/websocket-client.js';
+import {
+  addNotification,
+  fetchUnreadCount,
+  clearNotificationState,
+} from './state/notification-state.js';
+import {
+  createNotificationBell,
+  attachNotificationBellListeners,
+  updateBadgeCount,
+} from './components/notification-bell.js';
 
 /**
  * Application state
@@ -143,6 +154,33 @@ async function loadSiteConfig() {
 }
 
 /**
+ * Connect WebSocket globally for notifications
+ */
+function connectGlobalWebSocket() {
+  if (wsClient.isConnected && wsClient.isAuthenticated) {
+    // Already connected, just fetch unread count
+    fetchUnreadCount();
+    return;
+  }
+
+  wsClient
+    .connect()
+    .then(() => {
+      // Register notification handler
+      wsClient.on('notification:new', (message) => {
+        if (message.notification) {
+          addNotification(message.notification);
+        }
+      });
+      // Fetch initial unread count
+      fetchUnreadCount();
+    })
+    .catch((error) => {
+      logError('[WS] Failed to connect globally:', error);
+    });
+}
+
+/**
  * Initialize application (T080: Auth state integration)
  */
 async function initApp() {
@@ -180,6 +218,8 @@ async function initApp() {
     // Clear trip state when user logs out
     if (!user) {
       tripState.clear();
+      clearNotificationState();
+      wsClient.disconnect();
       // Reset preferences to browser defaults when logged out
       const defaults = getDefaultPreferences();
       setPreferences(defaults);
@@ -188,12 +228,16 @@ async function initApp() {
     } else {
       // Load user preferences when logged in
       await loadUserPreferences();
+      // Connect WebSocket globally for notifications
+      connectGlobalWebSocket();
     }
   });
 
   // Load preferences on initial load
   if (authState.isAuthenticated()) {
     await loadUserPreferences();
+    // Connect WebSocket globally for notifications
+    connectGlobalWebSocket();
   } else {
     // Apply browser locale defaults for unauthenticated users
     const defaults = getDefaultPreferences();
@@ -299,6 +343,7 @@ function updateUIForAuthState(isAuthenticated) {
 
     userMenu.innerHTML = `
       <div class="user-info">
+        ${createNotificationBell(0)}
         <button id="theme-toggle" class="btn btn-sm btn-secondary" aria-label="${t('nav.toggleTheme')}">
           <span id="theme-icon">🌙</span>
         </button>
@@ -351,6 +396,9 @@ function updateUIForAuthState(isAuthenticated) {
         </div>
       </div>
     `;
+
+    // Setup notification bell
+    attachNotificationBellListeners();
 
     // Setup avatar menu dropdown
     setupAvatarMenu();
@@ -509,7 +557,11 @@ function handleLogout() {
   // Use auth state to handle logout
   authState.logout();
 
-  // Close websocket if open
+  // Disconnect global WebSocket
+  wsClient.disconnect();
+  clearNotificationState();
+
+  // Close legacy websocket if open
   if (app.websocket) {
     app.websocket.close();
     app.websocket = null;

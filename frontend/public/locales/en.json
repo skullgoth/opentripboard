@@ -1003,6 +1003,16 @@
     "noResults": "No activities match your filters.",
     "resultCount": "{{count}} of {{total}} activities"
   },
+  "notifications": {
+    "bell": "Notifications",
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications yet",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  },
   "dragDrop": {
     "reorderFailed": "Failed to save new order. Please try again.",
     "keyboardHint": "Press Space to pick up, arrow keys to move, Space to drop",

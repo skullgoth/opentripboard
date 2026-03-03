@@ -1003,6 +1003,16 @@
     "noResults": "Ninguna actividad coincide con tus filtros.",
     "resultCount": "{{count}} de {{total}} actividades"
   },
+  "notifications": {
+    "bell": "Notificaciones",
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "empty": "Sin notificaciones",
+    "justNow": "ahora mismo",
+    "minutesAgo": "hace {{count}}m",
+    "hoursAgo": "hace {{count}}h",
+    "daysAgo": "hace {{count}}d"
+  },
   "dragDrop": {
     "reorderFailed": "Error al guardar el nuevo orden. Por favor, inténtelo de nuevo.",
     "keyboardHint": "Presione Espacio para tomar, teclas de flecha para mover, Espacio para soltar",

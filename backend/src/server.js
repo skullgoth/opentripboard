@@ -206,6 +206,8 @@ async function createServer() {
       await instance.register(import('./routes/site-config.js'));
       // Categories routes for custom trip categories
       await instance.register(import('./routes/categories.js'));
+      // Notification routes for in-app notifications
+      await instance.register(import('./routes/notifications.js'));
       // T012: Geocoding routes for destination autocomplete
       await instance.register(import('./routes/geocoding.js'), {
         prefix: '/geocoding',

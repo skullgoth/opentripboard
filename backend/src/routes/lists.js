@@ -2,9 +2,12 @@
 import * as listQueries from '../db/queries/lists.js';
 import * as tripQueries from '../db/queries/trips.js';
 import * as tripBuddyQueries from '../db/queries/trip-buddies.js';
+import * as userQueries from '../db/queries/users.js';
 import { authenticate } from '../middleware/auth.js';
 import { validateBody, validateParams } from '../middleware/validation.js';
 import { asyncHandler, NotFoundError, AuthorizationError } from '../middleware/error-handler.js';
+import { broadcastToRoom } from '../websocket/rooms.js';
+import { notifyListItemCompleted } from '../services/notification-service.js';
 
 const tripIdSchema = {
   type: 'object',
@@ -564,6 +567,33 @@ export default async function listRoutes(fastify) {
         request.params.itemId,
         request.body.checked
       );
+
+      // Broadcast list item toggle to trip room
+      broadcastToRoom(request.params.tripId, {
+        type: 'list:item-toggled',
+        tripId: request.params.tripId,
+        listId: request.params.listId,
+        itemId: request.params.itemId,
+        checked: request.body.checked,
+        userId: request.user.userId,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Notify when item is checked (completed)
+      if (request.body.checked) {
+        const item = list.items.find((i) => i.id === request.params.itemId);
+        if (item) {
+          const actor = await userQueries.findById(request.user.userId);
+          notifyListItemCompleted(
+            request.params.tripId,
+            request.user.userId,
+            actor.full_name,
+            item.text,
+            request.params.listId
+          );
+        }
+      }
+
       reply.send(list);
     })
   );

@@ -2,9 +2,12 @@
  * T099: TripBuddy routes - invite, accept, manage trip-buddies
  */
 import * as tripBuddyService from '../services/trip-buddy-service.js';
+import * as userQueries from '../db/queries/users.js';
+import * as tripQueries from '../db/queries/trips.js';
 import { authenticate } from '../middleware/auth.js';
 import { validateBody, validateParams } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/error-handler.js';
+import { notifyBuddyJoined } from '../services/notification-service.js';
 
 // Schemas for validation
 
@@ -130,6 +133,14 @@ export default async function tripBuddyRoutes(fastify) {
         request.params.id,
         request.user.userId
       );
+
+      // Send notifications to trip participants
+      const actor = await userQueries.findById(request.user.userId);
+      const trip = await tripQueries.findById(tripBuddy.tripId);
+      if (actor && trip) {
+        notifyBuddyJoined(tripBuddy.tripId, request.user.userId, actor.full_name, trip.name);
+      }
+
       reply.send(tripBuddy);
     })
   );

@@ -2,10 +2,12 @@
  * T100: Suggestion routes - create, vote, accept, reject suggestions
  */
 import * as suggestionService from '../services/suggestion-service.js';
+import * as userQueries from '../db/queries/users.js';
 import { authenticate } from '../middleware/auth.js';
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/error-handler.js';
 import { broadcastToRoom } from '../websocket/rooms.js';
+import { notifySuggestionVoted } from '../services/notification-service.js';
 
 // Schemas for validation
 
@@ -252,6 +254,17 @@ export default async function suggestionRoutes(fastify) {
           userId: request.user.userId,
           timestamp: new Date().toISOString(),
         }
+      );
+
+      // Send notifications to trip participants
+      const actor = await userQueries.findById(request.user.userId);
+      notifySuggestionVoted(
+        suggestion.tripId,
+        request.user.userId,
+        actor.full_name,
+        suggestion.title,
+        request.body.vote,
+        suggestion.id
       );
 
       reply.send(suggestion);

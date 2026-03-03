@@ -9,6 +9,49 @@ import logger from '../utils/logger.js';
 // Map of tripId -> Set of { userId, socket }
 const rooms = new Map();
 
+// Global user -> socket registry (for notifications regardless of room)
+const globalUsers = new Map();
+
+/**
+ * Register a user's socket globally (called on WS auth success)
+ * @param {string} userId - User ID
+ * @param {WebSocket} socket - WebSocket connection
+ */
+export function registerUser(userId, socket) {
+  globalUsers.set(userId, socket);
+  logger.debug('User registered globally', { userId });
+}
+
+/**
+ * Unregister a user's global socket (called on WS close)
+ * @param {string} userId - User ID
+ */
+export function unregisterUser(userId) {
+  globalUsers.delete(userId);
+  logger.debug('User unregistered globally', { userId });
+}
+
+/**
+ * Send a message to a user regardless of what room they're in
+ * @param {string} userId - Target user ID
+ * @param {Object} message - Message to send
+ * @returns {boolean} True if message was sent
+ */
+export function sendToUserGlobal(userId, message) {
+  const socket = globalUsers.get(userId);
+  if (!socket || socket.readyState !== 1) {
+    return false;
+  }
+
+  try {
+    socket.send(JSON.stringify(message));
+    return true;
+  } catch (error) {
+    logger.error('Failed to send global message to user', { userId, error });
+    return false;
+  }
+}
+
 /**
  * Join a room
  * @param {string} tripId - Trip ID (room identifier)

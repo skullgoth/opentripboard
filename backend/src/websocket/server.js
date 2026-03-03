@@ -1,6 +1,6 @@
 // T038: WebSocket server setup with authentication handshake
 import { verifyToken } from '../utils/jwt.js';
-import { joinRoom, leaveRoom, broadcastToRoom } from './rooms.js';
+import { joinRoom, leaveRoom, broadcastToRoom, registerUser, unregisterUser } from './rooms.js';
 import { handleMessage } from './handler.js';
 import logger from '../utils/logger.js';
 
@@ -62,6 +62,9 @@ export default async function websocketRoutes(fastify) {
             authenticated = true;
             userId = decoded.userId;
             clearTimeout(authTimeout);
+
+            // Register user globally for notifications
+            registerUser(userId, socket);
 
             logger.info('WebSocket authenticated', { userId });
 
@@ -183,6 +186,11 @@ export default async function websocketRoutes(fastify) {
     socket.on('close', () => {
       logger.debug('WebSocket close event', { userId: userId || 'unauthenticated' });
       clearTimeout(authTimeout);
+
+      // Unregister user from global registry
+      if (userId) {
+        unregisterUser(userId);
+      }
 
       if (currentRoomId && userId) {
         logger.debug('WebSocket leaving room', { roomId: currentRoomId, userId });

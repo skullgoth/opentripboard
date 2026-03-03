@@ -1,9 +1,11 @@
 // T213 & T214: Expense routes - CRUD and summary endpoints
 import * as expenseService from '../services/expense-service.js';
+import * as userQueries from '../db/queries/users.js';
 import { authenticate } from '../middleware/auth.js';
 import { validateBody, validateParams } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/error-handler.js';
 import { broadcastToRoom } from '../websocket/rooms.js';
+import { notifyExpenseCreated } from '../services/notification-service.js';
 
 const tripIdSchema = {
   type: 'object',
@@ -191,6 +193,10 @@ export default async function expenseRoutes(fastify) {
         userId: request.user.userId,
         timestamp: new Date().toISOString(),
       });
+
+      // Send notifications to trip participants
+      const actor = await userQueries.findById(request.user.userId);
+      notifyExpenseCreated(tripId, request.user.userId, actor.full_name, expense);
 
       reply.code(201).send(expense);
     })

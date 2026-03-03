@@ -21,12 +21,16 @@ export function joinTripRoom(tripId) {
   if (wsClient.isConnected && wsClient.isAuthenticated) {
     wsClient.joinTrip(tripId);
   } else {
-    wsClient
-      .connect()
-      .then(() => wsClient.joinTrip(tripId))
-      .catch((error) => {
-        logError('Failed to join trip room:', error);
-      });
+    // WebSocket should already be connected globally from main.js,
+    // but retry connection if not yet ready
+    const retryJoin = () => {
+      if (wsClient.isConnected && wsClient.isAuthenticated) {
+        wsClient.joinTrip(tripId);
+      } else {
+        setTimeout(retryJoin, 500);
+      }
+    };
+    setTimeout(retryJoin, 500);
   }
 }
 
