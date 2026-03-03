@@ -180,6 +180,29 @@ export async function handleDeleteCoverImage() {
   }
 }
 
+// --- Trip clone ---
+
+/**
+ * Handle clone trip button click
+ * @param {Object} trip - Trip to clone
+ */
+export async function handleCloneTrip(trip) {
+  if (!trip) return;
+
+  const confirmed = await confirmDialog({ message: t('trip.confirmClone') });
+  if (!confirmed) return;
+
+  try {
+    const { cloneTrip } = await import('../../services/api-client.js');
+    const newTrip = await cloneTrip(trip.id);
+    showToast(t('trip.cloneSuccess'), 'success');
+    app.router.navigate(`/trips/${newTrip.id}`);
+  } catch (error) {
+    logError('Failed to clone trip:', error);
+    showToast(error.message || t('trip.cloneFailed'), 'error');
+  }
+}
+
 // --- Trip delete ---
 
 /**

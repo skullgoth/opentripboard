@@ -123,7 +123,11 @@
     "deleteFailed": "Failed to delete trip. Please try again.",
     "deleteSuccess": "Trip deleted successfully",
     "exportPdfFailed": "Failed to export PDF. Please try again.",
-    "noActivitiesForMap": "No activities with locations to show on map"
+    "noActivitiesForMap": "No activities with locations to show on map",
+    "cloneTrip": "Clone Trip",
+    "confirmClone": "Create a copy of this trip with activities, lists, and budget? Dates will be adjusted to start from today. Expenses, documents, and buddies will not be copied.",
+    "cloneSuccess": "Trip cloned successfully",
+    "cloneFailed": "Failed to clone trip"
   },
   "activityCard": {
     "editActivity": "Edit activity",

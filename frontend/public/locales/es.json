@@ -123,7 +123,11 @@
     "deleteFailed": "Error al eliminar el viaje. Por favor, inténtalo de nuevo.",
     "deleteSuccess": "Viaje eliminado con éxito",
     "exportPdfFailed": "Error al exportar PDF. Por favor, inténtalo de nuevo.",
-    "noActivitiesForMap": "No hay actividades con ubicaciones para mostrar en el mapa"
+    "noActivitiesForMap": "No hay actividades con ubicaciones para mostrar en el mapa",
+    "cloneTrip": "Duplicar Viaje",
+    "confirmClone": "¿Crear una copia de este viaje con actividades, listas y presupuesto? Las fechas se ajustarán a partir de hoy. Los gastos, documentos y compañeros no se copiarán.",
+    "cloneSuccess": "Viaje duplicado con éxito",
+    "cloneFailed": "Error al duplicar el viaje"
   },
   "activityCard": {
     "editActivity": "Editar actividad",

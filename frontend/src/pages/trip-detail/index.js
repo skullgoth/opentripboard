@@ -41,6 +41,7 @@ import {
 import {
   showTripModal,
   handleDeleteTrip,
+  handleCloneTrip,
   handleEditCoverImage,
   handleCoverImageUpload,
   handleDeleteCoverImage,
@@ -226,6 +227,10 @@ export async function tripDetailPage(params) {
               <button class="dropdown-item" data-action="share-trip" title="${t('trip.shareTrip')}" aria-label="${t('trip.shareTrip')}">
                 <span class="dropdown-item-icon">🔗</span>
                 <span>${t('trip.shareTrip')}</span>
+              </button>
+              <button class="dropdown-item" data-action="clone-trip" title="${t('trip.cloneTrip')}">
+                <span class="dropdown-item-icon">📋</span>
+                <span>${t('trip.cloneTrip')}</span>
               </button>
               <div class="dropdown-divider"></div>
               <button class="dropdown-item" data-action="edit-trip" ${!isOwner ? 'disabled' : ''} title="${!isOwner ? t('trip.ownerOnly', { action: t('trip.editTrip').toLowerCase() }) : t('trip.editTrip')}" data-testid="edit-trip-menu-item">
@@ -423,6 +428,13 @@ export async function tripDetailPage(params) {
       .querySelector('[data-action="share-trip"]')
       ?.addEventListener('click', () => {
         showShareDialog(trip.id);
+      });
+
+    // Attach clone trip button
+    container
+      .querySelector('[data-action="clone-trip"]')
+      ?.addEventListener('click', () => {
+        handleCloneTrip(trip);
       });
 
     // Attach cover image edit button

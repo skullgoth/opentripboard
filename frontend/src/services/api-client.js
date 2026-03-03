@@ -209,6 +209,19 @@ export async function upload(endpoint, formData) {
 }
 
 // ============================================
+// Trip Clone API Method
+// ============================================
+
+/**
+ * Clone a trip with activities and lists
+ * @param {string} tripId - Trip ID to clone
+ * @returns {Promise<Object>} Cloned trip data
+ */
+export async function cloneTrip(tripId) {
+  return post(`/trips/${tripId}/clone`);
+}
+
+// ============================================
 // Trip buddy API Methods (T113)
 // ============================================
 
@@ -820,6 +833,7 @@ const apiClient = {
   patch,
   del,
   upload,
+  cloneTrip,
   inviteTripBuddy,
   getTripBuddies,
   getPendingInvitations,

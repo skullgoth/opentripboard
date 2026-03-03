@@ -1,5 +1,7 @@
 // T065: TripService - trip CRUD and validation
 import * as tripQueries from '../db/queries/trips.js';
+import * as activityQueries from '../db/queries/activities.js';
+import * as listQueries from '../db/queries/lists.js';
 import { checkAccess } from './trip-buddy-service.js';
 import { query } from '../db/connection.js';
 import { ValidationError, NotFoundError, AuthorizationError } from '../middleware/error-handler.js';
@@ -293,6 +295,117 @@ export async function getStatistics(tripId, userId) {
 
   const stats = await tripQueries.getStatistics(tripId);
   return stats;
+}
+
+/**
+ * Clone a trip with activities and lists
+ * Deep-copies the trip structure with dates shifted to start from today.
+ * Excludes: expenses, documents, buddies, suggestions, activity notes.
+ * @param {string} tripId - Source trip ID
+ * @param {string} userId - Requesting user ID (becomes owner of the clone)
+ * @returns {Promise<Object>} Cloned trip
+ */
+export async function cloneTrip(tripId, userId) {
+  // Verify access to source trip
+  const hasAccess = await checkAccess(tripId, userId);
+  if (!hasAccess) {
+    throw new AuthorizationError('You do not have access to this trip');
+  }
+
+  const sourceTripRaw = await tripQueries.findById(tripId);
+  if (!sourceTripRaw) {
+    throw new NotFoundError('Trip');
+  }
+
+  // Calculate date offset (in milliseconds)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let offsetMs = 0;
+  if (sourceTripRaw.start_date) {
+    const originalStart = new Date(sourceTripRaw.start_date);
+    originalStart.setHours(0, 0, 0, 0);
+    offsetMs = today.getTime() - originalStart.getTime();
+  }
+
+  // Shift a date/timestamp by the offset
+  const shiftDate = (dateValue) => {
+    if (!dateValue) return null;
+    const d = new Date(dateValue);
+    return new Date(d.getTime() + offsetMs).toISOString();
+  };
+
+  // Create the cloned trip
+  const newTripData = {
+    ownerId: userId,
+    name: `Copy of ${sourceTripRaw.name}`,
+    destination: sourceTripRaw.destination,
+    startDate: sourceTripRaw.start_date ? shiftDate(sourceTripRaw.start_date) : null,
+    endDate: sourceTripRaw.end_date ? shiftDate(sourceTripRaw.end_date) : null,
+    budget: sourceTripRaw.budget ? parseFloat(sourceTripRaw.budget) : null,
+    currency: sourceTripRaw.currency,
+    timezone: sourceTripRaw.timezone,
+    description: sourceTripRaw.description,
+    destinationData: sourceTripRaw.destination_data || null,
+    coverImageAttribution: sourceTripRaw.cover_image_attribution || null,
+  };
+
+  const newTripRaw = await tripQueries.create(newTripData);
+
+  // Copy cover_image_url from source trip
+  if (sourceTripRaw.cover_image_url) {
+    await query(
+      `UPDATE trips SET cover_image_url = $1, updated_at = NOW() WHERE id = $2`,
+      [sourceTripRaw.cover_image_url, newTripRaw.id]
+    );
+    newTripRaw.cover_image_url = sourceTripRaw.cover_image_url;
+  }
+
+  // Clone activities
+  const sourceActivities = await activityQueries.findByTripId(tripId);
+  for (const activity of sourceActivities) {
+    // Clean metadata: remove notes and attachments
+    let cleanMetadata = activity.metadata ? { ...activity.metadata } : {};
+    delete cleanMetadata.notes;
+    delete cleanMetadata.attachments;
+
+    await activityQueries.create({
+      tripId: newTripRaw.id,
+      type: activity.type,
+      title: activity.title,
+      description: activity.description,
+      location: activity.location,
+      latitude: activity.latitude,
+      longitude: activity.longitude,
+      startTime: shiftDate(activity.start_time),
+      endTime: shiftDate(activity.end_time),
+      orderIndex: activity.order_index,
+      metadata: cleanMetadata,
+      createdBy: userId,
+    });
+  }
+
+  // Clone lists
+  const sourceLists = await listQueries.findByTripId(tripId);
+  for (const list of sourceLists) {
+    // Uncheck all items
+    const uncheckedItems = (list.items || []).map((item) => ({
+      text: item.text,
+      checked: false,
+      order: item.order,
+    }));
+
+    await listQueries.create({
+      tripId: newTripRaw.id,
+      type: list.type,
+      title: list.title,
+      items: uncheckedItems,
+      createdBy: userId,
+    });
+  }
+
+  // Re-fetch the new trip with joined owner data
+  const newTrip = await tripQueries.findById(newTripRaw.id);
+  return formatTrip(newTrip);
 }
 
 /**

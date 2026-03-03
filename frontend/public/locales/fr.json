@@ -123,7 +123,11 @@
     "deleteFailed": "Échec de la suppression du voyage. Veuillez réessayer.",
     "deleteSuccess": "Voyage supprimé avec succès",
     "exportPdfFailed": "Échec de l'exportation PDF. Veuillez réessayer.",
-    "noActivitiesForMap": "Aucune activité avec des coordonnées à afficher sur la carte"
+    "noActivitiesForMap": "Aucune activité avec des coordonnées à afficher sur la carte",
+    "cloneTrip": "Dupliquer le Voyage",
+    "confirmClone": "Créer une copie de ce voyage avec les activités, listes et budget ? Les dates seront ajustées à partir d'aujourd'hui. Les dépenses, documents et compagnons ne seront pas copiés.",
+    "cloneSuccess": "Voyage dupliqué avec succès",
+    "cloneFailed": "Échec de la duplication du voyage"
   },
   "activityCard": {
     "editActivity": "Modifier l'activité",

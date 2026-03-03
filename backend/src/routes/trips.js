@@ -228,6 +228,21 @@ export default async function tripRoutes(fastify) {
   );
 
   /**
+   * Clone a trip
+   */
+  fastify.post(
+    '/trips/:id/clone',
+    {
+      schema: { tags: ['trips'], params: tripIdSchema },
+      preHandler: [authenticate, validateParams(tripIdSchema)],
+    },
+    asyncHandler(async (request, reply) => {
+      const trip = await tripService.cloneTrip(request.params.id, request.user.userId);
+      reply.code(201).send(trip);
+    })
+  );
+
+  /**
    * Get trip statistics
    */
   fastify.get(
