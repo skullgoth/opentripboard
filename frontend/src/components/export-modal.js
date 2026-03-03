@@ -3,15 +3,19 @@ import { t } from '../utils/i18n.js';
 import { showToast } from '../utils/toast.js';
 import { getItem } from '../utils/storage.js';
 import { logError } from '../utils/error-tracking.js';
+import { generateICS } from '../utils/ical-export.js';
 
 let currentTrip = null;
+let currentActivities = [];
 
 /**
  * Show export modal for a trip
  * @param {Object} trip - Trip object
+ * @param {Array} [activities=[]] - Array of activity objects
  */
-export function showExportModal(trip) {
+export function showExportModal(trip, activities = []) {
   currentTrip = trip;
+  currentActivities = activities;
 
   // Create modal if it doesn't exist
   let modal = document.getElementById('export-modal');
@@ -71,6 +75,14 @@ function createExportModal() {
                   <span class="export-format-desc">${t('export.jsonDescription')}</span>
                 </span>
               </label>
+              <label class="export-format-option">
+                <input type="radio" name="export-format" value="ics" />
+                <span class="export-format-label">
+                  <span class="export-format-icon">📅</span>
+                  <span class="export-format-name">${t('export.ics')}</span>
+                  <span class="export-format-desc">${t('export.icsDescription')}</span>
+                </span>
+              </label>
             </div>
           </div>
         </form>
@@ -119,6 +131,8 @@ async function handleExport() {
       await handleExportPdf();
     } else if (format === 'json') {
       await handleExportJson();
+    } else if (format === 'ics') {
+      await handleExportIcs();
     }
     hideExportModal();
   } finally {
@@ -189,5 +203,39 @@ async function handleExportJson() {
   } catch (error) {
     logError('Failed to export JSON:', error);
     showToast(t('export.jsonFailed'), 'error');
+  }
+}
+
+/**
+ * Handle iCalendar (.ics) export
+ */
+async function handleExportIcs() {
+  try {
+    const activitiesWithDates = currentActivities.filter(
+      (a) => a.startTime || a.start_time
+    );
+
+    if (activitiesWithDates.length === 0) {
+      showToast(t('export.icsNoActivities'), 'warning');
+      return;
+    }
+
+    showToast(t('export.generatingIcs'), 'info');
+
+    const icsContent = generateICS(currentTrip, currentActivities);
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentTrip.name.replace(/[^a-z0-9]/gi, '_')}_calendar.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    showToast(t('export.icsSuccess'), 'success');
+  } catch (error) {
+    logError('Failed to export ICS:', error);
+    showToast(t('export.icsFailed'), 'error');
   }
 }

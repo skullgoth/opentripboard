@@ -317,7 +317,13 @@
     "pdfSuccess": "PDF downloaded successfully!",
     "jsonSuccess": "JSON downloaded successfully!",
     "pdfFailed": "Failed to export PDF. Please try again.",
-    "jsonFailed": "Failed to export JSON. Please try again."
+    "jsonFailed": "Failed to export JSON. Please try again.",
+    "ics": "Calendar (.ics)",
+    "icsDescription": "Import into Google Calendar, Outlook, or Apple Calendar",
+    "generatingIcs": "Generating calendar file...",
+    "icsSuccess": "Calendar file downloaded successfully!",
+    "icsFailed": "Failed to export calendar file. Please try again.",
+    "icsNoActivities": "No activities with dates to export"
   },
   "cover": {
     "confirmRemove": "Are you sure you want to remove the cover image?",

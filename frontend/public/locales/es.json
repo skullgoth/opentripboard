@@ -380,7 +380,13 @@
     "pdfSuccess": "¡PDF descargado con éxito!",
     "jsonSuccess": "¡JSON descargado con éxito!",
     "pdfFailed": "Error al exportar PDF. Por favor, inténtalo de nuevo.",
-    "jsonFailed": "Error al exportar JSON. Por favor, inténtalo de nuevo."
+    "jsonFailed": "Error al exportar JSON. Por favor, inténtalo de nuevo.",
+    "ics": "Calendario (.ics)",
+    "icsDescription": "Importar en Google Calendar, Outlook o Apple Calendar",
+    "generatingIcs": "Generando archivo de calendario...",
+    "icsSuccess": "¡Archivo de calendario descargado con éxito!",
+    "icsFailed": "Error al exportar el calendario. Por favor, inténtalo de nuevo.",
+    "icsNoActivities": "No hay actividades con fechas para exportar"
   },
   "cover": {
     "confirmRemove": "¿Estás seguro de que quieres eliminar la imagen de portada?",

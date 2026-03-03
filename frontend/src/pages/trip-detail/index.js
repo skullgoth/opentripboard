@@ -402,7 +402,7 @@ export async function tripDetailPage(params) {
     container
       .querySelector('[data-action="export-trip"]')
       ?.addEventListener('click', () => {
-        showExportModal(trip);
+        showExportModal(trip, ctx.currentActivities);
       });
 
     // Attach export to Google Maps button

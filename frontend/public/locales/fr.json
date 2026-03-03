@@ -317,7 +317,13 @@
     "pdfSuccess": "PDF téléchargé avec succès !",
     "jsonSuccess": "JSON téléchargé avec succès !",
     "pdfFailed": "Échec de l'exportation PDF. Veuillez réessayer.",
-    "jsonFailed": "Échec de l'exportation JSON. Veuillez réessayer."
+    "jsonFailed": "Échec de l'exportation JSON. Veuillez réessayer.",
+    "ics": "Calendrier (.ics)",
+    "icsDescription": "Importer dans Google Agenda, Outlook ou Apple Calendar",
+    "generatingIcs": "Génération du fichier calendrier...",
+    "icsSuccess": "Fichier calendrier téléchargé avec succès !",
+    "icsFailed": "Échec de l'exportation du calendrier. Veuillez réessayer.",
+    "icsNoActivities": "Aucune activité avec des dates à exporter"
   },
   "cover": {
     "confirmRemove": "Êtes-vous sûr de vouloir supprimer l'image de couverture ?",
