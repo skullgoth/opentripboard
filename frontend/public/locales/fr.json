@@ -1019,6 +1019,35 @@
     "hoursAgo": "il y a {{count}}h",
     "daysAgo": "il y a {{count}}j"
   },
+  "weather": {
+    "title": "Prévisions météo",
+    "titleClimate": "Météo habituelle",
+    "climateHint": "Basé sur les moyennes climatiques",
+    "typical": "habituel",
+    "unavailable": "Prévisions météo indisponibles",
+    "conditions": {
+      "clearSky": "Ciel dégagé",
+      "mainlyClear": "Plutôt dégagé",
+      "partlyCloudy": "Partiellement nuageux",
+      "overcast": "Couvert",
+      "fog": "Brouillard",
+      "drizzle": "Bruine",
+      "freezingDrizzle": "Bruine verglaçante",
+      "rain": "Pluie",
+      "heavyRain": "Forte pluie",
+      "freezingRain": "Pluie verglaçante",
+      "snow": "Neige",
+      "heavySnow": "Forte neige",
+      "snowGrains": "Grains de neige",
+      "showers": "Averses",
+      "heavyShowers": "Fortes averses",
+      "snowShowers": "Averses de neige",
+      "heavySnowShowers": "Fortes averses de neige",
+      "thunderstorm": "Orage",
+      "thunderstormHail": "Orage avec grêle",
+      "unknown": "Inconnu"
+    }
+  },
   "dragDrop": {
     "reorderFailed": "Échec de l'enregistrement du nouvel ordre. Veuillez réessayer.",
     "keyboardHint": "Appuyez sur Espace pour saisir, touches fléchées pour déplacer, Espace pour déposer",

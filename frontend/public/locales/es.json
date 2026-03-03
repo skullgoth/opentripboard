@@ -1019,6 +1019,35 @@
     "hoursAgo": "hace {{count}}h",
     "daysAgo": "hace {{count}}d"
   },
+  "weather": {
+    "title": "Pronóstico del tiempo",
+    "titleClimate": "Clima típico",
+    "climateHint": "Basado en promedios climáticos",
+    "typical": "típico",
+    "unavailable": "Pronóstico del tiempo no disponible",
+    "conditions": {
+      "clearSky": "Cielo despejado",
+      "mainlyClear": "Mayormente despejado",
+      "partlyCloudy": "Parcialmente nublado",
+      "overcast": "Nublado",
+      "fog": "Niebla",
+      "drizzle": "Llovizna",
+      "freezingDrizzle": "Llovizna helada",
+      "rain": "Lluvia",
+      "heavyRain": "Lluvia intensa",
+      "freezingRain": "Lluvia helada",
+      "snow": "Nieve",
+      "heavySnow": "Nevada intensa",
+      "snowGrains": "Granos de nieve",
+      "showers": "Chubascos",
+      "heavyShowers": "Chubascos intensos",
+      "snowShowers": "Chubascos de nieve",
+      "heavySnowShowers": "Chubascos intensos de nieve",
+      "thunderstorm": "Tormenta eléctrica",
+      "thunderstormHail": "Tormenta con granizo",
+      "unknown": "Desconocido"
+    }
+  },
   "dragDrop": {
     "reorderFailed": "Error al guardar el nuevo orden. Por favor, inténtelo de nuevo.",
     "keyboardHint": "Presione Espacio para tomar, teclas de flecha para mover, Espacio para soltar",

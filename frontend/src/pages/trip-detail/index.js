@@ -78,8 +78,13 @@ import { authState } from '../../state/auth-state.js';
 import { formatDate } from '../../utils/date-helpers.js';
 import { t } from '../../utils/i18n.js';
 import { logError } from '../../utils/error-tracking.js';
-import { uploadDocument } from '../../services/api-client.js';
+import { uploadDocument, getWeatherForecast } from '../../services/api-client.js';
 import { showToast } from '../../utils/toast.js';
+import {
+  createWeatherWidget,
+  createWeatherLoading,
+  createWeatherError,
+} from '../../components/weather-widget.js';
 
 /**
  * Handle file upload from activity card inline attach button
@@ -290,6 +295,7 @@ export async function tripDetailPage(params) {
                 <span>${t('trip.lists')}</span>
               </a>
             </div>
+            <div id="weather-container">${trip.destinationData?.lat && trip.startDate && trip.endDate ? createWeatherLoading() : ''}</div>
             <div class="trip-main-content">
               <div class="trip-itinerary-layout">
                 ${dateSidebarHtml}
@@ -476,6 +482,29 @@ export async function tripDetailPage(params) {
     subscribeToSuggestionUpdates();
     subscribeToActivityUpdates();
     subscribeToActivityNoteUpdates();
+
+    // Async weather widget load (non-blocking)
+    const weatherContainer = container.querySelector('#weather-container');
+    if (weatherContainer && trip.destinationData?.lat && trip.startDate && trip.endDate) {
+      const startDate = trip.startDate.split('T')[0];
+      const endDate = trip.endDate.split('T')[0];
+      getWeatherForecast(
+        trip.destinationData.lat,
+        trip.destinationData.lon,
+        startDate,
+        endDate
+      )
+        .then((result) => {
+          if (result.days && result.days.length > 0) {
+            weatherContainer.innerHTML = createWeatherWidget(result.days, result.source);
+          } else {
+            weatherContainer.innerHTML = '';
+          }
+        })
+        .catch(() => {
+          weatherContainer.innerHTML = '';
+        });
+    }
   } catch (error) {
     logError('Failed to load trip:', error);
     container.innerHTML = `

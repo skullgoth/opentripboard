@@ -793,6 +793,22 @@ export async function deleteActivityNote(tripId, activityId, noteId) {
   return del(`/trips/${tripId}/activities/${activityId}/notes/${noteId}`);
 }
 
+// ============================================
+// Weather API Methods
+// ============================================
+
+/**
+ * Get weather forecast for a destination
+ * @param {number} lat - Latitude
+ * @param {number} lon - Longitude
+ * @param {string} startDate - Start date (YYYY-MM-DD)
+ * @param {string} endDate - End date (YYYY-MM-DD)
+ * @returns {Promise<Object>} Weather forecast data { days, cached }
+ */
+export async function getWeatherForecast(lat, lon, startDate, endDate) {
+  return get('/weather/forecast', { lat, lon, startDate, endDate });
+}
+
 // Export the request function for custom requests
 export { request };
 
@@ -837,6 +853,7 @@ const apiClient = {
   createActivityNote,
   updateActivityNote,
   deleteActivityNote,
+  getWeatherForecast,
   request,
   APIError
 };

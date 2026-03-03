@@ -1019,6 +1019,35 @@
     "hoursAgo": "{{count}}h ago",
     "daysAgo": "{{count}}d ago"
   },
+  "weather": {
+    "title": "Weather Forecast",
+    "titleClimate": "Typical Weather",
+    "climateHint": "Based on climate averages",
+    "typical": "typical",
+    "unavailable": "Weather forecast unavailable",
+    "conditions": {
+      "clearSky": "Clear sky",
+      "mainlyClear": "Mainly clear",
+      "partlyCloudy": "Partly cloudy",
+      "overcast": "Overcast",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "freezingDrizzle": "Freezing drizzle",
+      "rain": "Rain",
+      "heavyRain": "Heavy rain",
+      "freezingRain": "Freezing rain",
+      "snow": "Snow",
+      "heavySnow": "Heavy snow",
+      "snowGrains": "Snow grains",
+      "showers": "Showers",
+      "heavyShowers": "Heavy showers",
+      "snowShowers": "Snow showers",
+      "heavySnowShowers": "Heavy snow showers",
+      "thunderstorm": "Thunderstorm",
+      "thunderstormHail": "Thunderstorm with hail",
+      "unknown": "Unknown"
+    }
+  },
   "dragDrop": {
     "reorderFailed": "Failed to save new order. Please try again.",
     "keyboardHint": "Press Space to pick up, arrow keys to move, Space to drop",

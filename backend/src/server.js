@@ -132,6 +132,7 @@ async function createServer() {
           { name: 'geocoding', description: 'Geocoding & autocomplete' },
           { name: 'cover-images', description: 'Cover image generation' },
           { name: 'routing', description: 'Transport routing' },
+          { name: 'weather', description: 'Weather forecasts' },
           { name: 'health', description: 'Health checks' },
         ],
       },
@@ -219,6 +220,10 @@ async function createServer() {
       // Transport routing routes for distance/duration calculation
       await instance.register(import('./routes/routing.js'), {
         prefix: '/routing',
+      });
+      // Weather forecast routes for trip destination weather
+      await instance.register(import('./routes/weather.js'), {
+        prefix: '/weather',
       });
     },
     { prefix: '/api/v1' }
