@@ -5,6 +5,17 @@ const { Pool } = pg;
 
 let pool = null;
 
+const debugPool = process.env.DEBUG_POOL === 'true';
+
+function parsePoolConfig() {
+  return {
+    min: parseInt(process.env.PG_POOL_MIN, 10) || 2,
+    max: parseInt(process.env.PG_POOL_MAX, 10) || 20,
+    idleTimeoutMillis: parseInt(process.env.PG_POOL_IDLE_TIMEOUT_MS, 10) || 30000,
+    connectionTimeoutMillis: parseInt(process.env.PG_POOL_CONNECTION_TIMEOUT_MS, 10) || 5000,
+  };
+}
+
 /**
  * Get or create the database connection pool
  * @returns {pg.Pool} PostgreSQL connection pool
@@ -17,12 +28,16 @@ export function getPool() {
       throw new Error('DATABASE_URL environment variable is not set');
     }
 
+    const poolConfig = parsePoolConfig();
+
     pool = new Pool({
       connectionString: databaseUrl,
-      max: 20, // Maximum number of connections in pool
-      idleTimeoutMillis: 30000, // Close idle connections after 30s
-      connectionTimeoutMillis: 2000, // Return error if connection takes > 2s
+      ...poolConfig,
     });
+
+    if (debugPool) {
+      console.log('Pool config:', poolConfig);
+    }
 
     // Handle pool errors
     pool.on('error', (err) => {
@@ -37,6 +52,13 @@ export function getPool() {
         process.exit(-1);
       }
       console.log('Database connection pool established');
+      if (debugPool) {
+        console.log('Pool statistics:', {
+          totalCount: pool.totalCount,
+          idleCount: pool.idleCount,
+          waitingCount: pool.waitingCount,
+        });
+      }
     });
   }
 
