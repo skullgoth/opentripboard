@@ -150,19 +150,32 @@ export async function create(userId, tripData) {
         { tripId: trip.id }
       );
 
-      // Update trip with cover image URL and attribution
+      // Update trip with cover image URL, thumbnails, and attribution
       await query(
         `UPDATE trips
          SET cover_image_url = $1,
              cover_image_attribution = $2,
+             cover_thumbnail_url = $4,
+             cover_thumbnail_jpeg_url = $5,
+             cover_image_webp_url = $6,
              updated_at = NOW()
          WHERE id = $3`,
-        [coverResult.url, coverResult.attribution, trip.id]
+        [
+          coverResult.url,
+          coverResult.attribution,
+          trip.id,
+          coverResult.thumbnailUrl || null,
+          coverResult.thumbnailJpegUrl || null,
+          coverResult.webpUrl || null,
+        ]
       );
 
       // Update local trip object
       trip.cover_image_url = coverResult.url;
       trip.cover_image_attribution = coverResult.attribution;
+      trip.cover_thumbnail_url = coverResult.thumbnailUrl || null;
+      trip.cover_thumbnail_jpeg_url = coverResult.thumbnailJpegUrl || null;
+      trip.cover_image_webp_url = coverResult.webpUrl || null;
     } catch (error) {
       // T029: Fallback to placeholder on error (non-blocking)
       console.error(`Failed to fetch cover image for trip ${trip.id}:`, error.message);
@@ -351,13 +364,28 @@ export async function cloneTrip(tripId, userId) {
 
   const newTripRaw = await tripQueries.create(newTripData);
 
-  // Copy cover_image_url from source trip
+  // Copy cover image URLs from source trip (all variants)
   if (sourceTripRaw.cover_image_url) {
     await query(
-      `UPDATE trips SET cover_image_url = $1, updated_at = NOW() WHERE id = $2`,
-      [sourceTripRaw.cover_image_url, newTripRaw.id]
+      `UPDATE trips
+       SET cover_image_url = $1,
+           cover_thumbnail_url = $3,
+           cover_thumbnail_jpeg_url = $4,
+           cover_image_webp_url = $5,
+           updated_at = NOW()
+       WHERE id = $2`,
+      [
+        sourceTripRaw.cover_image_url,
+        newTripRaw.id,
+        sourceTripRaw.cover_thumbnail_url || null,
+        sourceTripRaw.cover_thumbnail_jpeg_url || null,
+        sourceTripRaw.cover_image_webp_url || null,
+      ]
     );
     newTripRaw.cover_image_url = sourceTripRaw.cover_image_url;
+    newTripRaw.cover_thumbnail_url = sourceTripRaw.cover_thumbnail_url;
+    newTripRaw.cover_thumbnail_jpeg_url = sourceTripRaw.cover_thumbnail_jpeg_url;
+    newTripRaw.cover_image_webp_url = sourceTripRaw.cover_image_webp_url;
   }
 
   // Clone activities
@@ -428,6 +456,9 @@ function formatTrip(trip) {
     timezone: trip.timezone,
     description: trip.description,
     coverImageUrl: trip.cover_image_url || null,
+    coverThumbnailUrl: trip.cover_thumbnail_url || null,
+    coverThumbnailJpegUrl: trip.cover_thumbnail_jpeg_url || null,
+    coverImageWebpUrl: trip.cover_image_webp_url || null,
     destinationData: trip.destination_data || null, // T013: New field
     coverImageAttribution: trip.cover_image_attribution || null, // T013: New field
     createdAt: trip.created_at,
@@ -446,7 +477,9 @@ function formatTrip(trip) {
  * @param {Object|null} attribution - Cover image attribution (optional)
  * @returns {Promise<Object>} Updated trip
  */
-export async function updateCoverImage(tripId, userId, coverImageUrl, attribution = undefined) {
+export async function updateCoverImage(
+  tripId, userId, coverImageUrl, attribution = undefined, variants = {}
+) {
   // Verify ownership/access
   await get(tripId, userId);
 
@@ -463,14 +496,38 @@ export async function updateCoverImage(tripId, userId, coverImageUrl, attributio
     finalAttribution = { source: 'user_upload' };
   }
 
+  const thumbnailUrl = 'thumbnailUrl' in variants ? variants.thumbnailUrl : undefined;
+  const thumbnailJpegUrl = 'thumbnailJpegUrl' in variants ? variants.thumbnailJpegUrl : undefined;
+  const webpUrl = 'webpUrl' in variants ? variants.webpUrl : undefined;
+
+  // Build dynamic SET clause for variant columns
+  const setClauses = [
+    'cover_image_url = $1',
+    'cover_image_attribution = $2',
+    'updated_at = NOW()',
+  ];
+  const params = [coverImageUrl, finalAttribution, tripId];
+  let paramIdx = 4;
+
+  if (thumbnailUrl !== undefined) {
+    setClauses.push(`cover_thumbnail_url = $${paramIdx++}`);
+    params.push(thumbnailUrl);
+  }
+  if (thumbnailJpegUrl !== undefined) {
+    setClauses.push(`cover_thumbnail_jpeg_url = $${paramIdx++}`);
+    params.push(thumbnailJpegUrl);
+  }
+  if (webpUrl !== undefined) {
+    setClauses.push(`cover_image_webp_url = $${paramIdx++}`);
+    params.push(webpUrl);
+  }
+
   const result = await query(
     `UPDATE trips
-     SET cover_image_url = $1,
-         cover_image_attribution = $2,
-         updated_at = NOW()
+     SET ${setClauses.join(', ')}
      WHERE id = $3
      RETURNING *`,
-    [coverImageUrl, finalAttribution, tripId]
+    params
   );
 
   if (result.rows.length === 0) {

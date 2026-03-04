@@ -194,12 +194,24 @@ export async function tripDetailPage(params) {
     const headerHtml = `
       <div class="trip-detail-header">
         <div class="trip-cover-image-header">
+          ${trip.coverImageWebpUrl ? `
+          <picture>
+            <source srcset="${trip.coverImageWebpUrl}" type="image/webp" />
+            <img
+              src="${coverImageUrl}"
+              alt="Cover image for ${escapeHtml(trip.name)}"
+              class="trip-cover-image"
+              data-testid="trip-cover-image"
+            />
+          </picture>
+          ` : `
           <img
             src="${coverImageUrl}"
             alt="Cover image for ${escapeHtml(trip.name)}"
             class="trip-cover-image"
             data-testid="trip-cover-image"
           />
+          `}
           ${renderCoverImageAttribution(trip)}
           <div class="cover-image-actions">
             <button class="btn btn-icon" data-action="edit-cover-image" title="${isOwner ? t('trip.changeCover') : t('trip.ownerOnly', { action: t('trip.changeCover').toLowerCase() })}" ${!isOwner ? 'disabled' : ''}>

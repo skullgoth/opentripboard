@@ -293,17 +293,59 @@ export default async function tripRoutes(fastify) {
         }
       );
 
+      // Generate full-size WebP version
+      const webpPath = path.join(
+        uploadDir,
+        `processed-${fileInfo.filename.replace(/\.[^.]+$/, '.webp')}`
+      );
+      await imageService.processCoverImage(
+        fileInfo.filepath,
+        webpPath,
+        { format: 'webp', quality: 85 }
+      );
+
+      // Generate WebP thumbnail (400x210)
+      const thumbWebpPath = path.join(
+        uploadDir,
+        `thumb-${fileInfo.filename.replace(/\.[^.]+$/, '.webp')}`
+      );
+      await imageService.generateThumbnail(
+        fileInfo.filepath,
+        thumbWebpPath,
+        { format: 'webp' }
+      );
+
+      // Generate JPEG thumbnail (400x210)
+      const thumbJpegPath = path.join(
+        uploadDir,
+        `thumb-${fileInfo.filename.replace(/\.[^.]+$/, '.jpg')}`
+      );
+      await imageService.generateThumbnail(
+        fileInfo.filepath,
+        thumbJpegPath,
+        { format: 'jpeg' }
+      );
+
       // Delete original unprocessed file
       await deleteUploadedFile(fileInfo.filepath);
 
-      // Generate relative URL path for storage
+      // Generate relative URL paths for storage
       const imageUrl = `/uploads/cover-images/processed-${fileInfo.filename}`;
+      const webpUrl = `/uploads/cover-images/processed-${fileInfo.filename.replace(/\.[^.]+$/, '.webp')}`;
+      const thumbWebpUrl = `/uploads/cover-images/thumb-${fileInfo.filename.replace(/\.[^.]+$/, '.webp')}`;
+      const thumbJpegUrl = `/uploads/cover-images/thumb-${fileInfo.filename.replace(/\.[^.]+$/, '.jpg')}`;
 
-      // Update trip with cover image URL
+      // Update trip with cover image URL and thumbnail URLs
       const trip = await tripService.updateCoverImage(
         request.params.id,
         request.user.userId,
-        imageUrl
+        imageUrl,
+        undefined,
+        {
+          thumbnailUrl: thumbWebpUrl,
+          thumbnailJpegUrl: thumbJpegUrl,
+          webpUrl,
+        }
       );
 
       reply.send({
@@ -328,20 +370,43 @@ export default async function tripRoutes(fastify) {
       const trip = await tripService.get(request.params.id, request.user.userId);
 
       if (trip.coverImageUrl) {
-        // Convert URL to filesystem path
+        // Convert URL to filesystem path and delete all image variants
         const uploadDir = process.env.UPLOAD_DIR || './uploads/cover-images';
         const filename = path.basename(trip.coverImageUrl);
         const filepath = path.join(uploadDir, filename);
 
-        // Delete file from filesystem
+        // Delete main JPEG file
         await imageService.deleteImage(filepath);
+
+        // Delete WebP full-size variant
+        if (trip.coverImageWebpUrl) {
+          await imageService.deleteImage(
+            path.join(uploadDir, path.basename(trip.coverImageWebpUrl))
+          );
+        }
+
+        // Delete WebP thumbnail
+        if (trip.coverThumbnailUrl) {
+          await imageService.deleteImage(
+            path.join(uploadDir, path.basename(trip.coverThumbnailUrl))
+          );
+        }
+
+        // Delete JPEG thumbnail
+        if (trip.coverThumbnailJpegUrl) {
+          await imageService.deleteImage(
+            path.join(uploadDir, path.basename(trip.coverThumbnailJpegUrl))
+          );
+        }
       }
 
-      // Update trip to remove cover image URL
+      // Update trip to remove cover image URL and all variants
       const updatedTrip = await tripService.updateCoverImage(
         request.params.id,
         request.user.userId,
-        null
+        null,
+        undefined,
+        { thumbnailUrl: null, thumbnailJpegUrl: null, webpUrl: null }
       );
 
       reply.send({ trip: updatedTrip });

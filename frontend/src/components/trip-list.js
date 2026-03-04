@@ -177,6 +177,25 @@ export function attachTripListListeners(container, onTripClick, onCreateClick, o
 function getCoverImageHtml(trip) {
   // T042: Use placeholder image for trips without cover
   const coverImageUrl = trip.coverImageUrl || '/images/placeholder-trip.svg';
+  const fallbackSrc = trip.coverThumbnailJpegUrl || coverImageUrl;
+
+  // Use <picture> with WebP thumbnail when available
+  if (trip.coverThumbnailUrl) {
+    return `
+      <div class="trip-cover-image-wrapper" data-action="view-trip">
+        <picture>
+          <source srcset="${trip.coverThumbnailUrl}" type="image/webp" />
+          <img
+            src="${fallbackSrc}"
+            alt="Cover image for ${escapeHtml(trip.name)}"
+            class="trip-cover-image"
+            data-testid="trip-cover-image"
+            loading="lazy"
+          />
+        </picture>
+      </div>
+    `;
+  }
 
   return `
     <div class="trip-cover-image-wrapper" data-action="view-trip">

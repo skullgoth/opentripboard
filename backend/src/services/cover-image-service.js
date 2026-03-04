@@ -3,6 +3,7 @@ import https from 'https';
 import { mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import sharp from 'sharp';
+import { generateThumbnail } from './image-service.js';
 
 /**
  * Cover Image Service
@@ -64,8 +65,8 @@ export class CoverImageService {
     const photo = photos[0];
     const imageUrl = photo.src.large2x; // 1920x1280 or similar
 
-    // Download and optimize image
-    const localPath = await this._downloadAndOptimize(imageUrl, tripId);
+    // Download and optimize image (returns all variant paths)
+    const imagePaths = await this._downloadAndOptimize(imageUrl, tripId);
 
     // Build attribution metadata
     const attribution = {
@@ -77,7 +78,10 @@ export class CoverImageService {
     };
 
     return {
-      url: localPath,
+      url: imagePaths.url,
+      webpUrl: imagePaths.webpUrl,
+      thumbnailUrl: imagePaths.thumbnailUrl,
+      thumbnailJpegUrl: imagePaths.thumbnailJpegUrl,
       attribution,
       source: 'pexels',
     };
@@ -157,7 +161,8 @@ export class CoverImageService {
    * @private
    */
   async _downloadAndOptimize(imageUrl, tripId) {
-    const filename = `${tripId}-${Date.now()}.jpg`;
+    const timestamp = Date.now();
+    const filename = `${tripId}-${timestamp}.jpg`;
     const filePath = join(this.uploadDir, filename);
 
     // Ensure upload directory exists
@@ -166,7 +171,7 @@ export class CoverImageService {
     // Download image
     const imageBuffer = await this._downloadImage(imageUrl);
 
-    // Optimize with Sharp
+    // Optimize with Sharp - full-size JPEG
     await sharp(imageBuffer)
       .resize(this.targetWidth, this.targetHeight, {
         fit: 'cover',
@@ -175,8 +180,34 @@ export class CoverImageService {
       .jpeg({ quality: this.quality })
       .toFile(filePath);
 
-    // Return relative path for database storage
-    return `/uploads/covers/${filename}`;
+    // Generate full-size WebP
+    const webpFilename = `${tripId}-${timestamp}.webp`;
+    const webpPath = join(this.uploadDir, webpFilename);
+    await sharp(imageBuffer)
+      .resize(this.targetWidth, this.targetHeight, {
+        fit: 'cover',
+        position: 'center',
+      })
+      .webp({ quality: this.quality })
+      .toFile(webpPath);
+
+    // Generate WebP thumbnail (400x210)
+    const thumbWebpFilename = `thumb-${tripId}-${timestamp}.webp`;
+    const thumbWebpPath = join(this.uploadDir, thumbWebpFilename);
+    await generateThumbnail(filePath, thumbWebpPath, { format: 'webp' });
+
+    // Generate JPEG thumbnail (400x210)
+    const thumbJpegFilename = `thumb-${tripId}-${timestamp}.jpg`;
+    const thumbJpegPath = join(this.uploadDir, thumbJpegFilename);
+    await generateThumbnail(filePath, thumbJpegPath, { format: 'jpeg' });
+
+    // Return all paths for database storage
+    return {
+      url: `/uploads/covers/${filename}`,
+      webpUrl: `/uploads/covers/${webpFilename}`,
+      thumbnailUrl: `/uploads/covers/${thumbWebpFilename}`,
+      thumbnailJpegUrl: `/uploads/covers/${thumbJpegFilename}`,
+    };
   }
 
   /**
