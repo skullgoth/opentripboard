@@ -345,7 +345,9 @@
     "distanceLabel": "Distancia:",
     "travelTime": "Tiempo de viaje:",
     "totalDistance": "Distancia total:",
-    "estTravelTime": "Tiempo estimado:"
+    "estTravelTime": "Tiempo estimado:",
+    "dayLegend": "Ruta por día",
+    "routeCalculating": "Cálculo de rutas en curso"
   },
   "transport": {
     "addTransport": "Añadir transporte",

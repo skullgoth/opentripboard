@@ -2799,6 +2799,42 @@ body:has(.trip-detail-page) {
   z-index: 1;
 }
 
+/* Route calculation loading overlay */
+.map-route-loading {
+  position: absolute;
+  top: var(--spacing-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  background: var(--color-white);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+[data-theme="dark"] .map-route-loading {
+  background: var(--color-gray-800);
+  color: var(--color-gray-200);
+}
+
+.map-route-loading__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-gray-300);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.map-route-loading__text {
+  white-space: nowrap;
+}
+
 .map-controls {
   position: absolute;
   top: var(--spacing-3);
@@ -2864,6 +2900,58 @@ body:has(.trip-detail-page) {
   margin-top: var(--spacing-3);
   display: flex;
   gap: var(--spacing-2);
+}
+
+/* Day color legend overlay */
+.map-day-legend {
+  background: var(--color-white);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--font-size-xs);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+[data-theme="dark"] .map-day-legend {
+  background: var(--color-gray-800);
+  color: var(--color-gray-100);
+}
+
+.map-day-legend__title {
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-600);
+}
+
+[data-theme="dark"] .map-day-legend__title {
+  color: var(--color-gray-400);
+}
+
+.map-day-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: 1px 0;
+}
+
+.map-day-legend__color {
+  display: inline-block;
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.map-day-legend__label {
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.map-day-legend__date {
+  color: var(--color-gray-500);
+  white-space: nowrap;
 }
 
 /* Map loading state */

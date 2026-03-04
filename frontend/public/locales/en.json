@@ -282,7 +282,9 @@
     "distanceLabel": "Distance:",
     "travelTime": "Travel Time:",
     "totalDistance": "Total Distance:",
-    "estTravelTime": "Est. Travel Time:"
+    "estTravelTime": "Est. Travel Time:",
+    "dayLegend": "Route by Day",
+    "routeCalculating": "Route calculation in progress"
   },
   "transport": {
     "addTransport": "Add transport",

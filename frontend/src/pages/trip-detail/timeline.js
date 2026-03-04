@@ -17,9 +17,17 @@ import { tripState } from '../../state/trip-state.js';
 import { suggestionState } from '../../state/suggestion-state.js';
 import { logError } from '../../utils/error-tracking.js';
 
+// Show map loading overlay when route calculation starts.
+document.addEventListener('auto-routes-start', () => {
+  const el = document.getElementById('map-route-loading');
+  if (el) el.style.display = '';
+});
+
 // Listen for auto route calculation completion to update the map with newly
 // calculated route data and sync any deferred WebSocket activity updates.
 document.addEventListener('auto-routes-complete', () => {
+  const el = document.getElementById('map-route-loading');
+  if (el) el.style.display = 'none';
   updateMap();
 });
 

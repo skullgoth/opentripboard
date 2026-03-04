@@ -1373,6 +1373,7 @@ async function autoCalculateRoutes(container, onTransportChange) {
   }
 
   autoCalculationInProgress = true;
+  document.dispatchEvent(new CustomEvent('auto-routes-start'));
 
   // Collect all routes that need calculation
   const routesToCalculate = [];

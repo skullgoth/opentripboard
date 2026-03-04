@@ -52,7 +52,24 @@ function getTypeIcon(type) {
 
 let leafletLoaded = false;
 let markerClusterLoaded = false;
+let polylineDecoratorLoaded = false;
 let L = null;
+
+/**
+ * Day color palette for route segments (distinct, works on light/dark tiles)
+ */
+const DAY_COLORS = [
+  '#e6194b', // red
+  '#3cb44b', // green
+  '#4363d8', // blue
+  '#f58231', // orange
+  '#911eb4', // purple
+  '#42d4f4', // cyan
+  '#f032e6', // magenta
+  '#bfef45', // lime
+  '#fabed4', // pink
+  '#469990', // teal
+];
 
 /**
  * Lazy-load Leaflet library and marker clustering plugin
@@ -78,6 +95,16 @@ async function loadLeaflet() {
     }
   }
 
+  // Load polyline decorator plugin
+  if (!polylineDecoratorLoaded) {
+    try {
+      await import('leaflet-polylinedecorator');
+      polylineDecoratorLoaded = true;
+    } catch (error) {
+      logWarning('Failed to load polyline decorator plugin:', error);
+    }
+  }
+
   return L;
 }
 
@@ -97,6 +124,10 @@ export async function createMapView(activities = [], options = {}) {
   return `
     <div class="map-container" style="height: ${height};">
       <div id="${containerId}" class="map-canvas" style="height: 100%; width: 100%;"></div>
+      <div class="map-route-loading" id="map-route-loading" style="display: none;">
+        <div class="map-route-loading__spinner"></div>
+        <span class="map-route-loading__text">${t('map.routeCalculating')}</span>
+      </div>
       ${showControls ? `
         <div class="map-controls">
           <button class="btn btn-secondary btn-sm" data-action="fit-bounds" title="${t('map.fitBounds')}">
@@ -279,25 +310,127 @@ export async function initializeMap(containerId, activities = [], options = {}) 
     }
   }
 
-  // Track transport polylines (multiple segments with different styles)
+  // Track route polylines and arrow decorators
   let transportPolylines = [];
+  let arrowDecorators = [];
+  let dayLegendControl = null;
 
   /**
-   * Transport mode polyline styles
+   * Get date string from an activity's startTime (local date portion)
+   * @param {Object} activity - Activity with startTime
+   * @returns {string|null} Date string like "2025-06-15" or null
    */
-  const TRANSPORT_STYLES = {
-    walk: { color: '#22c55e', weight: 3, dashArray: '5, 10', opacity: 0.8 },
-    bike: { color: '#3b82f6', weight: 3, dashArray: '5, 10', opacity: 0.8 },
-    drive: { color: '#3b82f6', weight: 4, dashArray: null, opacity: 0.8 },
-    train: { color: '#f59e0b', weight: 4, dashArray: '12, 6', opacity: 0.8 },
-    fly: { color: '#a855f7', weight: 2, dashArray: '10, 15', opacity: 0.7 },
-    boat: { color: '#06b6d4', weight: 3, dashArray: '8, 12', opacity: 0.8 },
-    default: { color: '#6b7280', weight: 2, dashArray: '3, 6', opacity: 0.5 },
-  };
+  function getActivityDateKey(activity) {
+    if (!activity.startTime) return null;
+    try {
+      const d = new Date(activity.startTime);
+      // Use local date to match what the user sees
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch {
+      return null;
+    }
+  }
 
   /**
-   * Draw route line connecting activities in order
-   * Uses transport-specific styling based on activity.metadata.transportToNext
+   * Build segment coordinates from two activities
+   */
+  function getSegmentCoords(fromActivity, toActivity) {
+    const transport = fromActivity.metadata?.transportToNext;
+
+    // Use cached route geometry if available (for road-following routes)
+    if (transport?.routeGeometry && Array.isArray(transport.routeGeometry) && transport.routeGeometry.length > 1) {
+      return transport.routeGeometry.map(coord => [coord[1], coord[0]]);
+    }
+
+    // Straight line between points
+    return [
+      [fromActivity.latitude, fromActivity.longitude],
+      [toActivity.latitude, toActivity.longitude],
+    ];
+  }
+
+  /**
+   * Add arrow decorator to a polyline segment
+   */
+  function addArrowDecorator(polyline, color) {
+    if (!L.polylineDecorator) return;
+
+    const decorator = L.polylineDecorator(polyline, {
+      patterns: [{
+        offset: '15%',
+        repeat: 100,
+        symbol: L.Symbol.arrowHead({
+          pixelSize: 12,
+          polygon: false,
+          pathOptions: { stroke: true, color: color, weight: 2, opacity: 0.9 },
+        }),
+      }],
+    });
+    decorator.addTo(map);
+    arrowDecorators.push(decorator);
+  }
+
+  /**
+   * Create or update the day color legend on the map
+   */
+  function updateDayLegend(dayEntries) {
+    removeDayLegend();
+
+    if (!dayEntries || dayEntries.length === 0) return;
+
+    const LegendControl = L.Control.extend({
+      options: { position: 'bottomright' },
+      onAdd() {
+        const container = L.DomUtil.create('div', 'map-day-legend');
+        L.DomEvent.disableClickPropagation(container);
+
+        let html = `<div class="map-day-legend__title">${t('map.dayLegend')}</div>`;
+        dayEntries.forEach(({ dayIndex, color, dateStr }) => {
+          const label = `${t('timeline.day')} ${dayIndex + 1}`;
+          const dateLabel = formatDateShort(dateStr);
+          html += `<div class="map-day-legend__item">`;
+          html += `<span class="map-day-legend__color" style="background:${color}"></span>`;
+          html += `<span class="map-day-legend__label">${label}</span>`;
+          html += `<span class="map-day-legend__date">${dateLabel}</span>`;
+          html += `</div>`;
+        });
+        container.innerHTML = html;
+        return container;
+      },
+    });
+
+    dayLegendControl = new LegendControl();
+    dayLegendControl.addTo(map);
+  }
+
+  /**
+   * Remove the day legend from map
+   */
+  function removeDayLegend() {
+    if (dayLegendControl) {
+      map.removeControl(dayLegendControl);
+      dayLegendControl = null;
+    }
+  }
+
+  /**
+   * Format a date string (YYYY-MM-DD) for short display
+   */
+  function formatDateShort(dateStr) {
+    try {
+      const [year, month, day] = dateStr.split('-');
+      const d = new Date(Number(year), Number(month) - 1, Number(day));
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  }
+
+  /**
+   * Draw route lines connecting activities, colored by day with directional arrows
    */
   function drawRoute(activitiesToConnect) {
     // Remove existing route polyline (legacy single line)
@@ -306,57 +439,105 @@ export async function initializeMap(containerId, activities = [], options = {}) 
       routePolyline = null;
     }
 
-    // Remove existing transport polylines
+    // Remove existing polylines and decorators
     transportPolylines.forEach(pl => map.removeLayer(pl));
     transportPolylines = [];
+    arrowDecorators.forEach(d => map.removeLayer(d));
+    arrowDecorators = [];
 
     const validActivities = activitiesToConnect.filter(
       activity => activity.latitude && activity.longitude
     );
 
     if (validActivities.length < 2) {
-      return; // Need at least 2 points for a route
+      removeDayLegend();
+      return;
     }
 
-    // Draw segment between each consecutive pair of activities
-    for (let i = 0; i < validActivities.length - 1; i++) {
-      const fromActivity = validActivities[i];
-      const toActivity = validActivities[i + 1];
-      const transport = fromActivity.metadata?.transportToNext;
-      const mode = transport?.mode || null;
+    // Group activities by day (date key from startTime)
+    const dayMap = new Map(); // dateKey -> [activities]
+    const undated = [];
 
-      // Get style for this transport mode
-      const style = mode ? TRANSPORT_STYLES[mode] : TRANSPORT_STYLES.default;
-
-      let segmentCoords;
-
-      // Use cached route geometry if available (for road-following routes)
-      if (transport?.routeGeometry && Array.isArray(transport.routeGeometry) && transport.routeGeometry.length > 1) {
-        // RouteGeometry is in [lng, lat] format, convert to [lat, lng] for Leaflet
-        segmentCoords = transport.routeGeometry.map(coord => [coord[1], coord[0]]);
+    validActivities.forEach(activity => {
+      const dateKey = getActivityDateKey(activity);
+      if (dateKey) {
+        if (!dayMap.has(dateKey)) {
+          dayMap.set(dateKey, []);
+        }
+        dayMap.get(dateKey).push(activity);
       } else {
-        // Straight line between points
-        segmentCoords = [
-          [fromActivity.latitude, fromActivity.longitude],
-          [toActivity.latitude, toActivity.longitude]
-        ];
+        undated.push(activity);
+      }
+    });
+
+    // Sort days chronologically
+    const sortedDays = [...dayMap.keys()].sort();
+
+    // Build legend entries
+    const legendEntries = [];
+
+    // Draw segments for each day
+    sortedDays.forEach((dateKey, dayIndex) => {
+      const dayActivities = dayMap.get(dateKey);
+      const color = DAY_COLORS[dayIndex % DAY_COLORS.length];
+
+      legendEntries.push({ dayIndex, color, dateStr: dateKey });
+
+      // Draw segments between consecutive activities within the same day
+      for (let i = 0; i < dayActivities.length - 1; i++) {
+        const segmentCoords = getSegmentCoords(dayActivities[i], dayActivities[i + 1]);
+        const polyline = L.polyline(segmentCoords, {
+          color,
+          weight: 4,
+          opacity: 0.8,
+          smoothFactor: 1,
+        });
+        polyline.addTo(map);
+        transportPolylines.push(polyline);
+        addArrowDecorator(polyline, color);
       }
 
-      const polylineOptions = {
-        color: style.color,
-        weight: style.weight,
-        opacity: style.opacity,
-        smoothFactor: 1,
-      };
+      // Draw connecting segment from last activity of this day to first of next day
+      if (dayIndex < sortedDays.length - 1) {
+        const nextDayKey = sortedDays[dayIndex + 1];
+        const nextDayActivities = dayMap.get(nextDayKey);
+        const lastOfDay = dayActivities[dayActivities.length - 1];
+        const firstOfNext = nextDayActivities[0];
+        const nextColor = DAY_COLORS[(dayIndex + 1) % DAY_COLORS.length];
+        const segmentCoords = getSegmentCoords(lastOfDay, firstOfNext);
 
-      if (style.dashArray) {
-        polylineOptions.dashArray = style.dashArray;
+        const polyline = L.polyline(segmentCoords, {
+          color: nextColor,
+          weight: 3,
+          opacity: 0.5,
+          dashArray: '8, 12',
+          smoothFactor: 1,
+        });
+        polyline.addTo(map);
+        transportPolylines.push(polyline);
+        addArrowDecorator(polyline, nextColor);
       }
+    });
 
-      const polyline = L.polyline(segmentCoords, polylineOptions);
-      polyline.addTo(map);
-      transportPolylines.push(polyline);
+    // Draw undated activities as a single grey chain
+    if (undated.length >= 2) {
+      for (let i = 0; i < undated.length - 1; i++) {
+        const segmentCoords = getSegmentCoords(undated[i], undated[i + 1]);
+        const polyline = L.polyline(segmentCoords, {
+          color: '#6b7280',
+          weight: 2,
+          opacity: 0.5,
+          dashArray: '3, 6',
+          smoothFactor: 1,
+        });
+        polyline.addTo(map);
+        transportPolylines.push(polyline);
+        addArrowDecorator(polyline, '#6b7280');
+      }
     }
+
+    // Update legend
+    updateDayLegend(legendEntries);
   }
 
   /**
@@ -379,6 +560,11 @@ export async function initializeMap(containerId, activities = [], options = {}) 
       // Remove transport polylines
       transportPolylines.forEach(pl => map.removeLayer(pl));
       transportPolylines = [];
+      // Remove arrow decorators
+      arrowDecorators.forEach(d => map.removeLayer(d));
+      arrowDecorators = [];
+      // Remove day legend
+      removeDayLegend();
     }
 
     // Update icon
@@ -615,6 +801,11 @@ export async function initializeMap(containerId, activities = [], options = {}) 
     // Clean up transport polylines
     transportPolylines.forEach(pl => map.removeLayer(pl));
     transportPolylines = [];
+    // Clean up arrow decorators
+    arrowDecorators.forEach(d => map.removeLayer(d));
+    arrowDecorators = [];
+    // Clean up day legend
+    removeDayLegend();
     // Clean up distance labels
     distanceLabels.forEach(label => map.removeLayer(label));
     distanceLabels = [];
