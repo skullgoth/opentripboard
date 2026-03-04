@@ -1067,5 +1067,10 @@
     "movedToDay": "Déplacé vers {{day}}.",
     "previousDay": "jour précédent",
     "nextDay": "jour suivant"
+  },
+  "connection": {
+    "reconnecting": "Reconnexion au serveur...",
+    "lost": "Connexion perdue.",
+    "reconnect": "Reconnecter"
   }
 }

@@ -4,6 +4,10 @@ import { logError } from '../utils/error-tracking.js';
 
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost/ws';
 
+const BACKOFF_BASE_MS = 1000;
+const BACKOFF_MAX_MS = 30000;
+const MAX_RECONNECT_ATTEMPTS = 10;
+
 /**
  * WebSocket client for real-time communication
  */
@@ -13,10 +17,50 @@ export class WebSocketClient {
     this.isConnected = false;
     this.isAuthenticated = false;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
-    this.reconnectDelay = 1000;
     this.messageHandlers = new Map();
     this.currentTripId = null;
+    this.intentionalClose = false;
+    this.reconnectTimer = null;
+    this.messageQueue = [];
+    this.connectionStateHandlers = [];
+  }
+
+  /**
+   * Get current connection state
+   * @returns {'connected'|'disconnected'|'reconnecting'|'failed'}
+   */
+  get connectionState() {
+    if (this.isConnected && this.isAuthenticated) return 'connected';
+    if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) return 'failed';
+    if (this.reconnectAttempts > 0) return 'reconnecting';
+    return 'disconnected';
+  }
+
+  /**
+   * Subscribe to connection state changes
+   * @param {Function} handler - Called with state string
+   * @returns {Function} Unsubscribe function
+   */
+  onConnectionStateChange(handler) {
+    this.connectionStateHandlers.push(handler);
+    return () => {
+      const idx = this.connectionStateHandlers.indexOf(handler);
+      if (idx !== -1) this.connectionStateHandlers.splice(idx, 1);
+    };
+  }
+
+  /**
+   * Notify connection state listeners
+   */
+  notifyConnectionState() {
+    const state = this.connectionState;
+    this.connectionStateHandlers.forEach((handler) => {
+      try {
+        handler(state);
+      } catch (error) {
+        logError('[WS] Error in connection state handler:', error);
+      }
+    });
   }
 
   /**
@@ -26,6 +70,7 @@ export class WebSocketClient {
   connect() {
     return new Promise((resolve, reject) => {
       try {
+        this.intentionalClose = false;
         this.ws = new WebSocket(WS_URL);
 
         this.ws.onopen = () => {
@@ -35,6 +80,8 @@ export class WebSocketClient {
           // Authenticate immediately after connection
           this.authenticate()
             .then(() => {
+              this.notifyConnectionState();
+              this.flushMessageQueue();
               resolve();
             })
             .catch((error) => {
@@ -54,9 +101,12 @@ export class WebSocketClient {
         this.ws.onclose = () => {
           this.isConnected = false;
           this.isAuthenticated = false;
+          this.notifyConnectionState();
 
-          // Attempt reconnection
-          this.reconnect();
+          // Only attempt reconnection if not intentionally closed
+          if (!this.intentionalClose) {
+            this.scheduleReconnect();
+          }
         };
 
       } catch (error) {
@@ -99,27 +149,33 @@ export class WebSocketClient {
       this.on('auth:success', authHandler);
       this.on('auth:error', errorHandler);
 
-      // Send auth message
-      this.send({
-        type: 'auth',
-        token,
-      });
+      // Send auth message directly (bypass queue since not yet authenticated)
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({ type: 'auth', token }));
+      }
     });
   }
 
   /**
-   * Reconnect to WebSocket server
+   * Schedule reconnection with exponential backoff
    */
-  reconnect() {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      logError('Max reconnection attempts reached');
+  scheduleReconnect() {
+    if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      logError('[WS] Max reconnection attempts reached');
+      this.notifyConnectionState();
       return;
     }
 
     this.reconnectAttempts++;
-    const delay = this.reconnectDelay * this.reconnectAttempts;
+    const delay = Math.min(
+      BACKOFF_BASE_MS * Math.pow(2, this.reconnectAttempts - 1),
+      BACKOFF_MAX_MS
+    );
 
-    setTimeout(() => {
+    this.notifyConnectionState();
+
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
       this.connect()
         .then(() => {
           // Rejoin current trip if any
@@ -128,15 +184,43 @@ export class WebSocketClient {
           }
         })
         .catch((error) => {
-          logError('Reconnection failed:', error);
+          logError('[WS] Reconnection failed:', error);
         });
     }, delay);
+  }
+
+  /**
+   * Manually trigger reconnection (resets attempt counter)
+   */
+  manualReconnect() {
+    this.reconnectAttempts = 0;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.notifyConnectionState();
+
+    this.connect()
+      .then(() => {
+        if (this.currentTripId) {
+          this.joinTrip(this.currentTripId);
+        }
+      })
+      .catch((error) => {
+        logError('[WS] Manual reconnection failed:', error);
+      });
   }
 
   /**
    * Disconnect WebSocket
    */
   disconnect() {
+    this.intentionalClose = true;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.messageQueue = [];
     if (this.ws) {
       this.ws.close();
       this.ws = null;
@@ -144,6 +228,8 @@ export class WebSocketClient {
       this.isAuthenticated = false;
       this.currentTripId = null;
     }
+    this.reconnectAttempts = 0;
+    this.notifyConnectionState();
   }
 
   /**
@@ -151,17 +237,12 @@ export class WebSocketClient {
    * @param {string} tripId - Trip ID
    */
   joinTrip(tripId) {
-    if (!this.isAuthenticated) {
-      logError('[WS] Cannot join trip: not authenticated');
-      return;
-    }
-
-    if (!this.isConnected) {
-      logError('[WS] Cannot join trip: not connected');
-      return;
-    }
-
     this.currentTripId = tripId;
+
+    if (!this.isAuthenticated || !this.isConnected) {
+      return;
+    }
+
     this.send({
       type: 'room:join',
       tripId,
@@ -184,19 +265,36 @@ export class WebSocketClient {
   }
 
   /**
-   * Send a message to the server
+   * Send a message to the server, queuing if disconnected
    * @param {Object} message - Message object
    */
   send(message) {
     if (!this.isConnected || !this.ws) {
-      logError('Cannot send message: not connected');
+      // Queue non-auth messages while disconnected
+      if (message.type !== 'auth') {
+        this.messageQueue.push(message);
+      }
       return;
     }
 
     try {
       this.ws.send(JSON.stringify(message));
     } catch (error) {
-      logError('Failed to send message:', error);
+      logError('[WS] Failed to send message:', error);
+      // Queue the message for retry
+      if (message.type !== 'auth') {
+        this.messageQueue.push(message);
+      }
+    }
+  }
+
+  /**
+   * Flush queued messages after reconnection
+   */
+  flushMessageQueue() {
+    const queue = this.messageQueue.splice(0);
+    for (const message of queue) {
+      this.send(message);
     }
   }
 

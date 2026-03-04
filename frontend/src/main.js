@@ -41,6 +41,7 @@ import {
   attachNotificationBellListeners,
   updateBadgeCount,
 } from './components/notification-bell.js';
+import { initConnectionStatus } from './components/connection-status.js';
 
 /**
  * Application state
@@ -245,6 +246,9 @@ async function initApp() {
     // Initialize i18n with browser locale language
     await initI18n(defaults.language);
   }
+
+  // Initialize WebSocket connection status banner
+  initConnectionStatus();
 
   // Update UI based on initial auth state
   updateUIForAuthState(authState.isAuthenticated());
